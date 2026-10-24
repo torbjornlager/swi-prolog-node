@@ -1,0 +1,80 @@
+{
+  "base_revision": "8c90a4dedcee7e6c590a5745fed02fc6b986dcbf",
+  "engine": "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+  "engine_sha256": "915c4758b6aba3d01ade4fe4f46332b6f526ad6c70a8e2574dd05278c2b0ce9c",
+  "probes": [
+    {
+      "source": "pre-repair",
+      "probe": "unknown-option",
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/swi-source-before-czh6n29b/tests/tiers/node/spawn_source_validation_tests.pl",
+        "-g",
+        "test_spawn_source_validation:with_mode(blacklist,test_spawn_source_validation:with_source(Base,Q,(test_spawn_source_validation:url(Base,'/safe',URI),catch(test_spawn_source_validation:checked(spawn(true,_,[src_uri(URI),unknown(probe)])),Error,true),(var(Error)->Outcome=admitted;Outcome=rejected(Error)),(thread_get_message(Q,fetched(Path),[timeout(0)])->Fetch=request(Path);Fetch=none),(var(Bool)->BoolState=unbound;BoolState=bound(Bool)),write_canonical(result(Outcome,Fetch,BoolState)),nl)))",
+        "-t",
+        "halt"
+      ],
+      "exit_code": 0,
+      "log": "pre-repair-unknown-option.log"
+    },
+    {
+      "source": "pre-repair",
+      "probe": "pending-boolean",
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/swi-source-before-czh6n29b/tests/tiers/node/spawn_source_validation_tests.pl",
+        "-g",
+        "test_spawn_source_validation:with_mode(blacklist,test_spawn_source_validation:with_source(Base,Q,(test_spawn_source_validation:url(Base,'/safe',URI),catch(test_spawn_source_validation:checked(spawn(true,_,[src_uri(URI),monitor(Bool)])),Error,true),(var(Error)->Outcome=admitted;Outcome=rejected(Error)),(thread_get_message(Q,fetched(Path),[timeout(0)])->Fetch=request(Path);Fetch=none),(var(Bool)->BoolState=unbound;BoolState=bound(Bool)),write_canonical(result(Outcome,Fetch,BoolState)),nl)))",
+        "-t",
+        "halt"
+      ],
+      "exit_code": 0,
+      "log": "pre-repair-pending-boolean.log"
+    },
+    {
+      "source": "candidate",
+      "probe": "unknown-option",
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/tests/tiers/node/spawn_source_validation_tests.pl",
+        "-g",
+        "test_spawn_source_validation:with_mode(blacklist,test_spawn_source_validation:with_source(Base,Q,(test_spawn_source_validation:url(Base,'/safe',URI),catch(test_spawn_source_validation:checked(spawn(true,_,[src_uri(URI),unknown(probe)])),Error,true),(var(Error)->Outcome=admitted;Outcome=rejected(Error)),(thread_get_message(Q,fetched(Path),[timeout(0)])->Fetch=request(Path);Fetch=none),(var(Bool)->BoolState=unbound;BoolState=bound(Bool)),write_canonical(result(Outcome,Fetch,BoolState)),nl)))",
+        "-t",
+        "halt"
+      ],
+      "exit_code": 0,
+      "log": "candidate-unknown-option.log"
+    },
+    {
+      "source": "candidate",
+      "probe": "pending-boolean",
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/tests/tiers/node/spawn_source_validation_tests.pl",
+        "-g",
+        "test_spawn_source_validation:with_mode(blacklist,test_spawn_source_validation:with_source(Base,Q,(test_spawn_source_validation:url(Base,'/safe',URI),catch(test_spawn_source_validation:checked(spawn(true,_,[src_uri(URI),monitor(Bool)])),Error,true),(var(Error)->Outcome=admitted;Outcome=rejected(Error)),(thread_get_message(Q,fetched(Path),[timeout(0)])->Fetch=request(Path);Fetch=none),(var(Bool)->BoolState=unbound;BoolState=bound(Bool)),write_canonical(result(Outcome,Fetch,BoolState)),nl)))",
+        "-t",
+        "halt"
+      ],
+      "exit_code": 0,
+      "log": "candidate-pending-boolean.log"
+    }
+  ],
+  "archived_source_removed": true
+}

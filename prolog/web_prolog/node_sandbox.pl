@@ -27,6 +27,7 @@ execution paths.
 
 :- use_module(node_lifetime, [check_term/1]).
 :- use_module(library(error)).
+:- use_module(actors, [validate_spawn_options/2]).
 :- use_module(library(lists)).
 :- use_module(library(modules)).
 :- use_module(library(option)).
@@ -1014,7 +1015,17 @@ reject_forbidden_qualified_goal(Profile, node, Goal) :-
 reject_forbidden_qualified_goal(_, _, _).
 
 reject_nested_spawn_goal(Profile, GoalModule, Goal, Options) :-
-    (   has_deferred_nested_source_option(Options)
+    % Use the same schema as native spawn/3, including recognised framework
+    % metadata; the existing policy checks still decide authorisation.
+    ( ground(Options) -> validate_spawn_options(Options, runtime) ; true ),
+    (   is_list(Options), \+ ground(Options), has_source_like_option(Options)
+    ->  reject_deferred_nested_spawn_options(Profile, Options),
+        % Source definitions may be unknown here. Keep known goal checks and
+        % defer only missing procedures supplied by the pending source. The
+        % runtime spawn hook checks the loaded goal in both modes.
+        catch(sandbox_check_goal_in_module(Profile, GoalModule, Goal),
+              error(existence_error(procedure,_),_), true)
+    ;   has_deferred_nested_source_option(Options)
     ->  reject_deferred_nested_spawn_options(Profile, Options),
         sandbox_check_goal_in_module(Profile, GoalModule, Goal)
     ;   has_source_like_option(Options)
@@ -1026,12 +1037,14 @@ reject_nested_spawn_goal(Profile, GoalModule, Goal, Options) :-
 has_source_like_option(Options) :-
     is_list(Options),
     member(Option, Options),
+    nonvar(Option),
     source_option_like(Option),
     !.
 
 has_deferred_nested_source_option(Options) :-
     is_list(Options),
     member(Option, Options),
+    nonvar(Option),
     deferred_nested_source_option(Option),
     !.
 
@@ -1055,6 +1068,8 @@ reject_deferred_nested_spawn_options(Profile, Options) :-
         reject_deferred_nested_spawn_option(Profile, Option)
     ).
 
+reject_deferred_nested_spawn_option(_Profile, Option) :-
+    \+ ground(Option), !.
 reject_deferred_nested_spawn_option(_Profile, Option) :-
     source_option_like(Option),
     !.

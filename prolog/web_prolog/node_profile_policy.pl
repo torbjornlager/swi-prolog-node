@@ -22,6 +22,7 @@ Explicit profile ceilings for node routes and submitted Web Prolog code.
 :- op(1000, xfy, if).
 
 :- use_module(library(error)).
+:- use_module(actors, [validate_spawn_options/2]).
 :- use_module(library(settings)).
 
 :- use_module(goal_walker, [walk_goal/2]).
@@ -270,6 +271,7 @@ profile_check_step_(spawn(Goal, Pid), Profile) :-
 profile_check_step_(spawn(Goal, Pid, Options), Profile) :-
     ensure_goal_profile(Profile, spawn(Goal, Pid, Options)),
     profile_check_goal_1(Profile, Goal),
+    ( ground(Options) -> validate_spawn_options(Options, runtime) ; true ),
     profile_check_nested_spawn_source_options(Profile, actor, Options).
 profile_check_step_(time(Goal), Profile) :-
     ensure_goal_profile(Profile, time(Goal)),
@@ -376,13 +378,15 @@ profile_check_nested_spawn_source_options(_Profile, _GoalModule, Options) :-
     !.
 profile_check_nested_spawn_source_options(Profile, GoalModule, Options) :-
     must_be(list, Options),
-    (   has_deferred_nested_source_option(Options)
-    ->  true
-    ;   profile_check_source_options(Profile, GoalModule, Options)
+    (   ground(Options)
+    ->  ( has_deferred_nested_source_option(Options) -> true
+        ; profile_check_source_options(Profile, GoalModule, Options) )
+    ;   true % Runtime validation precedes fetching once values are concrete.
     ).
 
 has_deferred_nested_source_option(Options) :-
     member(Option, Options),
+    nonvar(Option),
     deferred_nested_source_option(Option),
     !.
 

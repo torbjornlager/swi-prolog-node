@@ -88,3 +88,26 @@ This repair was evaluated as an explicit working-tree candidate over the unchang
 demonstrator dependency pin, using separate verified engines and disposable nodes.
 The dependency pin, installed runtimes and live n3/n5 were not updated or restarted.
 Promoting the source through a reviewed pin update remains a separate step.
+
+### Nested spawn validation before source fetching
+
+Public admission of plain `spawn/3` validates a ground option list with the
+native runtime schema before inspecting or fetching its source. Unknown options,
+invalid values (including later duplicates) and malformed lists cannot trigger a
+URI fetch first. Recognised framework metadata retains its existing handling.
+
+A proper option list containing variables is inspected without binding them;
+source fetching is deferred until runtime option validation succeeds. Pending
+source may supply a procedure that is not yet defined during admission. That
+missing-procedure check is deferred, while known forbidden calls remain rejected.
+The existing runtime profile and sandbox checks still check the loaded child goal
+before activation. Source ordering, variable sharing, URI origin restrictions and
+source-size limits remain active in both blacklist and whitelist modes.
+
+This is a plain `spawn/3` admission repair, not a general change to wrapper option
+schemas. Literal invalid options can still fail admission before the submitted
+query executes; the corresponding runtime-bound validation error remains catchable
+inside the query. Blacklist mode retains its prototype qualification above.
+The [verification report](docs/verification/spawn-source-validation-2026-10-24/REPORT.md)
+records regression and conformance results. The demonstrator pin, installed
+runtimes and live n3/n5 remain unchanged.

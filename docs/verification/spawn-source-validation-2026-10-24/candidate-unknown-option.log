@@ -1,0 +1,1 @@
+result(rejected(error(domain_error(spawn_option,unknown(probe)),context(:(actors,/(spawn,3)),'invalid spawn option'))),none,unbound)

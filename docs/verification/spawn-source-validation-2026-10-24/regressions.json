@@ -1,0 +1,46 @@
+{
+  "engine": "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+  "engine_sha256": "915c4758b6aba3d01ade4fe4f46332b6f526ad6c70a8e2574dd05278c2b0ce9c",
+  "groups": [
+    {
+      "label": "focused",
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "tests/tiers/node/spawn_source_validation_tests.pl",
+        "-g",
+        "run_tests(spawn_source_validation)",
+        "-t",
+        "halt"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.352,
+      "log": "focused.log"
+    },
+    {
+      "label": "LINT",
+      "command": [
+        "python3",
+        "tools/generate_dependency_graph.py",
+        "--check"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.133,
+      "log": "LINT.log"
+    },
+    {
+      "label": "T4_NATIVE",
+      "command": [
+        "bash",
+        "tools/test.sh",
+        "T4_NATIVE"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 50.607,
+      "log": "T4_NATIVE.log"
+    }
+  ]
+}
