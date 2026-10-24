@@ -66,6 +66,14 @@ comment block below.
 %% Child specification normalisation
 %% -------------------------------------------------------------------
 
+% Optional node policy guards inspect validated, normalised specifications.
+% Standalone behaviour code has no dependency on the node sandbox. Guard failure
+% propagates; a failing verifier must not be mistaken for an absent hook.
+:- multifile hook_child_spec_guard/1.
+
+check_child_spec_guards(Caller, Specs) :-
+    forall(hook_child_spec_guard(Guard), call(Guard, Caller, Specs)).
+
 normalise_child_specs(Caller, ChildSpecs, Specs) :-
     must_be(list, ChildSpecs),
     check_acyclic_child_spec(ChildSpecs),
@@ -198,6 +206,7 @@ supervisor_spawn(ChildSpecs0, Pid, Options) :-
     option(intensity(MaxR), Options, 1),
     option(period(MaxT), Options, 5),
     normalise_child_specs(SourceModule, ChildSpecs, Specs),
+    check_child_spec_guards(SourceModule, Specs),
     exclude(is_sup_option, Options, SpawnOpts0),
     ensure_source_module(SourceModule, SpawnOpts0, SpawnOpts),
     State0 = sup(Strategy, MaxR, MaxT, [], []),
@@ -255,6 +264,7 @@ start_sub_supervisor(ChildSpecs0, Options) :-
     option(intensity(MaxR), Options, 1),
     option(period(MaxT), Options, 5),
     normalise_child_specs(Caller, ChildSpecs, Specs),
+    check_child_spec_guards(Caller, Specs),
     State0 = sup(Strategy, MaxR, MaxT, [], []),
     sup_init(Specs, State0).
 
@@ -266,6 +276,7 @@ start_sub_supervisor(ChildSpecs0, Options) :-
 supervisor_spawn_child(Sup, ChildSpec0, Reply) :-
     strip_module(ChildSpec0, Caller, ChildSpec),
     normalise_child_spec(Caller, ChildSpec, NormSpec),
+    check_child_spec_guards(Caller, [NormSpec]),
     sup_call(Sup, start_child(NormSpec), Reply).
 
 supervisor_terminate_child(Sup, Id, Reply) :-

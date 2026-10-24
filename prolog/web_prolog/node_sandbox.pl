@@ -4,6 +4,7 @@
     sandbox_enabled/0,
     sandbox_check_goal/2,
     sandbox_check_goal_in_module/3,
+    sandbox_check_supervisor_child_specs/3,
     sandbox_check_dynamic_clause/3,
     sandbox_check_spawn_options/2,
     sandbox_check_source_text/3,
@@ -1162,46 +1163,55 @@ receive_option_calls(_, []).
 %   callbacks are deliberately omitted: the behaviour calls a callback of a
 %   different arity and its supplied source is checked independently.
 
+% Unknown specification data is deferred to the mandatory public-node
+% supervisor guard after API normalisation. It is never an executable var goal.
 supervisor_child_meta_calls(DefaultModule, ChildSpecs0, Calls) :-
     supervisor_specs_context(DefaultModule, ChildSpecs0, Module, ChildSpecs),
     supervisor_child_specs_calls(Module, ChildSpecs, Calls).
 
-supervisor_specs_context(_Default, Module:ChildSpecs, Module, ChildSpecs) :-
-    atom(Module),
-    !.
+supervisor_specs_context(_Default, Qualified, Module, ChildSpecs) :-
+    nonvar(Qualified), Qualified = Module:ChildSpecs,
+    atom(Module), !.
 supervisor_specs_context(Default, ChildSpecs, Default, ChildSpecs).
 
-supervisor_child_specs_calls(Module, ChildSpecs, [Module:ChildSpecs]) :-
-    var(ChildSpecs),
-    !.
-supervisor_child_specs_calls(_, [], []) :-
-    !.
-supervisor_child_specs_calls(Module, [ChildSpec|ChildSpecs], Calls) :-
-    !,
+supervisor_child_specs_calls(_, ChildSpecs, []) :- var(ChildSpecs), !.
+supervisor_child_specs_calls(_, [], []) :- !.
+supervisor_child_specs_calls(Module, [ChildSpec|ChildSpecs], Calls) :- !,
     supervisor_child_spec_calls(Module, ChildSpec, Here),
     supervisor_child_specs_calls(Module, ChildSpecs, Rest),
     append(Here, Rest, Calls).
 supervisor_child_specs_calls(_, _, []).
 
-supervisor_child_spec_calls(Module, child(_Id, Options), Calls) :-
-    is_list(Options),
-    memberchk(start(Start), Options),
-    !,
-    supervisor_start_calls(Module, Start, Calls).
+supervisor_child_spec_calls(Module, ChildSpec, Calls) :-
+    nonvar(ChildSpec), ChildSpec = child(_Id, Options),
+    !, supervisor_child_option_calls(Module, Options, Calls).
 supervisor_child_spec_calls(_, _, []).
 
-supervisor_start_calls(_, _Module:server(_, _), []) :-
-    !.
-supervisor_start_calls(_, server(_, _), []) :-
-    !.
-supervisor_start_calls(_Default, Module:start_sub_supervisor(Specs, _), Calls) :-
-    atom(Module),
-    !,
-    supervisor_child_meta_calls(Module, Specs, Calls).
-supervisor_start_calls(Module, start_sub_supervisor(Specs, _), Calls) :-
-    !,
+supervisor_child_option_calls(_, Options, []) :- var(Options), !.
+supervisor_child_option_calls(_, [], []) :- !.
+supervisor_child_option_calls(Module, [Option|Options], Calls) :- !,
+    ( nonvar(Option), Option = start(Start)
+    -> supervisor_start_calls(Module, Start, Calls)
+    ; supervisor_child_option_calls(Module, Options, Calls)
+    ).
+supervisor_child_option_calls(_, _, []).
+
+supervisor_start_calls(_, Goal, []) :- var(Goal), !.
+supervisor_start_calls(_Default, Qualified, Calls) :-
+    nonvar(Qualified), Qualified = Module:Goal,
+    atom(Module), !,
+    supervisor_start_calls(Module, Goal, Calls).
+supervisor_start_calls(_, server(_, _), []) :- !.
+supervisor_start_calls(Module, start_sub_supervisor(Specs, _), Calls) :- !,
     supervisor_child_meta_calls(Module, Specs, Calls).
 supervisor_start_calls(Module, Goal, [Module:Goal]).
+
+% Called by the node's guard hook only after specification normalisation.
+% Static safe_meta exposure and runtime checks use the same nonbinding walk.
+sandbox_check_supervisor_child_specs(Profile, Module, ChildSpecs) :-
+    check_term(ChildSpecs),
+    must_be(atom, Module),
+    reject_supervisor_child_specs(Profile, Module, ChildSpecs).
 
 reject_supervisor_child_specs(Profile, Module, ChildSpecs) :-
     supervisor_child_meta_calls(Module, ChildSpecs, Calls),

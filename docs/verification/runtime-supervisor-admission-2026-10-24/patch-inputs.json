@@ -1,0 +1,11 @@
+{
+  "base_revision": "f316e65503bff863dfbd2e182f7487988c91480c",
+  "files": {
+    "prolog/web_prolog/node_glue.pl": "e64568399ec4f06217a4ad372e29a6d35dabdf5f0d8b67a1db5337310cba9504",
+    "prolog/web_prolog/node_sandbox.pl": "333b4f4ad8eedf0a5003723a9cafcf1d15d4a0e987cb8479e35332c8f5018577",
+    "prolog/web_prolog/supervisor_actor.pl": "9432dbf560cae9cb9586337829d4b38cc219effa9df2cc40482b6159af9afcea",
+    "tests/tiers/node/supervisor_admission_tests.pl": "29474a1e9d39712debea4413050022cca1d0118704b37c59780587160b4fb950",
+    "tests/tiers/t4_node.pl": "d22bc865eee07a8237082b486710903fd211fd59e81c0d4706e38e59f8108357",
+    "README.md": "60ab18247641b274c1cce873ab22fa945524dd38e15f7b78c9031cbdc621f348"
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "base_revision": "f316e65503bff863dfbd2e182f7487988c91480c",
+  "probes": [
+    {
+      "source": "pre-repair",
+      "attempt": 1,
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "tests/tiers/t3_behaviours.pl",
+        "-g",
+        "run_tests(supervisor_restart:group_monitor_failure_reclaims_live_provisional_replacements)",
+        "-t",
+        "halt"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.123,
+      "log": "restart-control-pre-repair-1.log"
+    },
+    {
+      "source": "pre-repair",
+      "attempt": 2,
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "tests/tiers/t3_behaviours.pl",
+        "-g",
+        "run_tests(supervisor_restart:group_monitor_failure_reclaims_live_provisional_replacements)",
+        "-t",
+        "halt"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.114,
+      "log": "restart-control-pre-repair-2.log"
+    },
+    {
+      "source": "pre-repair",
+      "attempt": 3,
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "tests/tiers/t3_behaviours.pl",
+        "-g",
+        "run_tests(supervisor_restart:group_monitor_failure_reclaims_live_provisional_replacements)",
+        "-t",
+        "halt"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.111,
+      "log": "restart-control-pre-repair-3.log"
+    },
+    {
+      "source": "candidate",
+      "attempt": 1,
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "tests/tiers/t3_behaviours.pl",
+        "-g",
+        "findall(G,supervisor_actor:hook_child_spec_guard(G),Guards),write_canonical(Guards),nl,run_tests(supervisor_restart:group_monitor_failure_reclaims_live_provisional_replacements)",
+        "-t",
+        "halt"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.117,
+      "log": "restart-control-candidate-1.log"
+    },
+    {
+      "source": "candidate",
+      "attempt": 2,
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "tests/tiers/t3_behaviours.pl",
+        "-g",
+        "findall(G,supervisor_actor:hook_child_spec_guard(G),Guards),write_canonical(Guards),nl,run_tests(supervisor_restart:group_monitor_failure_reclaims_live_provisional_replacements)",
+        "-t",
+        "halt"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.111,
+      "log": "restart-control-candidate-2.log"
+    },
+    {
+      "source": "candidate",
+      "attempt": 3,
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "tests/tiers/t3_behaviours.pl",
+        "-g",
+        "findall(G,supervisor_actor:hook_child_spec_guard(G),Guards),write_canonical(Guards),nl,run_tests(supervisor_restart:group_monitor_failure_reclaims_live_provisional_replacements)",
+        "-t",
+        "halt"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.118,
+      "log": "restart-control-candidate-3.log"
+    }
+  ],
+  "scope": "six predeclared isolated runs; original full-tier failure remains unresolved",
+  "archived_source_removed": true
+}

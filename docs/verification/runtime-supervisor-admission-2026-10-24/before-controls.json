@@ -1,0 +1,84 @@
+{
+  "base_revision": "f316e65503bff863dfbd2e182f7487988c91480c",
+  "engine": "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+  "engine_sha256": "915c4758b6aba3d01ade4fe4f46332b6f526ad6c70a8e2574dd05278c2b0ce9c",
+  "probes": [
+    {
+      "source": "pre-repair",
+      "probe": "opaque-admission",
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/swi-admission-before-v56tr8vo/load.pl",
+        "-g",
+        "set_setting(node:sandbox,blacklist),catch(node_sandbox:sandbox_check_goal_in_module(actor,user,supervisor_spawn(Specs,_)),E,true),(var(E)->Result=accepted;Result=rejected(E)),write_canonical(Result),nl,(var(Specs)->writeln(specs_unbound);writeln(specs_bound)),halt",
+        "-t",
+        "halt"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.212,
+      "log": "pre-repair-opaque-admission.log"
+    },
+    {
+      "source": "pre-repair",
+      "probe": "whitelist-literal-startup",
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/swi-admission-before-v56tr8vo/load.pl",
+        "-g",
+        "set_setting(node:sandbox,whitelist),node_execution_context:with_public_execution_profile(actor,catch(supervisor_actor:supervisor_spawn(user:[child(a,[start(true),restart(temporary)])],Sup),E,true)),(nonvar(E)->write_canonical(rejected(E));write_canonical(started(Sup))),nl,halt",
+        "-t",
+        "halt"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.199,
+      "log": "pre-repair-whitelist-literal-startup.log"
+    },
+    {
+      "source": "candidate",
+      "probe": "opaque-admission",
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/load.pl",
+        "-g",
+        "set_setting(node:sandbox,blacklist),catch(node_sandbox:sandbox_check_goal_in_module(actor,user,supervisor_spawn(Specs,_)),E,true),(var(E)->Result=accepted;Result=rejected(E)),write_canonical(Result),nl,(var(Specs)->writeln(specs_unbound);writeln(specs_bound)),halt",
+        "-t",
+        "halt"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.223,
+      "log": "candidate-opaque-admission.log"
+    },
+    {
+      "source": "candidate",
+      "probe": "whitelist-literal-startup",
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/load.pl",
+        "-g",
+        "set_setting(node:sandbox,whitelist),node_execution_context:with_public_execution_profile(actor,catch(supervisor_actor:supervisor_spawn(user:[child(a,[start(true),restart(temporary)])],Sup),E,true)),(nonvar(E)->write_canonical(rejected(E));write_canonical(started(Sup))),nl,halt",
+        "-t",
+        "halt"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 0.2,
+      "log": "candidate-whitelist-literal-startup.log"
+    }
+  ],
+  "archived_source_removed": true
+}

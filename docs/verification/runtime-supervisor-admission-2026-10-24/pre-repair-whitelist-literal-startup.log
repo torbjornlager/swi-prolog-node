@@ -1,0 +1,1 @@
+rejected(error(instantiation_error,sandbox(_,[:(system,nb_setval(_,[])),:(supervisor_actor,with_startup_scope(start_children([spec(a,:(user,true),temporary,5,worker)],sup(one_for_one,1,5,[],[]),'$VAR'(0)))),:('tmp-1-2200925693629028282',sup_init([spec(a,:(user,true),temporary,5,worker)],sup(one_for_one,1,5,[],[])))])))

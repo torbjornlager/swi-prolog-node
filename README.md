@@ -57,3 +57,34 @@ plan is historical design context, not a second language manual.
 Separating this repository does not switch the demonstrator to a new native
 dependency, migrate Docker/CI assembly, update installed engines or restart
 live n3/n5. Those changes require separate integration work.
+
+### Runtime-bound supervisor child specifications
+
+Public supervisor admission inspects known child starts without binding unknown
+specifications, option lists, entries or start goals. Unknown specification data
+is deferred to execution rather than treated as an opaque executable variable.
+After complete API normalisation, the behaviour invokes its registered node guard
+before initial creation, nested supervisor startup or a dynamic start request.
+The guard checks the selected child goals in their source modules under the
+current public profile and sandbox policy. Existing per-child spawn/source checks
+remain active. Malformed specifications retain the constructor's validation
+errors, and guard checks preserve shared variables.
+
+The optional behaviour-layer guard hook keeps node dependencies out of standalone
+supervisor code. Known forbidden starts still fail during admission; runtime-bound
+forbidden starts fail before any initial child is created or dynamic request is
+sent. No public predicate, protocol or lifecycle policy is added. Blacklist mode
+remains a curated prototype policy, not a complete security boundary.
+
+`tests/tiers/node/supervisor_admission_tests.pl` covers nonbinding admission,
+malformed/duplicate/nested data, sharing, private source and rejection under both
+sandbox modes. It is included in `T4_NATIVE`. Full successful supervisor startup
+in whitelist mode retains a separate pre-existing internal-startup restriction;
+this batch does not exempt framework loops or claim complete whitelist support.
+Verification, shared conformance and remaining findings are recorded in
+[`docs/verification/runtime-supervisor-admission-2026-10-24/REPORT.md`](docs/verification/runtime-supervisor-admission-2026-10-24/REPORT.md).
+
+This repair was evaluated as an explicit working-tree candidate over the unchanged
+demonstrator dependency pin, using separate verified engines and disposable nodes.
+The dependency pin, installed runtimes and live n3/n5 were not updated or restarted.
+Promoting the source through a reviewed pin update remains a separate step.

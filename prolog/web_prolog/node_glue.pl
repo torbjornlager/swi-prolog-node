@@ -228,6 +228,19 @@ statechart_runtime:hook_check_chart_goal(Module, Goal) :-
                 *       ISOLATION HOOKS        *
                 *******************************/
 
+% The behaviour layer invokes registered guards after normalisation, before
+% creation or a dynamic start request. Opaque admission data is concrete here.
+:- multifile supervisor_actor:hook_child_spec_guard/1.
+supervisor_actor:hook_child_spec_guard(node_glue:check_public_child_specs).
+
+check_public_child_specs(Module, Specs) :-
+    ( current_public_execution_profile(Profile)
+    -> forall(member(spec(_, Start, _, _, _), Specs),
+              node_sandbox:sandbox_check_supervisor_child_specs(
+                  Profile, Module, [child(checked, [start(Start)])]))
+    ; true
+    ).
+
 %  Per-goal public guard (was rewrite_goal_if_needed/3 called from
 %  actor.pl's execute_start_goal and toplevel_actor.pl's state_2).
 :- multifile isolation:prepare_goal/3.
