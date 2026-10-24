@@ -1,0 +1,262 @@
+# Deviations from the trinity-demonstrator semantics
+
+Web Prolog syntax and semantics in this project are **frozen** to the
+behavior of the trinity-demonstrator (the normative reference: its test
+suite plus `docs/WEB_PROLOG_BUILTINS.md`, `docs/PROFILE_MATRIX.md`, and
+`docs/CROSS_NODE_ARCHITECTURE.md`).
+
+Any *intentional* observable deviation must be recorded here, with
+rationale, before it is merged.
+
+Most entries below are **bug / security fixes** to behavior that was wrong
+in the demonstrator too — the `/ws` same-origin, `node_request_port`, and
+forwarded-identity fixes are all back-ported, so the two codebases stay in
+lockstep. The `prolog_stack`, JSON error `details`, `/node_info`, and
+actor-isolation entries are genuine, permanent deviations (an unavoidable
+consequence of the module split; additive diagnostic and node metadata; and
+an intended correction to actor isolation, respectively). The actor-isolation
+and `parallel/1` binding entries change observable Web Prolog semantics. The
+diagnostic and node metadata additions preserve every pre-existing wire field.
+
+| date | deviation | rationale |
+|------|-----------|-----------|
+| 2026-09-11 | Browser actor transport negotiates structural import of qualified browser-local pids in spawn goals, messages and toplevel calls. | Fixes mixed browser/native actor protocols where a browser pid is supplied at spawn time: the remote node must route it through the originating browser connection rather than interpret localhost as itself. Bare values and source strings remain unchanged. Local WASM spawn completion compares decoded pid values across the synchronous/asynchronous JavaScript boundary. |
+| 2026-09-11 | SWI-WASM remote terminal writes negotiate browser acknowledgements. Actors wait until the shared browser terminal accepts each output event, including when output is inherited by a remote descendant. | Completes the native acknowledgement fix for browser-hosted terminals: separate peer WebSocket queues cannot establish an order at the common browser sink. Both browser execution models use the same bridge; replies are connection-scoped, disconnects release waiting writers, and unsupported peers fail negotiation instead of silently weakening output semantics. |
+| 2026-09-11 | Native distributed terminal I/O waits for a correlated acknowledgement after the home terminal queue accepts each write or prompt. Revoked endpoints, lost connections, and missing acknowledgements raise I/O errors rather than silently dropping output. | Author-directed causal ordering fix, following request/reply I/O semantics. Previously a write returned after sending to a socket, so subsequent actor messages could overtake output across connections. Ordinary actor sends and spawn completion semantics are unchanged. All participating nodes need acknowledgement support; old senders remain accepted but cannot provide the new guarantee. |
+| 2026-09-02 | SXML 0.2 documents are validated against a versioned DTD before model construction in the native and both SWI-WASM execution models. A side-effect-free semantic pass additionally rejects duplicate identifiers, missing references, and `initial` values that do not name direct children. Unknown or misplaced elements and unknown attributes are now startup errors instead of being silently ignored. Existing Prolog-valued attributes, actions, transition combinations, and `<spawn>` contracts retain their specialised semantic checks. | Author-directed addition of an executable grammar for Appendix C. The former permissive fallback made misspellings and misplaced vocabulary look like statecharts that merely failed to react. A fresh DTD object per parse avoids SWI's documented mutation of DTDs during error recovery, while the embedded copy gives browser workers the same grammar without a host filesystem dependency. |
+| 2026-08-28 | In the native runtime and both SWI-WASM execution models, `parallel/1` workers return a packed `term_variables/2` template instead of copying their complete instantiated goals back to the caller. Successful result messages are consumed before their templates are unified: compatible bindings shared by independent workers are combined, while incompatible bindings make the conjunction fail. | Optimization and correctness fix. Returning a whole goal recopied its static structure and ground inputs unnecessarily. More seriously, after an earlier worker bound a shared variable, the old receive pattern could no longer match a later worker's incompatible instantiated goal; `parallel([X=a,X=b])` therefore waited forever instead of failing. Regression tests cover template packing, compatible and incompatible shared bindings, bounded failure, repeated mailbox cleanup, and parity of the two embedded SWI-WASM bridges. |
+| 2026-08-09 | Web Prolog `catch/3` now filters reserved runtime controls. Actor termination (`unwind(abort)`), PTCP abort, and PTCP execution-time expiry run installed cleanup but bypass application recovery; ordinary exceptions retain ISO catch semantics. The rewrite covers submitted goals, loaded `src_*` source (including `src_uri`), computed `call/1-8`, closures passed through loaded meta-predicates, module qualification, receive bodies, callbacks, framework meta-call boundaries, and dynamically asserted rule bodies. PTCP abort is consumed only by the protocol loop and returns a live session to **s1**; actor termination remains fatal. | Author-directed completion of the signal contract. The earlier `answer/5` rethrow protected only the packaging boundary: a client catch-all could consume abort or time expiry before either reached it, and a catch-all around actor work could delay fatal exit indefinitely. Materializing `src_uri` before compilation is required so URI-loaded catches cross the same semantic boundary. Regression tests prove cleanup, non-recovery, PTCP restart, ordinary exception recovery, computed-call coverage, and indirect invocation through a loaded meta-predicate. |
+| 2026-08-08 | PTCP sessions implement separate lifecycle limits. `time_limit` applies only while a goal runs in state **s2**; expiry sends `error(Pid, time_limit_exceeded)` and leaves a session actor alive in **s1**. `idle_limit` applies while waiting in **s1** or **s3**; expiry terminates the actor normally and monitored clients observe `down(Pid, Ref, true)`. The ISOTOPE HTTP `timeout` now bounds only the wait for an event and returns a non-destructive `timeout(Pid)` event. Public clients may request tighter lifecycle limits but cannot exceed the node owner's configured ceilings. | Author-directed alignment with Section 3.4.4 and SWI-Prolog terminology. This separates execution policy, inactive-session reclamation, and transport waiting; preserves pageable choice points while **s3** is idle; and avoids the previous behavior in which an HTTP long-poll timeout aborted an otherwise valid running goal. |
+| 2026-08-03 | JSON error responses retain the existing `type` and concise `data` fields and may additionally carry a presentation-only `details` string containing a sanitised Prolog exception term. Private actor-module qualification and exception context are omitted from `details`; Prolog-format responses continue to carry the actual exception term. | Intentional additive diagnostic metadata for Prolog-oriented clients. Existing JSON clients remain compatible because `type` and `data` are unchanged. T5 compares those legacy fields with the frozen demonstrator and separately pins the new sanitised `details` value. |
+| 2026-07-30 | Every ISOTOPE `/toplevel_*` HTTP endpoint now requires POST; `/call` remains the safe GET surface. Form-encoded request bodies are canonical, with JSON additionally accepted by `/toplevel_spawn`. | Author-directed correction of the HTTP contract. Session calls, continuations, polling, input, tracing, abort, stop, and halt all mutate or consume persistent session state; exposing them as GET made unsafe requests replayable and potentially cacheable. |
+| 2026-07-30 | Delayed-send identifiers are scoped to the actor that scheduled them. `cancel(ID)` cancels only that caller's pending sends, even when another actor chose the same ID. Generic-server shutdown acknowledgements now carry a fresh correlation reference. | Author-directed completion of two actor-protocol contracts. Per-actor cancellation prevents cross-client interference through guessed IDs, and correlation prevents an unrelated stale reply from satisfying `server_halt/2`. |
+| 2026-07-28 | Browser toplevel source is canonical only at session creation: `src_*` terms belong in `toplevel_spawn`'s `options`, while WebSocket and SWI-WASM Worker `toplevel_call` reject call-time source (including source hidden in `options`). The portal replaces a toplevel when its editor/tutorial source changes. Canonical calls carry their Prolog call options in the `options` field; `toplevel_next` carries only `pid` and inherits the active call's `limit`. Legacy flattened call fields, explicit continuation limits, and the former top-level spawn `src_text` field remain accepted at input boundaries for compatibility. ISOTOPE adds `/toplevel_halt`; both the native session controller and stateful SWI-WASM Worker controller spawn and switch to a validated replacement before retiring its predecessor. Native idle-session cleanup remains the compatibility fallback for older node processes without the halt route; a replaced Worker receives `toplevel_halt` and is forcibly terminated only if it does not acknowledge. Output generated through the I/O prelude is serialized with the canonical `{type,pid,data}` shape; its `terminal_io_output/2` provenance remains internal, and node-to-node suppression happens at the originating relay rather than through a non-standard `source:"io"` wire member. | Author-directed alignment with the browser protocol in the book. It prevents call-time source transfer from becoming an undocumented source-loading operation, preserves variable identity by parsing a goal and its options together, keeps continuation slice size stable, keeps a working session available when replacement fails, avoids leaking replaced sessions, and keeps terminal-capability enforcement out of the public JSON vocabulary. |
+| 2026-07-28 | SXML adds state-scoped `<defer on="Pattern" if="Guard"/>`. When no transition is enabled, a matching active declaration appends the event to a FIFO postponed queue. After a configuration-changing macrostep, postponed events are re-offered on the internal queue before invocation or receipt of a newer external event. Transitions take precedence, deferral is inherited through active compound states, and a re-offered event may be postponed again. | Author-directed addition of explicit statechart postponement. It covers commands that arrive before the state able to handle them, preserves the actor mailbox's arrival-order consumption contract, and gives SXML a declarative counterpart to Erlang `gen_statem`'s retry-before-new `postpone` discipline. Documents without `<defer>` retain their previous behavior. |
+| 2026-07-18 | `statechart_spawn/2` no longer accepts the per-actor `trace/1` option. Every statechart now publishes trace events automatically in native SWI-Prolog and both SWI-WASM execution models; the Logger's SXML trace checkbox is solely a visibility filter, and tutorial diagrams consume the same event stream for animation. | Author-directed API simplification. The previous per-actor flag was not observable in the Logger because the UI's trace checkbox independently enabled session-wide production while also filtering display, making `trace(true)` and `trace(false)` appear identical. Always publishing gives Logger and tutorial consumers one consistent source without a redundant spawn option. |
+| 2026-07-18 | Native SWI-Prolog, Worker SWI-WASM, and main-thread SWI-WASM now share the complete public `rpc/3` option vocabulary (`limit`, `once`, `timeout`, `http_timeout`, and `src_*`); transport paging always begins internally at offset zero. `promise/4` additionally exposes `template` and `offset` for its single result slice. Promise references are opaque ten-digit integers in every runtime, and every `yield/3` timeout is non-consuming and defaults to success. Browser pids consistently use the opaque canonical presentation `Id@localhost`, including `main@localhost`. `runtime_property/1` is the single portable capability-discovery interface. Terms crossing a Worker or node boundary are restricted to acyclic ordinary Prolog terms without attributed variables or non-text blobs. | Author-directed removal of accidental host-language differences. SWI-WASM had leaked the stateless HTTP transport's initial offset into `rpc/3`; paging is now encapsulated consistently. Thread/Worker scheduling, persistence, inbound addressability, DOM access, isolation, and hard termination remain genuine host differences exposed through capability discovery. |
+| 2026-07-16 | Monitor notifications use `down(Pid, Ref, Reason)` throughout the native runtime, cross-node delivery, browser/SWI-WASM runtimes, manuals, and examples. The named JSON fields remain `pid`, `ref`, and `reason`. | Author-directed API simplification: the terminated actor is the primary subject of the notification and therefore occupies the first argument. This is an intentional breaking change to the Prolog message shape; no dual-order compatibility is provided. |
+| 2026-07-16 | Source options are canonically named `src_text/1`, `src_list/1`, `src_uri/1`, and `src_predicates/1`; the former `load_*` names remain accepted as deprecated compatibility aliases at input boundaries. This intentionally uses `src_uri/1`, not Pengines' `src_url/1`. | Author-directed alignment with `library(pengines)` source-option terminology while retaining URI terminology and avoiding a flag-day break for existing clients. Aliases are canonicalised before authorization, profile, size, and sandbox checks. |
+| 2026-07-15 | The checked local `time/1` wrapper is available in ISOBASE as well as ISOTOPE and ACTOR. Its nested goal is independently checked against profile and sandbox policy, and explicitly module-qualified raw timing implementations remain blocked. | Author-directed profile alignment: timing a stateless goal does not require session state. This makes the asynchronous `promise/3-4` and `yield/2-3` example executable on N1 after its unrelated `writeln/1` side effect is removed, without allowing `time/1` to conceal a higher-profile or sandbox-forbidden nested goal. |
+| 2026-07-12 | The unusable `statechart_spawn/1` arity is removed from the native runtime, SWI-WASM bridges, ACTOR family inventory, and manuals; `statechart_spawn/2` is the sole public constructor and requires exactly one `load_uri/1` or `load_text/1` source option. | `statechart_spawn/1` merely delegated with an empty option list and therefore always raised `existence_error(option, load_uri_or_load_text)`. No executable examples or supported workflows used it, so advertising the arity created a false API promise without providing shorthand semantics. |
+| 2026-07-12 | `in/1` is exposed alongside `raise/1` by the native statechart facade and documented as an ACTOR-profile statechart builtin. | The runtime already implemented the SCXML-style active-configuration test, but the facade, profile inventory, sandbox declaration, and manuals omitted it. The public contract now matches the statechart language implementation. |
+| 2026-07-12 | The ACTOR profile adopts `parallel/1` and `first_solution/2-3` as public actor-based predicate generics. `parallel/1` now preserves the caller module for user-defined goals and ignores unrelated abnormal `down/3` messages. `first_solution/2-3` races alternative actor goals with portable `on_fail(stop\|continue)` and `on_error(stop\|continue)` policies. Both use a private cleanup-monitor ordering barrier and leave unrelated mailbox traffic untouched. | Author-directed adoption of the Chapter 5 interfaces. `parallel/1` was previously catalogued but not reachable in prepared public actor modules, could resolve user predicates in the wrong module, and could consume an unrelated monitor failure. `first_solution/2-3` previously existed only as a book/example sketch. Regression tests cover profile visibility, sandbox acceptance, caller-module preservation, policy semantics, mailbox isolation, and race-free cleanup. |
+| 2026-07-11 | Service publication now follows the book's owner-only ACTOR contract. Ordinary registrations and published-service registrations are independent namespaces, so the same atom may name different actors in each. `register_service/2` validates a live local pid and uses the documented ISO-style errors; `unregister_service/1` is idempotent; actor termination removes publication atomically. Qualified atom addresses (`Name@Node`) resolve only through the live service registry, and absent service sends are non-revealing. The internal `whereis_service/2` helper remains available only to owner/bootstrap code. | Author-directed semantic alignment with Chapter 4. The old implementation conflated advertisement (`service/2`) with reachability, allowed an ordinary registration to collide with or capture a service spelling, and exposed demonstrator-specific registration errors. The deployed `registry`, `counter`, and `pubsub_service` names and the Discovery Hub schema are unchanged. |
+| 2026-07-02 | `monitor(Pid, Ref)` now immediately delivers `down(Pid, Ref, no_process)` when `Pid` is already dead. Monitor installation, local/remote termination delivery, and `demonitor(Ref, [flush])` are serialized so the monitor is either delivered exactly once or removed and flushed before delivery. | Bug fix: the previous check-then-assert lifecycle allowed monitoring an already-dead pid to install a row that could never fire, and allowed a termination notification to arrive after `demonitor(...,[flush])`. This made fail-fast cleanup capable of leaking late `down/3` messages or waiting forever. Regression tests cover dead pids, concurrent termination, demonitor flushing, and repeated parallel cleanup. |
+| 2026-06-11 | `/ws` same-origin check now accepts browser Origins on non-default ports (`ws_request_host_origin/2` re-attaches the request's `port(...)` field, which SWI's HTTP layer splits off the Host header). | Bug fix: the demonstrator rejects its own portal's ACTOR mode on any locally run node (`node(3060)` + browser ⇒ "WebSocket error"), violating the check's documented intent — "Origin matches the request's Host (same-origin): accept". Deployed nodes behind a default-port reverse proxy were unaffected, which is how it went unnoticed. |
+| 2026-06-11 | `prolog_stack` contexts inside `format=prolog` error responses show the layered module names (`actors`, `toplevel_actors`, …) and different frame counts (the hook indirections add frames). The error *formal* (e.g. `existence_error(procedure, Module:Name/Arity)`) and all simplified JSON messages are unchanged — pinned by the `t5_golden` differential suite. | Unavoidable consequence of the module split. The raw backtrace is a debugging artifact, not stable output even within one implementation (`'<garbage_collected>'` frames appear nondeterministically); freezing it byte-for-byte was never meaningful. |
+| 2026-06-13 | `node_request_port/2` resolves the serving node by the listening socket's port (the `httpd@<port>` thread-pool client id) **in preference to** the request's `port(...)` field, rather than the other way round. | Bug fix: SWI derives `port(...)` from the client-controlled Host header, so behind any port-remapping front end (a Docker `-p 8080:3060` publish, several nodes behind one reverse proxy on distinct external ports) it disagrees with the bind port; the node then looked up a non-existent runtime and reported itself permanently not-ready (`/readyz` ⇒ 503) with all per-node work broken. Pinned by the t4 `request_port_*` regression tests. The demonstrator shares the latent bug — a Caddy front end forwarding a port-less `Host` dodged it (no `port(...)` ⇒ the existing pool fallback already fired), which is how it went unnoticed. Same Host-header quirk as the `/ws` fix above. |
+| 2026-06-13 | A forwarded identity header (`X-Web-Prolog-User` / `-Principal` / `X-Authenticated-User`) grants a configured principal's capabilities **only from a trusted peer** (loopback or RFC1918 — i.e. the authenticating reverse proxy). From an untrusted peer the claimed id is still surfaced (for audit) but with no capabilities (`unknown:true`), so it is denied. The demonstrator honours the header from any peer. | Security fix: the header is a *claimed* identity with no secret. A node whose HTTP port is directly reachable (no header-stripping proxy) would otherwise let any client assume any configured principal — including an admin — just by setting the header. Same trust boundary already enforced for the `internal_transport` capability; the bundled Caddyfile is updated to strip inbound `X-Web-Prolog-*`. A proven bearer token needs no such gate and is unaffected. Pinned by the t4 `forwarded_*` tests. Back-ported. |
+| 2026-06-24 | `/node_info` carries five additive fields the demonstrator does not emit: `provides` and `services` (capability advertisement — the node's shared-DB contract predicates and its `register_service/2` services), `self_contained`, `tutorial_sections`, and `ws_allowed_origins`. Every field the demonstrator *does* emit (`auth`, `profile`, `principal_*`, `trusted_*_headers`, `self_url`, …) is preserved unchanged. | Additive node metadata for discovery and presentation; it changes neither the Web Prolog language nor the wire protocol. `provides`/`services` underpin the discovery hub's capability queries (cf. the `relation_conjunction` entry). T5's `node_info_agrees` enforces the invariant: the layered node may extend `/node_info` but never alter or drop a demonstrator field. **Pending back-port** to the demonstrator to restore lockstep. |
+| 2026-06-16 | A RELATION node's `/call` now accepts a **conjunction of advertised relations** (`(a(X), b(X))`), not just a single advertised relation. `,/2` is the only composer admitted; every conjunct must still unify with an advertised pattern, and disjunction / if-then / negation / any unadvertised predicate (`between/3`, `spawn/2`, …) are still refused. The demonstrator's `relation_check_goal/1` rejects every conjunction (`Unknown procedure: ,/2`). | Profile refinement (intended, author-directed): a conjunction of advertised relations is a relational **join** over the published schema — "a fixed query interface… a pattern matched against a known schema" (the book's RELATION definition), not arbitrary goal evaluation. The single-relation-only guard was an under-implementation that blocked the discovery hub's compositional queries (`node_profile(N,actor), node_status(N,up)`) even though each conjunct is advertised. Pinned by the `relation_conjunction` tests. **Pending back-port** to the demonstrator's `node_relation_policy:relation_check_goal/1` to restore lockstep. |
+| 2026-06-30 | **Public (untrusted) actor spawns no longer inherit the spawner's session module.** A spawned goal that references a session-defined predicate — e.g. `assert(p(a)), self(S), spawn((p(X), S ! X), _, [...])` — now raises `existence_error(procedure, _:p/1)` instead of resolving `p/1` against the shell's clause DB. Session code must be copied in explicitly via `load_predicates/1` (or another `load_*` source option, which already worked). Trusted/local and framework actors are unchanged: the framework start goals `ptcp/3`, `server_loop/2`, `sup_init/2` keep caller-module inheritance via an exemption, and statechart `interpret/1` resolves through `statechart_actor`'s own `prepare_module` self-import. Node-published shared-DB predicates remain callable by name. `server_upgrade/3` is added as the source-loading counterpart of `server_upgrade/2` (the 2-arg form now requires the callback to be already loaded). The pre-layering demonstrator (`demonstrator-peer`) inherits the session in every case. | Correctness / security fix to the actor-isolation model, **author-directed** ("the correct behaviour … a good break"). The per-actor temporary module imported the spawner's `GoalModule` live (`isolation.pl`), giving an untrusted public actor read access to the spawning shell's *mutable* clause database — contradicting the actor model's fresh-world isolation and diverging from the SWI-WASM model (a separate VM), which already isolates and requires `load_predicates`. Gating is in `node_glue.pl`: `hook_spawn_options` adds the internal `inherit_goal_module(false)` only under a public execution profile and **strips any client-supplied value**, so a client cannot re-enable inheritance; the conditioned import is `isolation:import_goal_module/3` (default `true`, so the actors/isolation/toplevel layers below the node and all trusted spawns are untouched — T0–T3 unaffected). Pinned by t4 `ws_actor_spawn_does_not_inherit_session_assertions`, `ws_actor_spawn_load_predicates_copies_session_assertions`, `ws_remote_actor_requires_load_predicates_for_session_code`, `public_spawn_cannot_override_goal_module_isolation`, `public_profile_server_framework_start_keeps_module`, `public_profile_supervisor_framework_start_keeps_module`, and t1 `load_predicates`. Permanent, intended divergence from the `demonstrator-peer` baseline; the baseline tag is **not** re-cut (no separate live demonstrator to back-port to — this repo *is* the demonstrator). |
+
+## Omitted solution limit (2026-09-21)
+
+An omitted `limit` on a toplevel call, stateless HTTP call, RPC, or promise
+requests all solutions, subject to the node's existing time, inference and
+memory ceilings. Collection uses `findall/3`; resource exhaustion produces
+an error, never a successful truncated result. This replaces the large
+integer defaults (and the browser RPC's smaller default).
+
+Explicit `limit(N)` values must be positive integers, including on
+`toplevel_next/2`. Omitting a next limit inherits the previous finite slice
+size. There is no public `infinity` value. Unlimited stateless requests start
+a fresh enumeration rather than inheriting a cached finite slice size.
+Both browser runtimes use the same contract, and retain the mutable count
+cell when resuming finite slices.
+
+## Portable execution resource errors (2026-09-21)
+
+Remote execution time ceilings now report `error(resource_error(time), _)`
+instead of `timeout` or `time_limit_exceeded`. Native and browser toplevels
+map backend memory/stack exhaustion to `error(resource_error(space), _)`.
+These public resource exceptions have an unbound context argument; other
+exceptions, including inference exhaustion, retain their existing identity.
+Both SWI-WASM RPC clients now throw the remote exception directly, matching
+native RPC, instead of adding `rpc_error/1`. Transport and parsing failures
+remain separate from remote resource exhaustion. This does not add a new
+result-size ceiling; the existing memory ceiling bounds solution collection.
+
+## Toplevel query boundaries (D4, 2026-10-04)
+
+- **Abort is acknowledged.** Unless the toplevel is already terminating,
+  `toplevel_abort/1` makes the toplevel send `abort(Pid)` to the client of
+  its most recent call (before any call, to its spawn target), after any
+  answers the aborted query had already sent. This includes an abort that
+  reaches an idle toplevel (s1), which stays idle (a one-shot toplevel
+  ends), so an abort racing the end of a query is still answered. The WebSocket transport forwards this
+  message instead of synthesising its own abort event; the HTTP `/abort`
+  endpoint replies only once it has arrived (or with `timeout`).
+- **Each call starts afresh.** On accepting a call the toplevel discards
+  queued `'$next'`, `'$stop'` and `'$input'` messages. Previously a
+  `toplevel_next/1` sent before `toplevel_call/2` was deferred and applied to
+  the next query (the old `next_wrong_order` test); it is now discarded
+  (`next_before_call_is_discarded`).
+- **Partial page before error.** With a finite `limit`, an exception raised
+  after some solutions were collected first yields `success(Pid, Slice, true)`;
+  the error answers the following next (a stop discards it). Without a limit
+  the error is reported alone, as before.
+- **HTTP retry safety.** Session responses carry `Web-Prolog-Seq`; a request
+  with `Web-Prolog-Ack` lower than the latest number re-delivers the latest
+  event without re-executing. JSON bodies are unchanged.
+- **session_lost.** A session's former owner addressing an ended or
+  reclaimed session gets an error with `code: "session_lost"` (previously the
+  generic "Not authorized to access session"). Other principals still get the
+  generic refusal.
+
+Author-directed (Semantic Contracts decision D4). Pinned by the D4 tests in
+`t2_toplevel.pl` and the `isotope_*` / `admin_reclaim_terminates_session`
+tests in `node_tests.pl`.
+
+## Answers on the wire (D5, 2026-10-04)
+
+- **Constrained answers are rejected.** A toplevel answer whose solutions
+  contain attributed variables (from `dif/2`, `freeze/2`, CLP(FD), ...) is
+  replaced by `error(representation_error(constraints), _)`, and the query
+  ends. Previously the constraints were silently dropped, so `dif(X, a)`
+  over `/call` answered as if `X` were unconstrained. The rule applies to
+  every toplevel, local or remote, and therefore also to `rpc/2-3` and
+  stateless `/call`. A solution in which the constrained variable has been
+  bound is unaffected. Returning residual goals instead is left as an
+  optional profile feature; this node does not offer it.
+- **`double_quotes` is fixed as `string`.** Goals, call and spawn options,
+  respond input, rpc answers, remote answer fields and WebSocket terms are
+  read with an explicit `double_quotes(string)`, and every actor module has
+  the flag set to `string`, so client source reads `"..."` as a string. With
+  SWI-Prolog's default flags nothing changes; the difference shows only on a
+  host started with another default (for example `--traditional`).
+
+Author-directed (Semantic Contracts decision D5). Pinned by
+`constrained_answer_is_a_representation_error`,
+`constrained_solution_on_a_later_page`, `bound_constrained_variable_is_portable`
+in `t2_toplevel.pl` and the `call_constrained_*`, `rpc_constrained_*` and
+`double_quotes_fixed_as_string_on_the_wire` tests in `node_tests.pl`.
+
+## Canonical term text and browser alignment (D5 completion, 2026-10-04)
+
+- **One way of writing term text.** Goals and templates sent by `rpc/2-3`
+  and `promise/3-4`, actor messages and options sent to other nodes or to
+  browser actors, and `format=prolog` answers are written by
+  `wire_text.pl`: quoted, `ignore_ops(true)`, no portray hooks, no
+  `numbervars`, explicit variable names shared between terms written
+  together. Previously `rpc/2-3` used `~p` (portray hooks and operator
+  syntax of the sender), node-to-node messages used `numbervars`, and JSON
+  display strings bound unnamed variables to `'$VAR'('_')`; a real
+  `'$VAR'(N)` term or a sender-only operator did not survive the trip.
+- **Node-to-node toplevel events carry `term`.** A peer that sends
+  `X-Web-Prolog-Protocol` gets the canonical text of the solution list or
+  exception in a `term` field of `success`/`error` WebSocket events, and the
+  receiving node restores the exact terms. Previously remote toplevel rows
+  were rebuilt from display text (losing variable sharing) and errors became
+  `remote_error(Text)`; that fallback remains for peers without the field.
+- **Stale commands.** Only `'$next'`, `'$stop'` and `'$input'` messages that
+  arrived before an accepted call (and were deferred) are discarded; a
+  command sent after the call is kept (`next_sent_after_call_is_kept`).
+- **Browser runtime.** The SWI-WASM Worker bridge (and, where it applies, the
+  main-thread compatibility bridge in `demonstrator.html`) now follows D1-D5:
+  guard control exceptions propagate and messages are deferred before guards
+  run; worker pids in `parallel/1` and `first_solution/2-3` guards are tested,
+  not bound; `exit/1` records the first reason and aborts the goal; abort of
+  a toplevel is acknowledged with `abort(Pid)` (the shell's `abort` event is
+  now that acknowledgement), is a no-op when idle, ends a `session(false)`
+  toplevel and never restarts an exiting one; a toplevel blocked in receive
+  is interrupted rather than engine-aborted (which previously wedged it);
+  stale commands are discarded, a partial page precedes an error,
+  constrained answers are rejected, and messages and rpc goals use canonical
+  term text read with `double_quotes(string)`. Pinned by
+  `tests/wasm/swi_wasm_contracts.js`, which runs the Worker against the real
+  SWI-WASM engine under Node.
+
+## Client source may not install expansion hooks (D6c / S2, 2026-10-04)
+
+A public client's loaded source (and any clause it asserts at runtime) can no
+longer define or declare `term_expansion/2` or `goal_expansion/2`. Such a hook
+fired while SWI-Prolog's loader read the rest of the client's own source,
+which runs **before** the per-goal sandbox check, so a client could write
+
+```prolog
+goal_expansion(trigger, shell('…', _)).
+p :- trigger.
+```
+
+and have `p/0` loaded with a `shell/2` body that then ran unchecked — a full
+blacklist-sandbox escape (reproduced before the fix). The precheck
+(`node_sandbox:reject_expansion_clause/1`, `reject_expansion_declaration/1`)
+now refuses a clause head or a `multifile`/`dynamic`/`discontiguous`
+declaration that names an expansion predicate, with
+`permission_error(define, expansion_hook, …)`. The node already reads client
+source as raw terms and does DCG translation itself, so blocking these
+definitions closes the only route by which client source adds a load-time
+hook; the same precheck guards `assert/1` at runtime. Author-directed
+correctness/security fix; the pre-layering baseline (`demonstrator-peer`) has
+the same hole and is **not** re-cut. Pinned by
+`client_source_cannot_install_goal_expansion` and
+`client_source_cannot_declare_term_expansion_multifile` in `node_tests.pl`.
+
+## Review corrections to D4/D5 (2026-10-04)
+
+- **Captured exceptions are wrapped.** The page-collection cell records
+  `caught(E)`; previously the bare exception was stored next to the empty
+  marker `none`, so `throw(none)` was reported as failure, or a solution
+  followed by it as a final success. Pinned by `throw_none_is_an_error` (t2
+  and the SWI-WASM contract tests).
+- **Idle abort acknowledged in the browser runtime.** The SWI-WASM Worker now
+  acknowledges an abort that reaches an idle toplevel, as the native node
+  already did; a one-shot toplevel ends. The manual and DEVIATIONS no longer
+  describe the s1 case as silent.
+
+## Lifetime, authority and compact identities (D7/D8, 2026-10-04)
+
+- Public application code may spawn only linked children. `link(false)` is
+  reserved for the node owner; detached owner work sends inherited output to
+  the node log. Transport-created roots remain bound to their connection or
+  HTTP session. Existing source-loading and visibility tests now use linked
+  children to preserve their original purpose; independent tests reject
+  unauthorized detachment.
+- Actor ownership, delegated lineage and resource accounts are recorded
+  separately from pids. Sends and monitors remain open; exit is confined to
+  the caller's ownership tree. Host thread aliases and numeric host thread
+  ids never become public actor authority. Demonitor removes only the
+  calling actor's subscription.
+- Finite defaults bound principal actors (32), application mailbox messages
+  (1,024), nesting depth (128), and aggregate sampled CPU (30 seconds per
+  60-second window). Flat list length is not nesting depth; cycles are
+  rejected. Runtime monitor notifications bypass application admission
+  limits, are still counted until consumed, and cannot prevent retirement.
+- Anonymous HTTP calls, sessions and WebSocket connections have independent
+  lifetime accounts. Authenticated principals share an account across their
+  connections. CPU watcher threads stop when no local actors remain;
+  ended lineage and remote ownership records are reclaimed. Unused CPU
+  accounts and their account tokens expire after the accounting window.
+- Trusted peer transports carry separate lineage and account tokens. Public
+  peers may authenticate with an issued bearer token granting
+  `internal_transport`, configured per exact destination URL through
+  `peer_transport_tokens([NodeURL-Token])`. Untrusted browsers cannot supply
+  lineage. Header-only transport claims remain restricted to trusted local
+  or private peers.
+- Visible actor and reference identities are CSPRNG-selected ten-digit
+  integers and are never reissued during a node or browser coordinator's
+  lifetime. JSON carries these compact ids as numbers. Issued-id registries
+  are intentionally retained; they are distinct from expired ownership
+  metadata. Hidden transport tokens remain 128 bits. Book examples use
+  eight digits and recommend larger production identities.
+
+## Review repairs (2026-10-04)
+
+- Browser abort acknowledgements normalize canonical pid text before routing.
+  Privileged cancellation interrupts message, RPC, input and send waits;
+  application messages cannot impersonate that control path. Each abort is
+  acknowledged, including during recovery or a concurrent time-limit report.
+- Native toplevels queue abort requests independently of host signals and
+  protect recovery. Rapid requests, including during startup, retain their
+  acknowledgements and leave persistent toplevels usable.
+- HTTP event replay records are removed with their session. Sequencing covers
+  event-consuming endpoints; spawn and halt have no sequence header, and
+  retrying spawn creates another session.
+- Client source and declarations may define neither two-argument nor
+  four-argument term or goal expansion hooks.
+
+Pinned by `lifetime_authority_tests.plt`, the native toplevel and node tests,
+`tests/wasm/swi_wasm_contracts.js`, and the browser smoke suites. Running-time,
+abort and termination controls bypass client recovery; inference exhaustion
+remains an ordinary catchable exception.
