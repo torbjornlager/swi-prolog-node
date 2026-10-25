@@ -1,0 +1,56 @@
+{
+  "suite": "dcg-http-controls",
+  "baseline": "0.1",
+  "status": "runtime regression, not a shared profile",
+  "scope": "required",
+  "cases": [
+    {
+      "id": "DCH-001",
+      "title": "Named explicit-terminal grammar",
+      "transport": "http",
+      "requests": [
+        {
+          "params": {
+            "src_text": "tokens --> [a,b].",
+            "goal": "phrase(tokens,[a,b])",
+            "template": "ok",
+            "format": "prolog"
+          },
+          "expect_prolog": "success([ok],false)."
+        }
+      ]
+    },
+    {
+      "id": "DCH-002",
+      "title": "Named grammar preserves remainder",
+      "transport": "http",
+      "requests": [
+        {
+          "params": {
+            "src_text": "tokens --> [a,b].",
+            "goal": "phrase(tokens,[a,b,c],Rest)",
+            "template": "rest(Rest)",
+            "format": "prolog"
+          },
+          "expect_prolog": "success([rest([c])],false)."
+        }
+      ]
+    },
+    {
+      "id": "DCH-003",
+      "title": "Native double quotes remain code terminals",
+      "transport": "http",
+      "requests": [
+        {
+          "params": {
+            "src_text": "tokens --> \"ab\".",
+            "goal": "phrase(tokens,[97,98])",
+            "template": "ok",
+            "format": "prolog"
+          },
+          "expect_prolog": "success([ok],false)."
+        }
+      ]
+    }
+  ]
+}

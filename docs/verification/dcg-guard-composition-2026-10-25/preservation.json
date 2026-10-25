@@ -1,0 +1,14 @@
+{
+  "reference": "/Users/torbjorn.lager/Documents/GitHub/trealla-port/reproducers/constructed-src-list-2026-10-25/repair-before.json",
+  "checks": {
+    "native_prolog": true,
+    "engines": true,
+    "library": true,
+    "live": true,
+    "dependency_pin": true,
+    "installed": true
+  },
+  "engine": "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+  "binary_sha256": "915c4758b6aba3d01ade4fe4f46332b6f526ad6c70a8e2574dd05278c2b0ce9c",
+  "scope": "diagnosis only; archived source; no runtime modification"
+}

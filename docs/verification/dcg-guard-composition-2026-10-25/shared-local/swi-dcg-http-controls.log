@@ -1,0 +1,4 @@
+PASS DCH-001 
+PASS DCH-002 
+PASS DCH-003 
+{"pass": 3, "fail": 0, "unsupported": 0, "observed": 0, "diagnostic_error": 0}

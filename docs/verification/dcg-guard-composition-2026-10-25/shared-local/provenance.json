@@ -1,0 +1,346 @@
+{
+  "runs": [
+    {
+      "label": "swi-language-actor-0.1",
+      "report": "swi-language-actor-0.1.json",
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "runner/baseline.py",
+        "--manifest",
+        "/Users/torbjorn.lager/Documents/GitHub/trinity-conformance/cases/language-actor-0.1.json",
+        "--url",
+        "ws://127.0.0.1:50591/ws",
+        "--candidate",
+        "swi",
+        "--profile",
+        "actor",
+        "--timeout",
+        "8",
+        "--report",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/shared-local/swi-language-actor-0.1.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "swi-copying-isolation-0.1",
+      "report": "swi-copying-isolation-0.1.json",
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "runner/baseline.py",
+        "--manifest",
+        "/Users/torbjorn.lager/Documents/GitHub/trinity-conformance/cases/copying-isolation-0.1.json",
+        "--url",
+        "ws://127.0.0.1:50591/ws",
+        "--candidate",
+        "swi",
+        "--profile",
+        "actor",
+        "--timeout",
+        "8",
+        "--report",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/shared-local/swi-copying-isolation-0.1.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "swi-creation-validation-0.1",
+      "report": "swi-creation-validation-0.1.json",
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "runner/baseline.py",
+        "--manifest",
+        "/Users/torbjorn.lager/Documents/GitHub/trinity-conformance/cases/creation-validation-0.1.json",
+        "--url",
+        "ws://127.0.0.1:50591/ws",
+        "--candidate",
+        "swi",
+        "--profile",
+        "actor",
+        "--timeout",
+        "8",
+        "--report",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/shared-local/swi-creation-validation-0.1.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "swi-child-specs-0.1",
+      "report": "swi-child-specs-0.1.json",
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "runner/baseline.py",
+        "--manifest",
+        "/Users/torbjorn.lager/Documents/GitHub/trinity-conformance/cases/child-specs-0.1.json",
+        "--url",
+        "ws://127.0.0.1:50591/ws",
+        "--candidate",
+        "swi",
+        "--profile",
+        "actor",
+        "--timeout",
+        "8",
+        "--report",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/shared-local/swi-child-specs-0.1.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "swi-dcg-http-controls",
+      "report": "swi-dcg-http-controls.json",
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "runner/baseline.py",
+        "--manifest",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/dcg-http-controls.json",
+        "--url",
+        "http://127.0.0.1:50591",
+        "--candidate",
+        "swi",
+        "--profile",
+        "actor",
+        "--timeout",
+        "8",
+        "--report",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/shared-local/swi-dcg-http-controls.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "swi-dcg-ws-controls",
+      "report": "swi-dcg-ws-controls.json",
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "runner/baseline.py",
+        "--manifest",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/dcg-ws-controls.json",
+        "--url",
+        "ws://127.0.0.1:50591/ws",
+        "--candidate",
+        "swi",
+        "--profile",
+        "actor",
+        "--timeout",
+        "8",
+        "--report",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/shared-local/swi-dcg-ws-controls.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "trealla-language-actor-0.1",
+      "report": "trealla-language-actor-0.1.json",
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "runner/baseline.py",
+        "--manifest",
+        "/Users/torbjorn.lager/Documents/GitHub/trinity-conformance/cases/language-actor-0.1.json",
+        "--url",
+        "ws://127.0.0.1:50597/ws",
+        "--candidate",
+        "trealla",
+        "--profile",
+        "actor",
+        "--timeout",
+        "8",
+        "--report",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/shared-local/trealla-language-actor-0.1.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "trealla-copying-isolation-0.1",
+      "report": "trealla-copying-isolation-0.1.json",
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "runner/baseline.py",
+        "--manifest",
+        "/Users/torbjorn.lager/Documents/GitHub/trinity-conformance/cases/copying-isolation-0.1.json",
+        "--url",
+        "ws://127.0.0.1:50597/ws",
+        "--candidate",
+        "trealla",
+        "--profile",
+        "actor",
+        "--timeout",
+        "8",
+        "--report",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/shared-local/trealla-copying-isolation-0.1.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "trealla-creation-validation-0.1",
+      "report": "trealla-creation-validation-0.1.json",
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "runner/baseline.py",
+        "--manifest",
+        "/Users/torbjorn.lager/Documents/GitHub/trinity-conformance/cases/creation-validation-0.1.json",
+        "--url",
+        "ws://127.0.0.1:50597/ws",
+        "--candidate",
+        "trealla",
+        "--profile",
+        "actor",
+        "--timeout",
+        "8",
+        "--report",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/shared-local/trealla-creation-validation-0.1.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "trealla-child-specs-0.1",
+      "report": "trealla-child-specs-0.1.json",
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "runner/baseline.py",
+        "--manifest",
+        "/Users/torbjorn.lager/Documents/GitHub/trinity-conformance/cases/child-specs-0.1.json",
+        "--url",
+        "ws://127.0.0.1:50597/ws",
+        "--candidate",
+        "trealla",
+        "--profile",
+        "actor",
+        "--timeout",
+        "8",
+        "--report",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/shared-local/trealla-child-specs-0.1.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "label": "trealla-dcg-http-controls",
+      "report": "trealla-dcg-http-controls.json",
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "runner/baseline.py",
+        "--manifest",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/dcg-http-controls.json",
+        "--url",
+        "http://127.0.0.1:50597",
+        "--candidate",
+        "trealla",
+        "--profile",
+        "actor",
+        "--timeout",
+        "8",
+        "--report",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/shared-local/trealla-dcg-http-controls.json"
+      ],
+      "exit_code": 1
+    },
+    {
+      "label": "trealla-dcg-ws-controls",
+      "report": "trealla-dcg-ws-controls.json",
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "runner/baseline.py",
+        "--manifest",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/dcg-ws-controls.json",
+        "--url",
+        "ws://127.0.0.1:50597/ws",
+        "--candidate",
+        "trealla",
+        "--profile",
+        "actor",
+        "--timeout",
+        "8",
+        "--report",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/shared-local/trealla-dcg-ws-controls.json"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "nodes": {
+    "swi": {
+      "url": "http://127.0.0.1:50591",
+      "pid": 64828,
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-g",
+        "use_module(library(sgml)),use_module(library(option)),consult('/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-conformance-_5rifyge/swi/load.pl'),set_setting(http:public_host,'127.0.0.1'),set_setting(http:public_port,50591),set_setting(http:public_scheme,http),use_module(library(socket)),tcp_socket(S),tcp_bind(S,ip(127,0,0,1):50591),tcp_listen(S,128),node:node(50591,[tcp_socket(S),profile(actor),sandbox(blacklist),auth(open)]),thread_get_message(stop)"
+      ]
+    },
+    "trealla": {
+      "url": "http://127.0.0.1:50597",
+      "pid": 64834,
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/trealla-v3.14.10-acceptance-2026-10-24/engine/tpl",
+        "-g",
+        "use_module(web_prolog),use_module(distribution),web_prolog:web_prolog_node(50597,[bind_address('127.0.0.1'),node_url('http://127.0.0.1:50597'),profile(actor),sandbox(blacklist),auth(open)]),thread_get_message(stop)"
+      ]
+    }
+  },
+  "sources": {
+    "swi": {
+      "revision": "81bc9605467ce0313d62aad290c9bd920a7fb6a6",
+      "archive_sha256": "467d2b3e32a5701a0941887a991ef199978f4d4248c85026b9fa41a747908ede",
+      "root": "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/conformance-source"
+    },
+    "trealla": {
+      "revision": "6fb21f1c39fc05377751d842ae7a34e7cc18464f",
+      "archive_sha256": "02ec70c938e5d25ac9349ac6d8b68bdb2dac9976ee7211ea0a549927f39ba591",
+      "root": "/Users/torbjorn.lager/Documents/GitHub/trealla-port"
+    }
+  },
+  "scope": "unchanged shared packs and separate DCG runtime controls; experimental text results separate",
+  "input_hashes": {
+    "/Users/torbjorn.lager/Documents/GitHub/trinity-conformance/cases/language-actor-0.1.json": "6204ea84a13e834aa2329fd97cb61c2508c989f1b1447cf86d22dda1ddb4bb91",
+    "/Users/torbjorn.lager/Documents/GitHub/trinity-conformance/cases/copying-isolation-0.1.json": "b7c0d35c88fbb9edbc4205a0e946767e5c97f4685645de9d40dca73f5fa0be19",
+    "/Users/torbjorn.lager/Documents/GitHub/trinity-conformance/cases/creation-validation-0.1.json": "ef48dc9ffd93590cae5e9b9a06430c047a90cff743d00fdccb4e767b2802c0d4",
+    "/Users/torbjorn.lager/Documents/GitHub/trinity-conformance/cases/child-specs-0.1.json": "fc73f572df9ce9921475bcd6efe7d1b12ca68e1f73d96eefe2a69e87ad206c3b",
+    "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/dcg-http-controls.json": "288478edf6ed625ad81beaf6ff6c24e931ddc3fd5321e890a37feb1be030df7e",
+    "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-guard-composition-2026-10-25/dcg-ws-controls.json": "45d2f4c544cc79a076b8d2ce5c34492d616b983045cc664602fb61e4683b7d4d",
+    "runner/baseline.py": "0e672a082e2ed159f34396cb56fef80632269ace648215b9b21c8798d643538f",
+    "conformance-check.py": "471b4f221fe5bb61e5090e699c9afaa2eb960dcf39a6d5db00d94a12245128c5"
+  },
+  "owned_nodes_stopped": true,
+  "engine_sha256": {
+    "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl": "915c4758b6aba3d01ade4fe4f46332b6f526ad6c70a8e2574dd05278c2b0ce9c",
+    "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/trealla-v3.14.10-acceptance-2026-10-24/engine/tpl": "71f5ab7df3bde1a0a73cffccb2a762815895f6d2c2ef3f63ee52ef10baaeba1c"
+  },
+  "report_metadata_correction": {
+    "reason": "Schema validation caught an unsupported scope label. required denotes assertions in these local runtime-regression manifests, not adoption into shared profiles. The runner treats both labels identically (only diagnostic selects a different execution path). Only manifest/report scope metadata changed; cases, observations, results, statuses, counts and timing are unchanged. Original input_hashes retain the manifests used during execution.",
+    "files": [
+      {
+        "manifest": "dcg-http-controls.json",
+        "original_scope": "supporting",
+        "corrected_scope": "required",
+        "original_sha256": "288478edf6ed625ad81beaf6ff6c24e931ddc3fd5321e890a37feb1be030df7e",
+        "corrected_sha256": "e3c0fd30f9f04795d6440402a46df7f480cc957258e6b1a6f9ed1ce2629e43fa"
+      },
+      {
+        "report": "swi-dcg-http-controls.json",
+        "original_sha256": "c385e8f2498ff3f6ea298d5448570d8ac7270de6e45c119d91d4823e73df7f71",
+        "corrected_sha256": "5b5e1ec503837291d6aeeed6200b10b41158be02b32e5d075d72ffccb798cbf3"
+      },
+      {
+        "report": "trealla-dcg-http-controls.json",
+        "original_sha256": "9bb07ffa59ce2938947e7b8fb36fdd4783e08c7ad2300bc6d4948d159ca64d9b",
+        "corrected_sha256": "e360d765c291f6ba42bba69cf6bdead40a46db794dd7a7ca57c79c487f937cbf"
+      },
+      {
+        "manifest": "dcg-ws-controls.json",
+        "original_scope": "supporting",
+        "corrected_scope": "required",
+        "original_sha256": "45d2f4c544cc79a076b8d2ce5c34492d616b983045cc664602fb61e4683b7d4d",
+        "corrected_sha256": "c22035120db918550f8684475352bff1403dd1bb20adfe6b092a593b514313cf"
+      },
+      {
+        "report": "swi-dcg-ws-controls.json",
+        "original_sha256": "6d0cea6cdae9fae1e1ece0b6f63bc60d8b72467fb55d61f4a8964cc0a2280817",
+        "corrected_sha256": "a29a3324dfa3b51e0d322c9a57ff94e9b4b92260d95033d8b98fa4c47b283864"
+      },
+      {
+        "report": "trealla-dcg-ws-controls.json",
+        "original_sha256": "d60fd1c47b26b73cc56a93b37916ec62e763fc22ec098c50e7214cc026ebb7f4",
+        "corrected_sha256": "e54e18b619c1b61f3f8919c47bed961bfc29a1000df8a49e38f0479c8e025337"
+      }
+    ]
+  }
+}

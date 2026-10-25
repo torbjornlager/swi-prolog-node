@@ -1,0 +1,164 @@
+{
+  "advertised_profile": "actor",
+  "baseline": "0.1",
+  "candidate": "swi",
+  "counts": {
+    "diagnostic_error": 0,
+    "fail": 0,
+    "observed": 0,
+    "pass": 6,
+    "unsupported": 0
+  },
+  "duration_ms": 209,
+  "endpoint": "ws://127.0.0.1:50591/ws",
+  "peer": null,
+  "results": [
+    {
+      "duration_ms": 15,
+      "id": "SV-001",
+      "observation": {
+        "data": [
+          {
+            "BaselineResult": "passed",
+            "E": "error(missing_start_option(a),supervisor)",
+            "S": "3427381779@'http://127.0.0.1:50591'",
+            "Specs": "[child(a,[])]",
+            "Sup": "Sup"
+          }
+        ],
+        "more": false,
+        "pid": 3427381779,
+        "type": "success"
+      },
+      "status": "pass",
+      "title": "Required start is rejected without creating a supervisor"
+    },
+    {
+      "duration_ms": 13,
+      "id": "SV-002",
+      "observation": {
+        "data": [
+          {
+            "BaselineResult": "passed",
+            "E": "error(permission_error(duplicate,supervisor_child_id,a),_)",
+            "S": "6156332824@'http://127.0.0.1:50591'",
+            "Specs": "[child(a,[start(true)]),child(a,[start(true)])]",
+            "Sup": "Sup"
+          }
+        ],
+        "more": false,
+        "pid": 6156332824,
+        "type": "success"
+      },
+      "status": "pass",
+      "title": "Initial child identifiers must be unique"
+    },
+    {
+      "duration_ms": 14,
+      "id": "SV-003",
+      "observation": {
+        "data": [
+          {
+            "BaselineResult": "passed",
+            "E1": "error(type_error(list,[child(a,[start(true)])|bad]),_)",
+            "E2": "error(type_error(list,[start(true)|bad]),_)",
+            "Inner": "[child(a,[start(true)|bad])]",
+            "Outer": "[child(a,[start(true)])|bad]",
+            "P": "P",
+            "Q": "Q",
+            "S": "5337801823@'http://127.0.0.1:50591'"
+          }
+        ],
+        "more": false,
+        "pid": 5337801823,
+        "type": "success"
+      },
+      "status": "pass",
+      "title": "Malformed initial child and child-option lists are rejected"
+    },
+    {
+      "duration_ms": 14,
+      "id": "SV-004",
+      "observation": {
+        "data": [
+          {
+            "BaselineResult": "passed",
+            "E1": "error(type_error(oneof([permanent,transient,temporary]),bad),_)",
+            "E2": "error(domain_error(supervisor_child_shutdown,-1),_)",
+            "Formal": "type_error(oneof([permanent,transient,temporary]),bad)",
+            "P": "P",
+            "Q": "Q",
+            "Restart": "[child(a,[start(true),restart(temporary),restart(bad)])]",
+            "S": "7893494157@'http://127.0.0.1:50591'",
+            "Shutdown": "[child(a,[start(true),shutdown(0),shutdown(-1)])]"
+          }
+        ],
+        "more": false,
+        "pid": 7893494157,
+        "type": "success"
+      },
+      "status": "pass",
+      "title": "Later restart and shutdown occurrences are validated"
+    },
+    {
+      "duration_ms": 13,
+      "id": "SV-005",
+      "observation": {
+        "data": [
+          {
+            "After": "[3018496929@'http://127.0.0.1:50591']",
+            "BaselineResult": "passed",
+            "Before": "[3018496929@'http://127.0.0.1:50591']",
+            "E": "error(missing_start_option(inner),supervisor)",
+            "S": "3018496929@'http://127.0.0.1:50591'",
+            "Sorted": "[3018496929@'http://127.0.0.1:50591']",
+            "Specs": "[child(probe,[start((3018496929@'http://127.0.0.1:50591'!unexpected_nested_start,receive({never->true})))]),child(outer,[start(start_sub_supervisor([child(inner,[])],[]))])]",
+            "Sup": "Sup"
+          }
+        ],
+        "more": false,
+        "pid": 3018496929,
+        "type": "success"
+      },
+      "status": "pass",
+      "title": "Nested invalid specification is rejected before any initial startup"
+    },
+    {
+      "duration_ms": 141,
+      "id": "SV-006",
+      "observation": {
+        "data": [
+          {
+            "Added": "ok",
+            "After": "[info(existing,1107302219@'http://127.0.0.1:50591',worker,temporary)]",
+            "BaselineResult": "passed",
+            "Before": "[info(existing,1107302219@'http://127.0.0.1:50591',worker,temporary)]",
+            "E": "error(missing_start_option(retry),supervisor)",
+            "Existing": "1107302219@'http://127.0.0.1:50591'",
+            "Final": "[info(existing,1107302219@'http://127.0.0.1:50591',worker,temporary),info(retry,7636712084@'http://127.0.0.1:50591',worker,temporary)]",
+            "From": "From",
+            "From2": "From2",
+            "Invalid": "child(retry,[])",
+            "Me": "Me",
+            "New": "7636712084@'http://127.0.0.1:50591'",
+            "NewMe": "NewMe",
+            "R1": "4820814430",
+            "R2": "5875628674",
+            "Rejected": "Rejected",
+            "S": "4589247139@'http://127.0.0.1:50591'",
+            "Sup": "6798435405@'http://127.0.0.1:50591'"
+          }
+        ],
+        "more": false,
+        "pid": 4589247139,
+        "type": "success"
+      },
+      "status": "pass",
+      "title": "Dynamic rejection preserves siblings and allows valid retry"
+    }
+  ],
+  "schema_version": 2,
+  "scope": "required",
+  "started_at": "2026-10-25T09:51:14.057419+00:00",
+  "suite": "child-specs-0.1"
+}

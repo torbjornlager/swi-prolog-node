@@ -194,6 +194,16 @@ rewrite_meta_argument(Extra, Module, Closure,
     integer(Extra),
     Extra > 0,
     !.
+% The public DCG guard already translates the original grammar and routes its
+% resulting goal through both sandbox checking and this control rewriter.
+% Preserve that closure for the same caller; wrapping it again would sandbox-
+% check the implementation helper itself as a foreign qualified call.
+rewrite_meta_argument(//, Module, Closure, Closure) :-
+    nonvar(Closure), Closure = (GuardModule:Call),
+    GuardModule == public_goal_guard,
+    nonvar(Call), Call = '$sandbox_dcg'(StoredModule, _),
+    StoredModule == Module,
+    !.
 rewrite_meta_argument(//, Module, Closure,
                       control_guard:'$dcg'(Module, Closure)) :-
     !.

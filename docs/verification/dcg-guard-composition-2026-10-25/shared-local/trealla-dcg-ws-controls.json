@@ -1,0 +1,81 @@
+{
+  "advertised_profile": "actor",
+  "baseline": "0.1",
+  "candidate": "trealla",
+  "counts": {
+    "diagnostic_error": 0,
+    "fail": 1,
+    "observed": 0,
+    "pass": 3,
+    "unsupported": 0
+  },
+  "duration_ms": 430,
+  "endpoint": "ws://127.0.0.1:50597/ws",
+  "peer": null,
+  "results": [
+    {
+      "duration_ms": 127,
+      "id": "DCW-001",
+      "observation": {
+        "data": [
+          {
+            "BaselineResult": "passed"
+          }
+        ],
+        "more": false,
+        "pid": 1046888037,
+        "type": "success"
+      },
+      "status": "pass",
+      "title": "Named explicit-terminal grammar"
+    },
+    {
+      "duration_ms": 131,
+      "id": "DCW-002",
+      "observation": {
+        "data": [
+          {
+            "BaselineResult": "passed",
+            "G": "tokens",
+            "Rest": "[c]"
+          }
+        ],
+        "more": false,
+        "pid": 2725216225,
+        "type": "success"
+      },
+      "status": "pass",
+      "title": "Runtime grammar and remainder"
+    },
+    {
+      "detail": "ConformanceFailure: expected success, got {'type': 'failure', 'pid': 2009686152}; preceding events were []",
+      "duration_ms": 30,
+      "id": "DCW-003",
+      "status": "fail",
+      "title": "Native double quotes remain code terminals"
+    },
+    {
+      "duration_ms": 142,
+      "id": "DCW-004",
+      "observation": {
+        "data": [
+          {
+            "BaselineResult": "passed",
+            "P": "1061359828",
+            "R": "[c]",
+            "S": "1258018990@'http://127.0.0.1:50597'"
+          }
+        ],
+        "more": false,
+        "pid": 1258018990,
+        "type": "success"
+      },
+      "status": "pass",
+      "title": "Copied grammar receives child context"
+    }
+  ],
+  "schema_version": 2,
+  "scope": "required",
+  "started_at": "2026-10-25T09:51:19.343581+00:00",
+  "suite": "dcg-ws-controls"
+}

@@ -1,0 +1,99 @@
+% Library was moved: library(http/json) --> library(json)
+% Start unit: public_goal_guard
+% [1/46] public_goal_guard:maplist_bindings ......... passed (0.001 sec)
+% [2/46] public_goal_guard:maplist_sharing .......... passed (0.000 sec)
+% [3/46] public_goal_guard:maplist_backtracking ..... passed (0.000 sec)
+% [4/46] public_goal_guard:maplist_failure .......... passed (0.000 sec)
+% [5/46] public_goal_guard:foldl_context ............ passed (0.000 sec)
+% [6/46] public_goal_guard..licit_caller_module ..... passed (0.000 sec)
+% [7/46] public_goal_guard:include_context .......... passed (0.000 sec)
+% [8/46] public_goal_guard:callback_exception ....... passed (0.000 sec)
+% [9/46] public_goal_guard:runtime_closure .......... passed (0.000 sec)
+% [10/46] public_goal_guard..oke_unbound_closure .... passed (0.000 sec)
+% [11/46] public_goal_guard..und_invoked_closure .... passed (0.000 sec)
+% [12/46] public_goal_guard:forbidden_callback ...... passed (0.000 sec)
+% [13/46] public_goal_guard.._forbidden_callback .... passed (0.000 sec)
+% [14/46] public_goal_guard.._forbidden_callback .... passed (0.000 sec)
+% [15/46] public_goal_guard..ument_meta_callback .... passed (0.000 sec)
+% [16/46] public_goal_guard..dule_sensitive_data .... passed (0.000 sec)
+% [17/46] public_goal_guard:unsupported_closure ..... passed (0.000 sec)
+% [18/46] public_goal_guard..ed_existential_meta .... passed (0.000 sec)
+% [19/46] public_goal_guard:dcg_terminals ........... passed (0.000 sec)
+% [20/46] public_goal_guard..variable_and_braces .... passed (0.000 sec)
+% [21/46] public_goal_guard:dcg_forbidden ........... passed (0.000 sec)
+% [22/46] public_goal_guard..re_closure_identity .... passed (0.000 sec)
+% [23/46] public_goal_guard:restore_zero_meta ....... passed (0.000 sec)
+% [24/46] public_goal_guard:restore_dcg_identity .... passed (0.000 sec)
+% [25-1/46] public_goal_guard..unguarded_variables .. passed (0.000 sec)
+% [25-2/46] public_goal_guard..unguarded_variables .. passed (0.000 sec)
+% [25-3/46] public_goal_guard..unguarded_variables .. passed (0.000 sec)
+% [26/46] public_goal_guard.._composed_terminals .. **FAILED (0.000 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:120:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_terminals: received error: node_sandbox:sandbox_check_goal/2: No permission to call sandboxed `public_goal_guard:'$sandbox_dcg'(plunit_public_goal_guard,[a,b],_8458,[])' (top-level module-qualified goal is disabled in blacklist sandbox mode)
+% [27/46] public_goal_guard:dcg_composed_named .... **FAILED (0.000 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:122:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_named: received error: node_sandbox:sandbox_check_goal/2: No permission to call sandboxed `public_goal_guard:'$sandbox_dcg'(plunit_public_goal_guard,grammar_tokens,_12774,[])' (top-level module-qualified goal is disabled in blacklist sandbox mode)
+% [28/46] public_goal_guard.._composed_remainder .. **FAILED (0.000 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:124:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_remainder: received error: node_sandbox:sandbox_check_goal/2: No permission to call sandboxed `public_goal_guard:'$sandbox_dcg'(plunit_public_goal_guard,[a,b],[a,b,c],_3376)' (top-level module-qualified goal is disabled in blacklist sandbox mode)
+% [29/46] public_goal_guard:dcg_composed_failure .. **FAILED (0.000 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:126:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_failure: received error: node_sandbox:sandbox_check_goal/2: No permission to call sandboxed `public_goal_guard:'$sandbox_dcg'(plunit_public_goal_guard,[a],[b],[])' (top-level module-qualified goal is disabled in blacklist sandbox mode)
+% [30/46] public_goal_guard..mposed_alternatives .. **FAILED (0.000 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:128:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_alternatives: received error: node_sandbox:sandbox_check_goal/2: No permission to call sandboxed `public_goal_guard:'$sandbox_dcg'(plunit_public_goal_guard,([a];[b]),_12096,[])' (top-level module-qualified goal is disabled in blacklist sandbox mode)
+% [31/46] public_goal_guard:dcg_composed_sharing .. **FAILED (0.000 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:131:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_sharing: received error: node_sandbox:sandbox_check_goal/2: No permission to call sandboxed `public_goal_guard:'$sandbox_dcg'(plunit_public_goal_guard,([_3264],{_3264=_3282},[_3282]),_3252,[])' (top-level module-qualified goal is disabled in blacklist sandbox mode)
+% [32/46] public_goal_guard..sed_runtime_grammar .. **FAILED (0.000 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:134:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_runtime_grammar: received error: node_sandbox:sandbox_check_goal/2: No permission to call sandboxed `public_goal_guard:'$sandbox_dcg'(plunit_public_goal_guard,([a],{_7744=b},[_7744]),_7716,[])' (top-level module-qualified goal is disabled in blacklist sandbox mode)
+% [33/46] public_goal_guard:dcg_composed_unbound .. **FAILED (0.000 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:137:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_unbound: wrong error
+ERROR: [Thread main]     Expected: error(instantiation_error,A)
+ERROR: [Thread main]     Got:      error(permission_error(call,sandboxed,public_goal_guard:'$sandbox_dcg'(plunit_public_goal_guard,B,[],[])),context(node_sandbox:sandbox_check_goal/2,'top-level module-qualified goal is disabled in blacklist sandbox mode'))
+% [34/46] public_goal_guard.._composed_exception .. **FAILED (0.000 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:139:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_exception: wrong error
+ERROR: [Thread main]     Expected: grammar_error
+ERROR: [Thread main]     Got:      error(permission_error(call,sandboxed,public_goal_guard:'$sandbox_dcg'(plunit_public_goal_guard,{throw(grammar_error)},[],[])),context(node_sandbox:sandbox_check_goal/2,'top-level module-qualified goal is disabled in blacklist sandbox mode'))
+% [35/46] public_goal_guard..osed_ordinary_catch .. **FAILED (0.000 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:141:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_ordinary_catch: received error: node_sandbox:sandbox_check_goal/2: No permission to call sandboxed `public_goal_guard:'$sandbox_dcg'(plunit_public_goal_guard,{catch(throw(grammar_error),_7836,true)},[],[])' (top-level module-qualified goal is disabled in blacklist sandbox mode)
+% [36-1/46] public_goal_guard..ed_reserved_control .. **FAILED (0.016 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:143:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_reserved_control (1-th forall generator = member('$abort_goal',['$abort_goal','$ptcp_time_limit'])): assertion
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:143:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_reserved_control: assertion at line 147 failed
+	Assertion: error(permission_error(call,sandboxed,public_goal_guard:'$sandbox_dcg'(plunit_public_goal_guard,{catch(throw('$abort_goal'),_12450,_12460=true)},[],[])),context(node_sandbox:sandbox_check_goal/2,'top-level module-qualified goal is disabled in blacklist sandbox mode'))=='$abort_goal'
+
+% [36-2/46] public_goal_guard..ed_reserved_control .. **FAILED (0.000 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:143:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_reserved_control (2-th forall generator = member('$ptcp_time_limit',['$abort_goal','$ptcp_time_limit'])): assertion
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:143:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_reserved_control: assertion at line 147 failed
+	Assertion: error(permission_error(call,sandboxed,public_goal_guard:'$sandbox_dcg'(plunit_public_goal_guard,{catch(throw('$ptcp_time_limit'),_5568,_5578=true)},[],[])),context(node_sandbox:sandbox_check_goal/2,'top-level module-qualified goal is disabled in blacklist sandbox mode'))=='$ptcp_time_limit'
+
+% [37/46] public_goal_guard..sed_forbidden_brace .... passed (0.000 sec)
+% [38/46] public_goal_guard..d_qualified_grammar .... passed (0.000 sec)
+% [39/46] public_goal_guard..osed_crafted_helper .... passed (0.000 sec)
+% [40/46] public_goal_guard..ition_does_not_bind .... passed (0.000 sec)
+% [41/46] public_goal_guard..xt_is_not_preserved .... passed (0.000 sec)
+% [42/46] public_goal_guard..restore_and_rewrite .... passed (0.000 sec)
+% [43/46] public_goal_guard..osed_private_source .. **FAILED (0.007 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:180:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_private_source: throw(early_dcg_exit(exception(error(permission_error(call,sandboxed,public_goal_guard:'$sandbox_dcg'(actor_9268098175,tokens,_4720,[])),_4698))))
+% [44/46] public_goal_guard..posed_copied_source .. **FAILED (2.009 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:182:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_copied_source: throw(missing_dcg_observation)
+% [45/46] public_goal_guard..literal_stays_codes .. **FAILED (0.016 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:184:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_native_literal_stays_codes: throw(early_dcg_exit(exception(error(permission_error(call,sandboxed,public_goal_guard:'$sandbox_dcg'(actor_4617887890,tokens,_2562,[])),_2540))))
+% [46/46] public_goal_guard..up_without_recovery .. **FAILED (2.013 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source/tests/tiers/node/public_goal_guard_tests.pl:186:
+ERROR: [Thread main]     test public_goal_guard:dcg_composed_exit_runs_cleanup_without_recovery: throw(missing_dcg_ready)
+% End unit public_goal_guard: **FAILED (0.045 sec CPU)
+ERROR: [Thread main] 16 tests failed
+% 33 tests passed
+% Test run completed in 4.076 seconds (0.047 cpu)

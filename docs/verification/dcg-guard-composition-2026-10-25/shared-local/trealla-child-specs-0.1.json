@@ -1,0 +1,164 @@
+{
+  "advertised_profile": "actor",
+  "baseline": "0.1",
+  "candidate": "trealla",
+  "counts": {
+    "diagnostic_error": 0,
+    "fail": 0,
+    "observed": 0,
+    "pass": 6,
+    "unsupported": 0
+  },
+  "duration_ms": 1040,
+  "endpoint": "ws://127.0.0.1:50597/ws",
+  "peer": null,
+  "results": [
+    {
+      "duration_ms": 122,
+      "id": "SV-001",
+      "observation": {
+        "data": [
+          {
+            "BaselineResult": "passed",
+            "E": "error(missing_start_option(a),context(supervisor_actor:supervisor_spawn/3,'invalid child specification'))",
+            "S": "2192754487@'http://127.0.0.1:50597'",
+            "Specs": "[child(a,[])]",
+            "Sup": "Sup"
+          }
+        ],
+        "more": false,
+        "pid": 2192754487,
+        "type": "success"
+      },
+      "status": "pass",
+      "title": "Required start is rejected without creating a supervisor"
+    },
+    {
+      "duration_ms": 126,
+      "id": "SV-002",
+      "observation": {
+        "data": [
+          {
+            "BaselineResult": "passed",
+            "E": "error(permission_error(duplicate,supervisor_child_id,a),context(supervisor_actor:supervisor_spawn/3,'invalid child specification'))",
+            "S": "1460939597@'http://127.0.0.1:50597'",
+            "Specs": "[child(a,[start(true)]),child(a,[start(true)])]",
+            "Sup": "Sup"
+          }
+        ],
+        "more": false,
+        "pid": 1460939597,
+        "type": "success"
+      },
+      "status": "pass",
+      "title": "Initial child identifiers must be unique"
+    },
+    {
+      "duration_ms": 130,
+      "id": "SV-003",
+      "observation": {
+        "data": [
+          {
+            "BaselineResult": "passed",
+            "E1": "error(type_error(list,[child(a,[start(true)])|bad]),context(supervisor_actor:supervisor_spawn/3,'invalid child specification'))",
+            "E2": "error(type_error(list,[start(true)|bad]),context(supervisor_actor:supervisor_spawn/3,'invalid child specification'))",
+            "Inner": "[child(a,[start(true)|bad])]",
+            "Outer": "[child(a,[start(true)])|bad]",
+            "P": "P",
+            "Q": "Q",
+            "S": "2266573078@'http://127.0.0.1:50597'"
+          }
+        ],
+        "more": false,
+        "pid": 2266573078,
+        "type": "success"
+      },
+      "status": "pass",
+      "title": "Malformed initial child and child-option lists are rejected"
+    },
+    {
+      "duration_ms": 130,
+      "id": "SV-004",
+      "observation": {
+        "data": [
+          {
+            "BaselineResult": "passed",
+            "E1": "error(domain_error(supervisor_child_restart,bad),context(supervisor_actor:supervisor_spawn/3,'invalid child specification'))",
+            "E2": "error(domain_error(supervisor_child_shutdown,-1),context(supervisor_actor:supervisor_spawn/3,'invalid child specification'))",
+            "Formal": "domain_error(supervisor_child_restart,bad)",
+            "P": "P",
+            "Q": "Q",
+            "Restart": "[child(a,[start(true),restart(temporary),restart(bad)])]",
+            "S": "1186440132@'http://127.0.0.1:50597'",
+            "Shutdown": "[child(a,[start(true),shutdown(0),shutdown(-1)])]"
+          }
+        ],
+        "more": false,
+        "pid": 1186440132,
+        "type": "success"
+      },
+      "status": "pass",
+      "title": "Later restart and shutdown occurrences are validated"
+    },
+    {
+      "duration_ms": 132,
+      "id": "SV-005",
+      "observation": {
+        "data": [
+          {
+            "After": "[1019994397@'http://127.0.0.1:50597']",
+            "BaselineResult": "passed",
+            "Before": "[1019994397@'http://127.0.0.1:50597']",
+            "E": "error(missing_start_option(inner),context(supervisor_actor:supervisor_spawn/3,'invalid child specification'))",
+            "S": "1019994397@'http://127.0.0.1:50597'",
+            "Sorted": "[1019994397@'http://127.0.0.1:50597']",
+            "Specs": "[child(probe,[start((1019994397@'http://127.0.0.1:50597'!unexpected_nested_start,receive({never->true})))]),child(outer,[start(start_sub_supervisor([child(inner,[])],[]))])]",
+            "Sup": "Sup"
+          }
+        ],
+        "more": false,
+        "pid": 1019994397,
+        "type": "success"
+      },
+      "status": "pass",
+      "title": "Nested invalid specification is rejected before any initial startup"
+    },
+    {
+      "duration_ms": 400,
+      "id": "SV-006",
+      "observation": {
+        "data": [
+          {
+            "Added": "ok",
+            "After": "[info(existing,1424871198,worker,temporary)]",
+            "BaselineResult": "passed",
+            "Before": "[info(existing,1424871198,worker,temporary)]",
+            "E": "error(missing_start_option(retry),context(supervisor_actor:supervisor_spawn_child/3,'invalid child specification'))",
+            "Existing": "1424871198",
+            "Final": "[info(existing,1424871198,worker,temporary),info(retry,1427098511,worker,temporary)]",
+            "From": "From",
+            "From2": "From2",
+            "Invalid": "child(retry,[])",
+            "Me": "Me",
+            "New": "1427098511",
+            "NewMe": "NewMe",
+            "R1": "1000000272",
+            "R2": "1000000283",
+            "Rejected": "Rejected",
+            "S": "2277357144@'http://127.0.0.1:50597'",
+            "Sup": "3115231137"
+          }
+        ],
+        "more": false,
+        "pid": 2277357144,
+        "type": "success"
+      },
+      "status": "pass",
+      "title": "Dynamic rejection preserves siblings and allows valid retry"
+    }
+  ],
+  "schema_version": 2,
+  "scope": "required",
+  "started_at": "2026-10-25T09:51:17.723610+00:00",
+  "suite": "child-specs-0.1"
+}

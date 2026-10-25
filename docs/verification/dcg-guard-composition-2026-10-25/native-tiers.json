@@ -1,0 +1,11 @@
+{
+  "command": [
+    "bash",
+    "tools/test.sh",
+    "T1_NATIVE",
+    "T4_NATIVE"
+  ],
+  "SWIPL": "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+  "exit_code": 0,
+  "duration": 51.017
+}

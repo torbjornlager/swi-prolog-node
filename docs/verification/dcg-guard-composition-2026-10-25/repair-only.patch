@@ -1,0 +1,197 @@
+diff --git a/prolog/web_prolog/control_guard.pl b/prolog/web_prolog/control_guard.pl
+index 2c46581..643f4a1 100644
+--- a/prolog/web_prolog/control_guard.pl
++++ b/prolog/web_prolog/control_guard.pl
+@@ -194,6 +194,16 @@ rewrite_meta_argument(Extra, Module, Closure,
+     integer(Extra),
+     Extra > 0,
+     !.
++% The public DCG guard already translates the original grammar and routes its
++% resulting goal through both sandbox checking and this control rewriter.
++% Preserve that closure for the same caller; wrapping it again would sandbox-
++% check the implementation helper itself as a foreign qualified call.
++rewrite_meta_argument(//, Module, Closure, Closure) :-
++    nonvar(Closure), Closure = (GuardModule:Call),
++    GuardModule == public_goal_guard,
++    nonvar(Call), Call = '$sandbox_dcg'(StoredModule, _),
++    StoredModule == Module,
++    !.
+ rewrite_meta_argument(//, Module, Closure,
+                       control_guard:'$dcg'(Module, Closure)) :-
+     !.
+diff --git a/tests/tiers/node/public_goal_guard_tests.pl b/tests/tiers/node/public_goal_guard_tests.pl
+index e829d6a..c0ff32f 100644
+--- a/tests/tiers/node/public_goal_guard_tests.pl
++++ b/tests/tiers/node/public_goal_guard_tests.pl
+@@ -3,11 +3,43 @@
+ :- use_module('../../../prolog/web_prolog/node.pl', []).
+ :- use_module('../../../prolog/web_prolog/public_goal_guard.pl').
+ :- use_module('../../../prolog/web_prolog/node_execution_context.pl').
++:- use_module('../../../prolog/web_prolog/actor_api.pl',
++              [spawn/3,self/1,receive/2,exit/2,send/2,demonitor/2]).
+ :- use_module(library(apply)).
+ :- use_module(library(settings)).
+ :- use_module(library(plunit)).
+ 
+ :- meta_predicate guarded(0), meta_zero(0), meta_data(:), meta_large(8), meta_exist(^).
++:- meta_predicate combined_guarded(0), in_public_context(0).
++
++in_public_context(Goal) :-
++    setup_call_cleanup(
++        (setting(node:sandbox, Saved), set_setting(node:sandbox, blacklist)),
++        with_public_execution_profile(actor, Goal),
++        set_setting(node:sandbox, Saved)).
++
++combined_guarded(Goal) :-
++    strip_module(Goal, Module, Plain),
++    in_public_context(
++        (isolation:prepared_goal(Module,Plain,Safe),call(Module:Safe))).
++
++% Build phrase as data so SWI compilation cannot expand it before the guards.
++phrase_goal(Grammar, Input, Goal) :- Goal =.. [phrase,Grammar,Input].
++phrase_goal(Grammar, Input, Rest, Goal) :- Goal =.. [phrase,Grammar,Input,Rest].
++grammar_tokens --> [a,b].
++
++private_observation(Source, Value) :-
++    self(Parent),
++    in_public_context(
++      setup_call_cleanup(
++        spawn(run(Parent),Pid,[src_text(Source),monitor(true)]),
++        (receive({observed(Value)->true;
++                  down(Pid,Pid,Early)->throw(early_dcg_exit(Early))},
++                 [timeout(2),on_timeout(throw(missing_dcg_observation))]),
++         receive({down(Pid,Pid,Reason)->true},
++                 [timeout(2),on_timeout(throw(missing_dcg_down))]),
++         assertion(Reason==true)),
++        (catch(exit(Pid,test_cleanup),_,true),catch(demonitor(Pid,[flush]),_,true)))).
+ 
+ guarded(Goal) :-
+     strip_module(Goal, Module, PlainGoal),
+@@ -85,4 +117,84 @@ test(restore_unguarded_variables,
+     public_goal_guard:restore_goal(test_public_goal_guard,Original,Restored),
+     assertion(Restored==Original), assertion(var(P)).
+ 
++test(dcg_composed_terminals, true(Input==[a,b])) :-
++    phrase_goal([a,b],Input,Goal),combined_guarded(Goal).
++test(dcg_composed_named, true(Input==[a,b])) :-
++    phrase_goal(grammar_tokens,Input,Goal),combined_guarded(Goal).
++test(dcg_composed_remainder, true(Rest==[c])) :-
++    phrase_goal([a,b],[a,b,c],Rest,Goal),combined_guarded(Goal).
++test(dcg_composed_failure, [fail]) :-
++    phrase_goal([a],[b],Goal),combined_guarded(Goal).
++test(dcg_composed_alternatives, true(All==[[a],[b]])) :-
++    phrase_goal(([a];[b]),Input,Goal),
++    findall(Input,combined_guarded(Goal),All).
++test(dcg_composed_sharing) :-
++    phrase_goal(([X],{X=Y},[Y]),Input,Goal),combined_guarded(Goal),
++    assertion(Input==[X,X]),assertion(X==Y),assertion(var(X)).
++test(dcg_composed_runtime_grammar, true(Input==[a,b])) :-
++    phrase_goal(Grammar,Input,Goal),
++    combined_guarded((Grammar=([a],{X=b},[X]),Goal)).
++test(dcg_composed_unbound, [throws(error(instantiation_error,_))]) :-
++    phrase_goal(_Grammar,[],Goal),combined_guarded(Goal).
++test(dcg_composed_exception, [throws(grammar_error)]) :-
++    phrase_goal({throw(grammar_error)},[],Goal),combined_guarded(Goal).
++test(dcg_composed_ordinary_catch, true(Error==grammar_error)) :-
++    phrase_goal({catch(throw(grammar_error),Error,true)},[],Goal),combined_guarded(Goal).
++test(dcg_composed_reserved_control,
++     [forall(member(Control,['$abort_goal','$ptcp_time_limit']))]) :-
++    phrase_goal({catch(throw(Control),_,Recovered=true)},[],Goal),
++    catch(combined_guarded(Goal),Error,true),
++    assertion(Error==Control),assertion(var(Recovered)).
++test(dcg_composed_forbidden_brace,
++     [throws(error(permission_error(call,sandboxed,_),_))]) :-
++    phrase_goal({nb_getval(guard_probe,_)},[],Goal),combined_guarded(Goal).
++test(dcg_composed_qualified_grammar,
++     [throws(error(permission_error(call,sandboxed,_),_))]) :-
++    phrase_goal(system:({nb_getval(guard_probe,_)}),[],Goal),combined_guarded(Goal).
++test(dcg_composed_crafted_helper,
++     [throws(error(permission_error(call,sandboxed,_),_))]) :-
++    context_module(Module),
++    Grammar=public_goal_guard:'$sandbox_dcg'(Module,{nb_getval(guard_probe,_)}),
++    phrase_goal(Grammar,[],Goal),combined_guarded(Goal).
++test(dcg_composed_recognition_does_not_bind) :-
++    phrase_goal(Module:'$sandbox_dcg'(Stored,Grammar),[],Goal),
++    control_guard:rewrite_goal(test_public_goal_guard,Goal,_),
++    assertion(var(Module)),assertion(var(Stored)),assertion(var(Grammar)),
++    phrase_goal(public_goal_guard:Unknown,[],Other),
++    control_guard:rewrite_goal(test_public_goal_guard,Other,_),assertion(var(Unknown)).
++test(dcg_composed_foreign_stored_context_is_not_preserved) :-
++    Closure=public_goal_guard:'$sandbox_dcg'(other_module,[a]),
++    phrase_goal(Closure,[],Original),
++    control_guard:rewrite_goal(test_public_goal_guard,Original,Safe),
++    assertion(Safe==phrase(control_guard:'$dcg'(test_public_goal_guard,Closure),[])).
++test(dcg_composed_restore_and_rewrite) :-
++    context_module(Module),phrase_goal(([X],{X=Y}),Input,Rest,Original),
++    public_goal_guard:rewrite_goal(Module,Original,Public),
++    control_guard:rewrite_goal(Module,Public,Safe),
++    control_guard:restore_goal(Module,Safe,RestoredControl),
++    public_goal_guard:restore_goal(Module,RestoredControl,Restored),
++    assertion(Restored==Original),assertion(var(X)),assertion(var(Y)),
++    assertion(var(Input)),assertion(var(Rest)),
++    public_goal_guard:rewrite_goal(Module,Restored,Again),
++    control_guard:rewrite_goal(Module,Again,CombinedAgain),assertion(CombinedAgain==Safe).
++test(dcg_composed_private_source, true(Value==[a,b])) :-
++    private_observation("tokens --> [a,b]. run(Parent) :- phrase(tokens,Input), send(Parent,observed(Input)).",Value).
++test(dcg_composed_copied_source, true(Value==[c])) :-
++    private_observation("tokens --> [a,b]. parse(Input,Rest) :- phrase(tokens,Input,Rest). run(Parent) :- self(Self), spawn((parse([a,b,c],Rest),send(Self,copied(Rest))),Child,[src_predicates([parse/2,tokens/2]),monitor(true)]), receive({copied(Rest)->send(Parent,observed(Rest))},[timeout(2),on_timeout(fail)]), receive({down(Child,Child,true)->true},[timeout(2),on_timeout(fail)]).",Value).
++test(dcg_composed_native_literal_stays_codes, true(Value==[97,98])) :-
++    private_observation("tokens --> \"ab\". run(Parent) :- phrase(tokens,Input), send(Parent,observed(Input)).",Value).
++test(dcg_composed_exit_runs_cleanup_without_recovery) :-
++    self(Parent),
++    in_public_context(
++      setup_call_cleanup(
++        spawn(run(Parent),Pid,[monitor(true),
++          src_text("run(Parent) :- phrase({setup_call_cleanup(send(Parent,dcg_ready),catch(sleep(60),_,send(Parent,dcg_recovered)),send(Parent,dcg_cleaned))},[]).")]),
++        (receive({dcg_ready->true},[timeout(2),on_timeout(throw(missing_dcg_ready))]),
++         exit(Pid,killed_by_dcg_test),
++         receive({dcg_cleaned->true},[timeout(2),on_timeout(throw(missing_dcg_cleanup))]),
++         receive({dcg_recovered->throw(dcg_exit_was_caught);
++                  down(Pid,Pid,killed_by_dcg_test)->true},
++                 [timeout(2),on_timeout(throw(missing_dcg_exit))])),
++        (catch(exit(Pid,test_cleanup),_,true),catch(demonitor(Pid,[flush]),_,true)))).
++
+ :- end_tests(public_goal_guard).
+--- a/README.md
++++ b/README.md
+@@ -137,3 +137,40 @@
+ source origin policy, redirects, TLS or permitted schemes. See the shared manual
+ for the runtime-specific text forms. The bounded regression report is in
+ `docs/verification/uri-options-2026-10-24/REPORT.md`.
++
++### Composed DCG execution guards
++
++Public blacklist execution applies both sandbox and reserved-control guards.
++For `phrase/2-3`, the control rewriter now preserves an existing sandbox DCG
++closure for the same caller module. That closure already translates the original
++grammar and sends its ordinary goal through sandbox checks and control rewriting;
++wrapping it again would incorrectly check the internal helper as a foreign
++module-qualified call. Foreign qualifications and crafted helper calls retain
++their sandbox checks; the helper module is not broadly exempted.
++
++Terminals, named/private and runtime-selected grammars retain list remainders,
++sharing, alternatives and ordinary exceptions. Reserved controls still bypass
++application recovery while cleanup runs. Copied-source restoration removes the
++guards before the destination actor applies its own context. Native string/DCG
++character-code behaviour is unchanged: `"ab"` terminals consume `[97,98]`, not
++the experimental portable-text draft's `[a,b]`.
++
++Combined-path regressions are included in `tests/tiers/node/public_goal_guard_tests.pl`
++and the native T4 tier. Verification and separate experimental findings are in
++[`docs/verification/dcg-guard-composition-2026-10-25/REPAIR.md`](docs/verification/dcg-guard-composition-2026-10-25/REPAIR.md).
++Blacklist mode remains a prototype policy rather than a complete security boundary.
++The dependency pin, installed runtimes and n3/n5 are not updated or restarted
++by this repair.
++
++DCG portability remains an open follow-up: assess the host facilities against
++ISO/IEC TS 13211-3:2025 and the experimental portable-text contract, especially
++double-quoted terminals. A separate portable DCG library may be needed if the
++host facilities cannot supply the required semantics. This is not a confirmed
++standards violation in SWI-Prolog. Any replacement must preserve sandbox checks,
++source isolation and reserved-control handling; the composition repair does
++not decide that migration.
++
++Assessment starting points are the [ISO Prolog working documents and DCG reference implementation](https://www.complang.tuwien.ac.at/ulrich/iso-prolog/)
++and the [phrase/2-3 comparison cases](https://www.complang.tuwien.ac.at/ulrich/iso-prolog/phrase).
++The comparison identifies tested implementation versions; its SWI 9.3.17 column
++is not evidence about the current engine without rerunning the relevant cases.

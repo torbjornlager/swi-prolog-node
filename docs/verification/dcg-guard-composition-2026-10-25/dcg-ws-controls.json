@@ -1,0 +1,36 @@
+{
+  "suite": "dcg-ws-controls",
+  "baseline": "0.1",
+  "status": "runtime regression, not a shared profile",
+  "scope": "required",
+  "cases": [
+    {
+      "id": "DCW-001",
+      "title": "Named explicit-terminal grammar",
+      "transport": "query",
+      "source": "tokens --> [a,b].",
+      "goal": "phrase(tokens,[a,b])"
+    },
+    {
+      "id": "DCW-002",
+      "title": "Runtime grammar and remainder",
+      "transport": "query",
+      "source": "tokens --> [a,b].",
+      "goal": "G=tokens,phrase(G,[a,b,c],Rest),Rest==[c]"
+    },
+    {
+      "id": "DCW-003",
+      "title": "Native double quotes remain code terminals",
+      "transport": "query",
+      "source": "tokens --> \"ab\".",
+      "goal": "phrase(tokens,[97,98])"
+    },
+    {
+      "id": "DCW-004",
+      "title": "Copied grammar receives child context",
+      "transport": "query",
+      "source": "tokens --> [a,b]. parse(Input,Rest) :- phrase(tokens,Input,Rest).",
+      "goal": "self(S),spawn((parse([a,b,c],R),S!copied(R)),P,[monitor(true),src_predicates([parse/2,tokens/2])]),receive({copied(R)->true},[timeout(2),on_timeout(throw(missing_dcg_copy))]),R==[c],receive({down(P,P,true)->true},[timeout(2),on_timeout(throw(missing_dcg_child))])"
+    }
+  ]
+}

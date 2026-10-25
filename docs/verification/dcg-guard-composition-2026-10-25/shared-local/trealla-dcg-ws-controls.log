@@ -1,0 +1,5 @@
+PASS DCW-001 
+PASS DCW-002 
+FAIL DCW-003 ConformanceFailure: expected success, got {'type': 'failure', 'pid': 2009686152}; preceding events were []
+PASS DCW-004 
+{"pass": 3, "fail": 1, "unsupported": 0, "observed": 0, "diagnostic_error": 0}

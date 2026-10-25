@@ -1,0 +1,5 @@
+PASS DCW-001 
+PASS DCW-002 
+PASS DCW-003 
+PASS DCW-004 
+{"pass": 4, "fail": 0, "unsupported": 0, "observed": 0, "diagnostic_error": 0}

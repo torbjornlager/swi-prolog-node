@@ -1,0 +1,24 @@
+{
+  "native_base_revision": "786737f3352c9a3abc3f59c6e09a393008579b5a",
+  "trealla_revision": "6fb21f1c39fc05377751d842ae7a34e7cc18464f",
+  "conformance_revision": "6ce74de550a221361583f9dee7db4ad62d65c2ab",
+  "overlaid_files": {
+    "prolog/web_prolog/control_guard.pl": "0333969dd64f899056b510b8f3ef7c4659f5c5ed04658ef8538a473b94db9673",
+    "tests/tiers/node/public_goal_guard_tests.pl": "7a300564ecb8761ca4685267bd42729b9497596c47382f41990ec4a58fdbdb51"
+  },
+  "engines": {
+    "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl": "915c4758b6aba3d01ade4fe4f46332b6f526ad6c70a8e2574dd05278c2b0ce9c",
+    "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/trealla-v3.14.10-acceptance-2026-10-24/engine/tpl": "71f5ab7df3bde1a0a73cffccb2a762815895f6d2c2ef3f63ee52ef10baaeba1c"
+  },
+  "source_fixtures": [
+    "candidate-source.json",
+    "conformance-source.json"
+  ],
+  "command_records": [
+    "unit-results.json",
+    "native-tiers.json",
+    "shared-local/provenance.json",
+    "portable-text/provenance.json"
+  ],
+  "note": "Committed source archives plus DCG-only overlays; pending Boolean/URI work excluded. Disposable nodes only."
+}

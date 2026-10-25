@@ -1,0 +1,52 @@
+{
+  "native_tiers": {
+    "command": [
+      "bash",
+      "tools/test.sh",
+      "T1_NATIVE",
+      "T4_NATIVE"
+    ],
+    "SWIPL": "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+    "exit_code": 0,
+    "duration": 51.017
+  },
+  "guard_suite": {
+    "candidate": "46 tests plus 3 parameterized sub-tests pass",
+    "negative_control": "16 failures, 33 passes with identical final tests"
+  },
+  "shared_conformance": {
+    "swi": 25,
+    "trealla": 25,
+    "failures": 0
+  },
+  "dcg_transport_controls": {
+    "swi": "7/7 pass",
+    "trealla_common_cases": "5/5 pass",
+    "trealla_swi_code_list_expectations": "2 failures retained as native text convention contrasts"
+  },
+  "experimental_portable_text": {
+    "swi": {
+      "fail": 22,
+      "pass": 4,
+      "unsupported": 0
+    },
+    "trealla": {
+      "fail": 5,
+      "pass": 21,
+      "unsupported": 0
+    }
+  },
+  "preservation": {
+    "trealla_sources": true,
+    "engines": true,
+    "library": true,
+    "live": true,
+    "only_authorized_native_change": true,
+    "pending_files_preserved": true,
+    "readme_append_only": true,
+    "dependency_pin": true,
+    "installed": true,
+    "source_overlays_match": true,
+    "conformance-source_overlays_match": true
+  }
+}

@@ -1,0 +1,4 @@
+PASS DCH-001 
+PASS DCH-002 
+FAIL DCH-003 ConformanceFailure: expected 'success([ok],false).', got 'failure.\n'
+{"pass": 2, "fail": 1, "unsupported": 0, "observed": 0, "diagnostic_error": 0}

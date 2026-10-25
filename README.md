@@ -111,3 +111,40 @@ inside the query. Blacklist mode retains its prototype qualification above.
 The [verification report](docs/verification/spawn-source-validation-2026-10-24/REPORT.md)
 records regression and conformance results. The demonstrator pin, installed
 runtimes and live n3/n5 remain unchanged.
+
+### Composed DCG execution guards
+
+Public blacklist execution applies both sandbox and reserved-control guards.
+For `phrase/2-3`, the control rewriter now preserves an existing sandbox DCG
+closure for the same caller module. That closure already translates the original
+grammar and sends its ordinary goal through sandbox checks and control rewriting;
+wrapping it again would incorrectly check the internal helper as a foreign
+module-qualified call. Foreign qualifications and crafted helper calls retain
+their sandbox checks; the helper module is not broadly exempted.
+
+Terminals, named/private and runtime-selected grammars retain list remainders,
+sharing, alternatives and ordinary exceptions. Reserved controls still bypass
+application recovery while cleanup runs. Copied-source restoration removes the
+guards before the destination actor applies its own context. Native string/DCG
+character-code behaviour is unchanged: `"ab"` terminals consume `[97,98]`, not
+the experimental portable-text draft's `[a,b]`.
+
+Combined-path regressions are included in `tests/tiers/node/public_goal_guard_tests.pl`
+and the native T4 tier. Verification and separate experimental findings are in
+[`docs/verification/dcg-guard-composition-2026-10-25/REPAIR.md`](docs/verification/dcg-guard-composition-2026-10-25/REPAIR.md).
+Blacklist mode remains a prototype policy rather than a complete security boundary.
+The dependency pin, installed runtimes and n3/n5 are not updated or restarted
+by this repair.
+
+DCG portability remains an open follow-up: assess the host facilities against
+ISO/IEC TS 13211-3:2025 and the experimental portable-text contract, especially
+double-quoted terminals. A separate portable DCG library may be needed if the
+host facilities cannot supply the required semantics. This is not a confirmed
+standards violation in SWI-Prolog. Any replacement must preserve sandbox checks,
+source isolation and reserved-control handling; the composition repair does
+not decide that migration.
+
+Assessment starting points are the [ISO Prolog working documents and DCG reference implementation](https://www.complang.tuwien.ac.at/ulrich/iso-prolog/)
+and the [phrase/2-3 comparison cases](https://www.complang.tuwien.ac.at/ulrich/iso-prolog/phrase).
+The comparison identifies tested implementation versions; its SWI 9.3.17 column
+is not evidence about the current engine without rerunning the relevant cases.

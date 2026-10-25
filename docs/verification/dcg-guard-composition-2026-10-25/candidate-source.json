@@ -1,0 +1,8 @@
+{
+  "path": "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-dcg-guard-composition-2026-10-25/source",
+  "base_revision": "786737f3352c9a3abc3f59c6e09a393008579b5a",
+  "overlaid_files": [
+    "prolog/web_prolog/control_guard.pl",
+    "tests/tiers/node/public_goal_guard_tests.pl"
+  ]
+}

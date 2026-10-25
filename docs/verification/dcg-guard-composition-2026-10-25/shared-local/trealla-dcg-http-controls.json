@@ -1,0 +1,52 @@
+{
+  "advertised_profile": "actor",
+  "baseline": "0.1",
+  "candidate": "trealla",
+  "counts": {
+    "diagnostic_error": 0,
+    "fail": 1,
+    "observed": 0,
+    "pass": 2,
+    "unsupported": 0
+  },
+  "duration_ms": 375,
+  "endpoint": "http://127.0.0.1:50597",
+  "peer": null,
+  "results": [
+    {
+      "duration_ms": 127,
+      "id": "DCH-001",
+      "observation": [
+        {
+          "body": "success([ok],false).\n",
+          "http_status": 200
+        }
+      ],
+      "status": "pass",
+      "title": "Named explicit-terminal grammar"
+    },
+    {
+      "duration_ms": 121,
+      "id": "DCH-002",
+      "observation": [
+        {
+          "body": "success([rest([c])],false).\n",
+          "http_status": 200
+        }
+      ],
+      "status": "pass",
+      "title": "Named grammar preserves remainder"
+    },
+    {
+      "detail": "ConformanceFailure: expected 'success([ok],false).', got 'failure.\\n'",
+      "duration_ms": 127,
+      "id": "DCH-003",
+      "status": "fail",
+      "title": "Native double quotes remain code terminals"
+    }
+  ],
+  "schema_version": 2,
+  "scope": "required",
+  "started_at": "2026-10-25T09:51:18.881822+00:00",
+  "suite": "dcg-http-controls"
+}
