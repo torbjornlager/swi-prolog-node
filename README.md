@@ -197,3 +197,49 @@ retains exact default assertions and adds explicit character-list counterparts.
 Full T4 and library-boundary checks pass in each mode. Its read-only example
 audit identifies model/Jev native-string guards as remaining application work;
 no examples, runtime modules or deployed nodes were changed.
+
+The separate [four-way ISO/text assessment](docs/verification/iso-four-way-2026-10-25/REPORT.md)
+compares ordinary/character-list readers with and without SWI's `iso` flag.
+ISO leaves text selection independent and currently breaks static source
+copying/listing, whitelist rule admission and clean early startup. Its outcome
+matrix is diagnostic evidence, not a new runtime configuration or ISO conformance
+claim. Runtime code, installed engines and n3/n5 remain unchanged.
+
+### Computed cyclic answers and exceptions
+
+Computed solution templates are checked before collection stores them. Cyclic
+answers report `representation_error(cyclic_term)`; cyclic exceptions escaping
+the query receive a finite error envelope before pending-error storage. Finite
+answers, non-ground sharing and the existing pending-error paging rules remain
+unchanged. This does not enable global occurs checking or restrict cycles used
+inside a computation that returns a finite answer.
+[Verification](docs/verification/cyclic-answer-rejection-2026-10-25/REPORT.md)
+includes T2/T4 results and the separate Trealla exception-copying diagnostic.
+The demonstrator dependency pin and deployed nodes were not updated.
+
+### Current character-list adoption checkpoint
+
+The [current repaired-code checkpoint](docs/verification/portable-text-current-checkpoint-2026-10-25/REPORT.md)
+confirms goal/source/shared-DB readers and RPC/promise controls on a temporary
+character-list node. Three term-output mismatches and the model/Jev native-string
+input guards remain explicit blockers. The regular n3 text mode is unchanged;
+this check adds no deployment or complete migration claim.
+
+The [term-output follow-up](docs/verification/portable-term-output-2026-10-25/REPORT.md)
+resolves the character-list `write/1`/`writeln/1` mismatches in both prelude forms.
+Both reading modes pass the focused and native regression checks. Prompt and
+format text handling is unchanged; model/Jev boundaries still precede adoption
+on regular n3. No running node or installed runtime was changed.
+
+The demonstrator's [model/Jev follow-up](../trinity-demonstrator/docs/verification/model-jev-text-2026-10-25/REPORT.md)
+now covers character-list prompts, explicit JSON conversions and selected-mode
+application replies with local mocks. The actor and statechart examples pass
+public WebSocket checks in both modes. Raw Jev provenance preserves JSON types.
+This resolves those application guards in the candidate; it does not switch
+regular n3 or establish complete portable-text adoption.
+
+The subsequent authorised [local deployment checkpoint](../trinity-demonstrator/docs/verification/portable-text-live-restart-2026-10-25/REPORT.md)
+restarted n3 with the repaired snapshot and character-list reading, and refreshed
+n5 with its existing tested Trealla code. Public text and interoperability smoke
+checks pass. Installed engines, package defaults and the dependency pin remain
+unchanged; the known Trealla supplementary JSON-escape diagnostic stays separate.

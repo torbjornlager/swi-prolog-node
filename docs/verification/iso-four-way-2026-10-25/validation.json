@@ -1,0 +1,18 @@
+{
+  "controls": {
+    "all_four_execution_processes_completed": true,
+    "no_probe_timeouts": true,
+    "static_actor_copy_baselines_work": true,
+    "dynamic_copy_controls_work": true,
+    "dynamic_listing_controls_work": true,
+    "existing_workers_keep_old_iso_flag": true,
+    "new_workers_inherit_iso_flag": true,
+    "new_actors_inherit_iso_flag": true,
+    "actor_private_chars_and_explicit_reader_agree": true,
+    "iso_does_not_select_chars": true,
+    "ordinary_and_chars_clean_bootstrap": true,
+    "iso_bootstrap_errors_kept_as_diagnostics": true
+  },
+  "observations": 164,
+  "source_preserved": true
+}

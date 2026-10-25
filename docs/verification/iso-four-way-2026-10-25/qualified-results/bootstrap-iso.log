@@ -1,0 +1,5 @@
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/prolog/web_prolog/statechart_actor.pl:360:28: Syntax error: Unbalanced operator
+ERROR: /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/lib/swipl/library/sandbox.pl:495:
+ERROR:    /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/lib/swipl/library/sandbox.pl:495: Initialization goal raised exception:
+ERROR:    clause/3: No permission to access private_procedure `sandbox:safe_primitive/1'
+assessment_bootstrap_complete

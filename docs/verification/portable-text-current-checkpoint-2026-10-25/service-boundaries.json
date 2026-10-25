@@ -1,0 +1,48 @@
+[
+  {
+    "mode": "default",
+    "result": {
+      "jev_reader_input": "accepted",
+      "mode": "string",
+      "model_reader_input": "accepted",
+      "native_jev_control": "accepted",
+      "native_model_control": "accepted",
+      "provider_called": false
+    },
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtimes/swi-current/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "docs/verification/portable-text-current-checkpoint-2026-10-25/service_boundaries.pl",
+      "-g",
+      "service_text_boundary:run",
+      "-t",
+      "halt"
+    ]
+  },
+  {
+    "mode": "chars",
+    "result": {
+      "jev_reader_input": "rejected",
+      "mode": "chars",
+      "model_reader_input": "rejected",
+      "native_jev_control": "accepted",
+      "native_model_control": "accepted",
+      "provider_called": false
+    },
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtimes/swi-current/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "docs/verification/portable-text-current-checkpoint-2026-10-25/service_boundaries.pl",
+      "-g",
+      "service_text_boundary:run",
+      "-t",
+      "halt"
+    ]
+  }
+]

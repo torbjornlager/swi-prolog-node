@@ -1,0 +1,6 @@
+{
+  "path": "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/lib/swipl/library/sandbox.pl",
+  "resolved": "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/lib/swipl/library/sandbox.pl",
+  "sha256": "dbe013e75597e04b0442fda3f85e3fa945ba73352eaf2d889609cf4f3cee08bb",
+  "role": "Unmodified library read by bootstrap control; no library patch in this batch."
+}

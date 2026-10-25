@@ -1,0 +1,5 @@
+Warning: /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/iso-four-way-2026-10-25/probes.pl:76:
+Warning:    Clauses of iso_assessment:language_case/2 are not together in the source-file
+Warning:    Earlier definition at /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/iso-four-way-2026-10-25/probes.pl:60
+Warning:    Current predicate: iso_assessment:query/3
+Warning:    Use :- discontiguous iso_assessment:language_case/2. to suppress this message

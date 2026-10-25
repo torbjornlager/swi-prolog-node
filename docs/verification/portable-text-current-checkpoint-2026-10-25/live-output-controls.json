@@ -1,0 +1,290 @@
+[
+  {
+    "node": "n3",
+    "goal": "write(abc),Outcome=ok",
+    "result": {
+      "outputs": [
+        "abc"
+      ],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 8793974948,
+        "type": "success"
+      },
+      "events": [
+        {
+          "event": {
+            "data": "abc",
+            "pid": 8793974948,
+            "type": "output"
+          },
+          "request_id": "d0d1e6ab0012a3edf8374e8b93d065592990068bc04544634dee71be57d9b15d",
+          "type": "io_request"
+        },
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 8793974948,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "node": "n3",
+    "goal": "write(\"abc\"),Outcome=ok",
+    "result": {
+      "outputs": [
+        "abc"
+      ],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 5624753248,
+        "type": "success"
+      },
+      "events": [
+        {
+          "event": {
+            "data": "abc",
+            "pid": 5624753248,
+            "type": "output"
+          },
+          "request_id": "2ebfea8e8e29ff32a9dd911ffa5872f19f0b7d4d6de3284956f94793f68c4a9a",
+          "type": "io_request"
+        },
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 5624753248,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "node": "n3",
+    "goal": "write([a,b,c]),Outcome=ok",
+    "result": {
+      "outputs": [
+        "[a,b,c]"
+      ],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 9049603529,
+        "type": "success"
+      },
+      "events": [
+        {
+          "event": {
+            "data": "[a,b,c]",
+            "pid": 9049603529,
+            "type": "output"
+          },
+          "request_id": "0abfb58f533c28087d66dbe8cb2d743cd7eab69bbc3d7234950a280869941cc3",
+          "type": "io_request"
+        },
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 9049603529,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "node": "n3",
+    "goal": "writeln([a,b,c]),Outcome=ok",
+    "result": {
+      "outputs": [
+        "[a,b,c]"
+      ],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 7593466588,
+        "type": "success"
+      },
+      "events": [
+        {
+          "event": {
+            "data": "[a,b,c]",
+            "pid": 7593466588,
+            "type": "output"
+          },
+          "request_id": "50679e87ea4abf8d6f70ecb2d15d0276b19e9b15a04e2aaa9b9cb4c79066eaaf",
+          "type": "io_request"
+        },
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 7593466588,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "node": "n5",
+    "goal": "write(abc),Outcome=ok",
+    "result": {
+      "outputs": [
+        "abc"
+      ],
+      "answer": {
+        "type": "success",
+        "pid": 1814852400,
+        "data": [
+          "ok"
+        ],
+        "more": false
+      },
+      "events": [
+        {
+          "type": "io_request",
+          "request_id": "browser-1000000193",
+          "event": {
+            "type": "output",
+            "pid": 1814852400,
+            "data": "abc"
+          }
+        },
+        {
+          "type": "success",
+          "pid": 1814852400,
+          "data": [
+            "ok"
+          ],
+          "more": false
+        }
+      ]
+    }
+  },
+  {
+    "node": "n5",
+    "goal": "write(\"abc\"),Outcome=ok",
+    "result": {
+      "outputs": [
+        "[a,b,c]"
+      ],
+      "answer": {
+        "type": "success",
+        "pid": 1456567427,
+        "data": [
+          "ok"
+        ],
+        "more": false
+      },
+      "events": [
+        {
+          "type": "io_request",
+          "request_id": "browser-1000000202",
+          "event": {
+            "type": "output",
+            "pid": 1456567427,
+            "data": "[a,b,c]"
+          }
+        },
+        {
+          "type": "success",
+          "pid": 1456567427,
+          "data": [
+            "ok"
+          ],
+          "more": false
+        }
+      ]
+    }
+  },
+  {
+    "node": "n5",
+    "goal": "write([a,b,c]),Outcome=ok",
+    "result": {
+      "outputs": [
+        "[a,b,c]"
+      ],
+      "answer": {
+        "type": "success",
+        "pid": 1792414151,
+        "data": [
+          "ok"
+        ],
+        "more": false
+      },
+      "events": [
+        {
+          "type": "io_request",
+          "request_id": "browser-1000000211",
+          "event": {
+            "type": "output",
+            "pid": 1792414151,
+            "data": "[a,b,c]"
+          }
+        },
+        {
+          "type": "success",
+          "pid": 1792414151,
+          "data": [
+            "ok"
+          ],
+          "more": false
+        }
+      ]
+    }
+  },
+  {
+    "node": "n5",
+    "goal": "writeln([a,b,c]),Outcome=ok",
+    "result": {
+      "outputs": [
+        "[a,b,c]"
+      ],
+      "answer": {
+        "type": "success",
+        "pid": 1240431514,
+        "data": [
+          "ok"
+        ],
+        "more": false
+      },
+      "events": [
+        {
+          "type": "io_request",
+          "request_id": "browser-1000000220",
+          "event": {
+            "type": "output",
+            "pid": 1240431514,
+            "data": "[a,b,c]"
+          }
+        },
+        {
+          "type": "success",
+          "pid": 1240431514,
+          "data": [
+            "ok"
+          ],
+          "more": false
+        }
+      ]
+    }
+  }
+]

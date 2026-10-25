@@ -1,0 +1,84 @@
+{
+  "checks": {
+    "native_prolog": true,
+    "trealla_sources": true,
+    "engines": true,
+    "library": true,
+    "live": true,
+    "protected": true,
+    "pin": true,
+    "all_required_public_checks_pass": true,
+    "all_temporary_nodes_stopped": true,
+    "text_and_example_suites_pass": true,
+    "protected_after_live_output_controls": true
+  },
+  "counts": {
+    "default": {
+      "required_passed": 16,
+      "required_total": 16,
+      "output_diagnostic_mismatches": 0,
+      "TEXT_passed_parameter_selections": 40,
+      "examples_passed_parameter_selections": 10
+    },
+    "chars": {
+      "required_passed": 13,
+      "required_total": 13,
+      "output_diagnostic_mismatches": 3,
+      "TEXT_passed_parameter_selections": 40,
+      "examples_passed_parameter_selections": 10
+    }
+  },
+  "ready_to_switch_regular_n3": false,
+  "remaining": [
+    "term-writing versus character-list text presentation",
+    "model/Jev native-string application guards"
+  ],
+  "service_boundaries": [
+    {
+      "mode": "default",
+      "result": {
+        "jev_reader_input": "accepted",
+        "mode": "string",
+        "model_reader_input": "accepted",
+        "native_jev_control": "accepted",
+        "native_model_control": "accepted",
+        "provider_called": false
+      },
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtimes/swi-current/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "docs/verification/portable-text-current-checkpoint-2026-10-25/service_boundaries.pl",
+        "-g",
+        "service_text_boundary:run",
+        "-t",
+        "halt"
+      ]
+    },
+    {
+      "mode": "chars",
+      "result": {
+        "jev_reader_input": "rejected",
+        "mode": "chars",
+        "model_reader_input": "rejected",
+        "native_jev_control": "accepted",
+        "native_model_control": "accepted",
+        "provider_called": false
+      },
+      "command": [
+        "/Users/torbjorn.lager/.local/share/trinity-runtimes/swi-current/bin/swipl",
+        "-f",
+        "none",
+        "-q",
+        "-s",
+        "docs/verification/portable-text-current-checkpoint-2026-10-25/service_boundaries.pl",
+        "-g",
+        "service_text_boundary:run",
+        "-t",
+        "halt"
+      ]
+    }
+  ]
+}

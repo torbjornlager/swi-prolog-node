@@ -1,0 +1,11 @@
+Warning: /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/iso-four-way-2026-10-25/probes.pl:74:
+Warning:    Clauses of iso_assessment:language_case/2 are not together in the source-file
+Warning:    Earlier definition at /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/iso-four-way-2026-10-25/probes.pl:58
+Warning:    Current predicate: iso_assessment:query/3
+Warning:    Use :- discontiguous iso_assessment:language_case/2. to suppress this message
+Warning: actor_9273193761_source_1:1:
+Warning:    Redefined static procedure iso_assessment:copy_worker/1
+Warning:    Previously defined at /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/iso-four-way-2026-10-25/probes.pl:13
+Warning: actor_9273193761_source_1:2:
+Warning:    Redefined static procedure iso_assessment:copy_probe/2
+Warning:    Previously defined at /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/iso-four-way-2026-10-25/probes.pl:12
