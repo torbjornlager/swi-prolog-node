@@ -112,6 +112,21 @@ The [verification report](docs/verification/spawn-source-validation-2026-10-24/R
 records regression and conformance results. The demonstrator pin, installed
 runtimes and live n3/n5 remain unchanged.
 
+### Strict Boolean language options
+
+Boolean option values are the atoms `true` and `false`. Numbers (including
+0/1), strings/character lists such as "true", and JSON wrapper terms are not
+accepted as language Booleans. Asynchronous `toplevel_call/3` now validates every
+`once/1` value before local or remote dispatch, including later duplicates,
+without binding a pending value. The first valid setting still takes precedence;
+query, template and callback handling are unchanged. Existing spawn, wrapper,
+RPC and promise Boolean validators remain strict.
+
+HTTP textual parameters and actual JSON Booleans are decoded at the transport
+boundary; this is not permission to pass a string to a language option. Trace
+and administration wire-field compatibility is unchanged. The repair is tested
+using separate engines and does not update installed runtimes or restart n3/n5.
+
 ### Composed DCG execution guards
 
 Public blacklist execution applies both sandbox and reserved-control guards.

@@ -1,0 +1,1 @@
+error(domain_error(boolean,"bogus"),context(:(node_ws,/(ws_parse_enabled_atom,2)),'enabled must be true or false'))

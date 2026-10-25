@@ -1,0 +1,13 @@
+{
+  "base_revision": "786737f3352c9a3abc3f59c6e09a393008579b5a",
+  "files": {
+    "DEVIATIONS.md": "1b368eee01dc6c252bcaa2d3a30ab7f120ad467f7faa2f9d89532c59e230b540",
+    "README.md": "d0cef3428ca5e9b3f35c332a21adda576444751f05979b852d7a9d51629d9139",
+    "prolog/web_prolog/node.pl": "8dfab255fc7b1a39c2b4888406b5264da5e06262a0b97f82c08304af6a36f021",
+    "prolog/web_prolog/node_ws.pl": "3b9504956fcd67ac83f6d9b7169d4d6f2ee2088e4cea4ff275b9e36aa0e135e8",
+    "prolog/web_prolog/toplevel_actors.pl": "1067d7be046e2987052c1000e745a48553276e13783ce53574c5171e03ba07b3",
+    "tests/tiers/node/boolean_options_tests.pl": "b66845298d264f34c53ff14873dd2dcdb58f02f435b0200c37992625d6b67489",
+    "tests/tiers/t4_node.pl": "c12f77167c6e63600df41536e98288e673554582790835da5bd41873ebb21674",
+    "tests/tiers/toplevel_synch_tests.pl": "3b35e8c4912ae57384872d9810ccd973ad583a72a68eaf92acf036c6e1cc4025"
+  }
+}

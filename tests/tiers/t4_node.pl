@@ -41,6 +41,7 @@ http_status(URL, Status) :-
 :- use_module('node/public_goal_guard_tests.pl', []).
 :- use_module('node/supervisor_admission_tests.pl', []).
 :- use_module('node/spawn_source_validation_tests.pl', []).
+:- use_module('node/boolean_options_tests.pl', []).
 :- use_module('node/node_assets_tests.pl', []).
 :- use_module('node/sandbox_source_names_tests.pl', []).
 :- use_module('node/promise_yield_tests.pl', []).
@@ -78,7 +79,7 @@ http_status(URL, Status) :-
 
 :- use_module(test_partition).
 
-tier_test_units([ lifetime_authority, node, public_goal_guard, supervisor_admission, spawn_source_validation, sandbox_source_names, promise_yield, promise_lifecycle, promise_ownership, rpc_options, native_paging,
+tier_test_units([ lifetime_authority, node, public_goal_guard, supervisor_admission, spawn_source_validation, boolean_options, sandbox_source_names, promise_yield, promise_lifecycle, promise_ownership, rpc_options, native_paging,
                 toplevel_synch, toplevel_correlation_transport,
                 spawn_options, spawn_source_options,
                 wrapper_options,
