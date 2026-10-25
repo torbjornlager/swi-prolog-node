@@ -1,0 +1,20 @@
+[
+  {
+    "mode": "default",
+    "tier": "TEXT",
+    "exit_code": 0,
+    "revision": "abbc56f3d5104bd6d40d2ed5f99fe6199d75c4a8"
+  },
+  {
+    "mode": "chars",
+    "tier": "TEXT",
+    "exit_code": 0,
+    "revision": "abbc56f3d5104bd6d40d2ed5f99fe6199d75c4a8"
+  },
+  {
+    "mode": "chars",
+    "tier": "T4_NATIVE",
+    "exit_code": 0,
+    "revision": "abbc56f3d5104bd6d40d2ed5f99fe6199d75c4a8"
+  }
+]

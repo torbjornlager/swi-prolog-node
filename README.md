@@ -243,3 +243,9 @@ restarted n3 with the repaired snapshot and character-list reading, and refreshe
 n5 with its existing tested Trealla code. Public text and interoperability smoke
 checks pass. Installed engines, package defaults and the dependency pin remain
 unchanged; the known Trealla supplementary JSON-escape diagnostic stays separate.
+
+The [committed adoption checkpoint](docs/verification/committed-adoption-2026-10-25/REPORT.md)
+selects native revision `abbc56f3d5104bd6d40d2ed5f99fe6199d75c4a8` for the
+demonstrator pin and strict commit-pinned local n3 startup. Both reader-mode
+checks and native/integration tiers pass; local n3 explicitly selects chars.
+Package defaults, installed engine and unresolved diagnostics remain separate.
