@@ -1086,6 +1086,62 @@ test(bound_constrained_variable_is_portable) :-
          receive({down(Pid, _, _) -> true}, [timeout(2), on_timeout(true)])
        )).
 
+% Cycles are allowed during local computation but cannot be answer payloads.
+test(cyclic_answer_before_collection, [forall(member(Limit,[1,all]))]) :-
+    toplevel_actors:answer((X=f(X)),X,0,Limit,Answer),
+    assertion(acyclic_term(Answer)),
+    assertion(subsumes_term(error(error(representation_error(cyclic_term),_)),Answer)),
+    assertion(var(X)).
+
+test(cyclic_exception_finite_envelope, [forall(member(Shape,[bare,formal,context]))]) :-
+    toplevel_actors:answer(
+      (X=f(X),(Shape==bare -> throw(X)
+              ; Shape==formal -> throw(error(probe(X),ctx))
+              ; throw(error(probe,context(test,X))))),
+      ok,0,1,Answer),
+    assertion(acyclic_term(Answer)),
+    assertion(subsumes_term(error(error(representation_error(cyclic_term),_)),Answer)).
+
+test(cyclic_later_solution_preserves_finite_prefix) :-
+    toplevel_actors:answer((X=ok;X=f(X)),X,0,5,Answer),
+    assertion(acyclic_term(Answer)),
+    assertion(subsumes_term(pending_error([ok],error(representation_error(cyclic_term),_)),Answer)).
+
+test(cyclic_exception_preserves_finite_prefix) :-
+    toplevel_actors:answer((X=ok;Y=f(Y),throw(error(probe(Y),ctx))),X,0,5,Answer),
+    assertion(acyclic_term(Answer)),
+    assertion(subsumes_term(pending_error([ok],error(representation_error(cyclic_term),_)),Answer)).
+
+test(finite_answer_may_use_local_cycle) :-
+    toplevel_actors:answer((X=f(X),acyclic_term(X)->fail;true),ok,0,1,Answer),
+    assertion(Answer==success([ok],false)).
+
+test(locally_caught_cyclic_exception_may_return_finite_answer) :-
+    toplevel_actors:answer(
+      catch((X=f(X),throw(X)),E,\+acyclic_term(E)),ok,0,1,Answer),
+    assertion(Answer==success([ok],false)).
+
+test(ordinary_exception_sharing_is_preserved) :-
+    toplevel_actors:answer(throw(error(probe(V),context(test,V))),ok,0,1,Answer),
+    Answer=error(error(probe(A),context(test,B))),
+    assertion(var(A)),assertion(A==B),assertion(var(V)).
+
+test(cycle_guard_preserves_non_ground_sharing) :-
+    toplevel_actors:answer(X=pair(Y,Y),X-Y,0,1,success([pair(A,B)-C],false)),
+    assertion(var(A)),assertion(A==B),assertion(B==C),
+    assertion(var(X)),assertion(var(Y)).
+
+test(cyclic_answer_page_and_session_recovery) :-
+    setup_call_cleanup(toplevel_spawn(Pid,[session(true)]),
+      (toplevel_call_synch(Pid,(X=ok;X=f(X)),First,[template(X),limit(1),timeout(2)]),
+       assertion(First==success(Pid,[ok],true)),
+       toplevel_next_synch(Pid,Next,[timeout(2)]),
+       assertion(acyclic_term(Next)),
+       assertion(subsumes_term(error(Pid,error(representation_error(cyclic_term),_)),Next)),
+       toplevel_call_synch(Pid,true,Healthy,[timeout(2)]),
+       assertion(Healthy==success(Pid,[true],false))),
+      exit(Pid,true)).
+
 :- end_tests(t2_toplevels).
 
 

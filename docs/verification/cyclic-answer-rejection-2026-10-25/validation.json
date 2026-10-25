@@ -1,0 +1,24 @@
+{
+  "T2": {
+    "passed_parameter_selections": 145,
+    "test_definitions": 101
+  },
+  "T4_NATIVE": {
+    "passed_parameter_selections": 1529
+  },
+  "live_report": "../trinity-conformance/reports/2026-10-25-cyclic-answer-rejection/validation.json",
+  "live_validation_sha256": "493a11c859c900864e44b48de11b8658c994c23a3d7b4989d466ba07d9d1fa33",
+  "preservation": {
+    "native_prolog": true,
+    "trealla_sources": true,
+    "engines": true,
+    "library": true,
+    "live": true,
+    "required_regressions_pass": true,
+    "all_health_checks_pass": true,
+    "all_temporary_nodes_stopped": true,
+    "no_node_exited_before_shutdown": true,
+    "installed_launchers_and_engines_unchanged": true,
+    "dependency_pin_unchanged": true
+  }
+}

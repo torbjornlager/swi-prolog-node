@@ -456,7 +456,7 @@ answer(Goal, Template, Offset, Limit, Answer) :-
 answer_(Goal, Template, Offset, Limit, Answer) :-
     Pending = pending(none),
     catch(
-       call_cleanup(slice(capture_error(Goal, Pending), Template, Offset,
+       call_cleanup(slice(capture_error(checked_solution(Goal, Template), Pending), Template, Offset,
                           Limit, Slice),
                     Det = true),
            Error, true),
@@ -502,6 +502,21 @@ portable_answer(Answer, Answer).
 answer_slice(success(Slice, _), Slice).
 answer_slice(pending_error(Slice, _), Slice).
 
+% Check before findall/findnsols stores a solution. Local computation may use
+% rational trees, but a computed answer must be an ordinary finite term.
+checked_solution(Goal, Template) :-
+    call(Goal),
+    ( acyclic_term(Template) -> true ; throw(error(representation_error(cyclic_term),
+                 context(toplevel_actors:answer/5, 'cyclic answer'))) ).
+
+finite_query_error(Error0, Error) :-
+    \+ acyclic_term(Error0),
+    !,
+    Error = error(representation_error(cyclic_term),
+                  context(toplevel_actors:answer/5,
+                          'answer or exception contains a cyclic term')).
+finite_query_error(Error, Error).
+
 %   Run Goal, recording an ordinary exception instead of letting it discard
 %   the solutions already collected for the current page.  With a finite
 %   limit, the recorded error is reported after those solutions (see
@@ -519,8 +534,15 @@ record_goal_error(E, _) :-
 %   The cell holds caught(E), never the bare exception, so a goal that
 %   throws the empty marker itself (throw(none)) is still recorded.
 record_goal_error(E, Pending) :-
-    nb_setarg(1, Pending, caught(E)),
+    finite_query_error(E, PublicError),
+    nb_setarg(1, Pending, caught(PublicError)),
     fail.
+
+% The catch around collection can also receive a cyclic exception. Never put
+% its cyclic culprit into the public envelope or subsequent normalization.
+normalize_resource_error(Error0, Error) :-
+    \+ acyclic_term(Error0), !,
+    finite_query_error(Error0, Error).
 
 % Public resource categories hide backend-specific memory names and context.
 normalize_resource_error(error(resource_error(Resource), _),
