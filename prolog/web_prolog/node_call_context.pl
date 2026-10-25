@@ -4,6 +4,8 @@
     parse_call_options_context/9
 ]).
 
+:- use_module(text_config, [text_double_quotes/1]).
+
 /** <module> Node Call Request Parsing
 
 Shared request parsing and execution context normalization for stateless
@@ -94,10 +96,11 @@ parse_call_context(GoalAtom, TemplateAtom0, Format, Once0, RequestedTimeout0,
 %   transport-owned options such as `target/1` are deliberately not accepted.
 parse_call_options_context(GoalAtom, OptionsAtom, Goal, Template,
                            Offset, Limit, Once, RequestedTimeout, Options) :-
+    text_double_quotes(TextMode),
     atomic_list_concat(['(', GoalAtom, ')+(', OptionsAtom, ')'], CallAtom),
     read_term_from_atom(CallAtom, Goal+Options0,
                         [ module(actor),
-                          double_quotes(string),
+                          double_quotes(TextMode),
                           variable_names(Bindings)
                         ]),
     check_term(Goal+Options0),
@@ -144,10 +147,11 @@ template_atom(_, GoalAtom, GoalAtom).
 %
 %   Parse goal/template together so template can refer to goal variables.
 parse_goal_template(GoalAtom, TemplateAtom, Goal, Template, Bindings) :-
+    text_double_quotes(TextMode),
     atomic_list_concat(['(', GoalAtom, ')+(', TemplateAtom, ')'], QTAtom),
     read_term_from_atom(QTAtom, Goal+Template,
                         [ module(actor),
-                          double_quotes(string),
+                          double_quotes(TextMode),
                           variable_names(Bindings)
                         ]),
     check_term(Goal+Template).

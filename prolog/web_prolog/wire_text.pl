@@ -5,6 +5,8 @@
     wire_read_options/1         % -Options
 ]).
 
+:- use_module(text_config, [text_double_quotes/1]).
+
 /** <module> Canonical Term Text
 
 The one normative way of writing a term as text when it crosses a node
@@ -23,7 +25,8 @@ The text is
   - written with explicit variable names, so terms written together share
     their variables when they are read back together.
 
-It is read with `double_quotes` set to `string`.  A conformance suite
+It is read with the selected language text configuration (native strings by
+default, character lists in the isolated experimental process). A conformance suite
 compares the decoded terms, not this text; the text is how this node meets
 the contract.
 */
@@ -60,7 +63,8 @@ wire_variable_names([Var|Vars], N, [Name=Var|Names]) :-
 %!  wire_read_options(-Options) is det.
 %
 %   Reader options for term text received from another node or a client.
-wire_read_options([double_quotes(string)]).
+wire_read_options([double_quotes(TextMode)]) :-
+    text_double_quotes(TextMode).
 
 %!  wire_text_to_term(+Text, -Term) is det.
 wire_text_to_term(Text, Term) :-

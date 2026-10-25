@@ -13,7 +13,7 @@ SWIPL="${SWIPL:-swipl}"
 SELECT="$*"
 # Native checkout default; external content and legacy-layout gates stay explicit.
 if [ -z "$SELECT" ]; then
-    SELECT="LINT T0 T1_NATIVE T2 T3_NATIVE T4_NATIVE T5"
+    SELECT="LINT TEXT T0 T1_NATIVE T2 T3_NATIVE T4_NATIVE T5"
 fi
 FAILED=0
 
@@ -47,6 +47,7 @@ if selected LINT; then
     fi
 fi
 
+run_tier TEXT   tests/tiers/node/portable_text_tests.pl run_tests
 run_tier T0     tests/tiers/t0_actors.pl     run_tier
 run_tier T1     tests/tiers/t1_isolation.pl  run_tier
 run_tier T2     tests/tiers/t2_toplevel.pl   run_tier

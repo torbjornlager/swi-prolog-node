@@ -12,6 +12,8 @@
     profile_check_source_options/3
 ]).
 
+:- use_module(text_config, [text_double_quotes/1]).
+
 /** <module> Node Profile Policy
 
 Explicit profile ceilings for node routes and submitted Web Prolog code.
@@ -538,7 +540,8 @@ goal_required_profile(read_term(_, _, _), isotope).
 
 
 profile_check_source_terms(Profile, Stream) :-
-    read_term(Stream, Term, [double_quotes(string)]),
+    text_double_quotes(TextMode),
+    read_term(Stream, Term, [double_quotes(TextMode)]),
     (   Term == end_of_file
     ->  true
     ;   forall(hook_check_source_term(Term), true),

@@ -73,6 +73,7 @@ actor-coupled.
 :- use_module(library(modules)).
 :- use_module(library(option)).
 :- use_module(library(memfile)).
+:- use_module(text_config, []).
 :- use_module(library(error)).
 :- use_module(actors, [
     self/1,
@@ -377,10 +378,10 @@ configure_actor_operators(Module) :-
     configure_actor_syntax(Module).
 
 %   The profiles fix the meaning of a double-quoted literal rather than
-%   inheriting the host's default (Semantic Contracts D5): "abc" is a
-%   string in actor source and in goals read on behalf of an actor.
+%   inheriting the host's default. The default uses native strings; the
+%   isolated portable-text experiment selects character lists consistently.
 configure_actor_syntax(Module) :-
-    set_prolog_flag(Module:double_quotes, string).
+    text_config:configure_text_module(Module).
 
 prepare_actor_io(Module, Options, Options0, PreparedOptions) :-
     actor_io_mode(Options, Mode),

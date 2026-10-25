@@ -2,6 +2,8 @@
     isotope_spawn_options/6
 ]).
 
+:- use_module(text_config, [text_double_quotes/1]).
+
 /** <module> ISOTOPE Spawn Option Parsing
 
 Parse and normalize spawn options for ISOTOPE endpoints.
@@ -137,7 +139,8 @@ parse_spawn_options_value(Value, _) :-
 
 %!  parse_spawn_options_atom(+OptionsAtom, -SpawnOptions:list) is det.
 parse_spawn_options_atom(OptionsAtom, SpawnOptions) :-
-    read_term_from_atom(OptionsAtom, SpawnOptions, [double_quotes(string)]),
+    text_double_quotes(TextMode),
+    read_term_from_atom(OptionsAtom, SpawnOptions, [double_quotes(TextMode)]),
     must_be(list, SpawnOptions).
 
 

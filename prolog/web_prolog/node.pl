@@ -37,6 +37,7 @@ Design notes:
                  *        NODE DEPENDENCIES      *
                  *******************************/    
                  
+:- use_module(text_config, []).
 :- use_module(actor_api).
 :- use_module(node_glue).
 :- use_module(node_assets, [node_asset_file/2, node_wasm_source_directory/1]).
@@ -379,6 +380,7 @@ load_shared_db_source(SourceId, Module, Text) :-
         close(Stream)).
 
 configure_shared_db_module(SharedModule) :-
+    text_config:configure_text_module(SharedModule),
     add_import_module(SharedModule, actor_api, start),
     SharedModule:op(800, xfx, !),
     SharedModule:op(200, xfx, @),

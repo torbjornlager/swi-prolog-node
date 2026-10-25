@@ -7,6 +7,8 @@
     abort_inherited_ws_actor_spawn/1
 ]).
 
+:- use_module(text_config, [text_double_quotes/1]).
+
 /** <module> WebSocket Actor Profile
 
 Full actor capabilities for browser clients over WebSocket.
@@ -1867,6 +1869,7 @@ ws_parse_enabled_atom(Value, _) :-
 %   and !/2.  The size check is enforced here so that every call site
 %   is protected regardless of how the text was obtained.
 ws_read_term(Field, Text, Term) :-
+    text_double_quotes(TextMode),
     check_term_text_size(Field, Text),
-    read_term_from_atom(Text, Term, [module(node_ws), double_quotes(string)]),
+    read_term_from_atom(Text, Term, [module(node_ws), double_quotes(TextMode)]),
     node_lifetime:check_term(Term).

@@ -286,6 +286,7 @@ LAYERS = {
     # layer 0 — stand-alone actor core
     _WP + "actors.pl": 0,
     _WP + "wire_text.pl": 0,
+    _WP + "text_config.pl": 0,
     # layer 1 — isolation
     _WP + "source_utils.pl": 1,
     _WP + "actor_io_support.pl": 1,

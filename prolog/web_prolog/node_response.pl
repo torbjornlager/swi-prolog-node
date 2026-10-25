@@ -12,6 +12,7 @@ Response writers and JSON/error encoding helpers used by `node.pl`.
 :- op(800, xfx, !).
 
 :- use_module(library(http/http_json)).
+:- use_module(text_config, [text_double_quotes/1]).
 :- use_module(rpc, [text_to_string/2]).
 :- use_module(node_runtime_state, [current_node_url/1]).
 :- use_module(term_display, [term_to_display_string/3]).
@@ -671,7 +672,15 @@ prompt_to_json_string(Prompt, PromptString) :-
     !,
     atom_string(Prompt, PromptString).
 prompt_to_json_string(Prompt, PromptString) :-
+    text_double_quotes(chars),
+    is_list(Prompt),
+    maplist(character_atom, Prompt),
+    !,
+    string_chars(PromptString, Prompt).
+prompt_to_json_string(Prompt, PromptString) :-
     term_to_json_string(Prompt, PromptString).
+
+character_atom(Char) :- atom(Char), atom_length(Char, 1).
 
 strip_terminal_trailing_newline_marker(Text0, Text) :-
     strip_last_literal_tilde_n(Text0, Text),

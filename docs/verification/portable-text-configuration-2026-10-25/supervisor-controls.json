@@ -1,0 +1,86 @@
+[
+  {
+    "mode": "default",
+    "iteration": 1,
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-q",
+      "-s",
+      "tests/tiers/t3_behaviours.pl",
+      "-g",
+      "run_tests([supervisor_restart:automatic_failure_respects_numeric_and_brutal_shutdown,supervisor_restart:cleanup_error_preserves_restart_error_and_still_stops_other_children]),halt"
+    ],
+    "log": "supervisor-control-default-1.log"
+  },
+  {
+    "mode": "default",
+    "iteration": 2,
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-q",
+      "-s",
+      "tests/tiers/t3_behaviours.pl",
+      "-g",
+      "run_tests([supervisor_restart:automatic_failure_respects_numeric_and_brutal_shutdown,supervisor_restart:cleanup_error_preserves_restart_error_and_still_stops_other_children]),halt"
+    ],
+    "log": "supervisor-control-default-2.log"
+  },
+  {
+    "mode": "default",
+    "iteration": 3,
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-q",
+      "-s",
+      "tests/tiers/t3_behaviours.pl",
+      "-g",
+      "run_tests([supervisor_restart:automatic_failure_respects_numeric_and_brutal_shutdown,supervisor_restart:cleanup_error_preserves_restart_error_and_still_stops_other_children]),halt"
+    ],
+    "log": "supervisor-control-default-3.log"
+  },
+  {
+    "mode": "chars",
+    "iteration": 1,
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-q",
+      "-s",
+      "tests/tiers/t3_behaviours.pl",
+      "-g",
+      "run_tests([supervisor_restart:automatic_failure_respects_numeric_and_brutal_shutdown,supervisor_restart:cleanup_error_preserves_restart_error_and_still_stops_other_children]),halt"
+    ],
+    "log": "supervisor-control-chars-1.log"
+  },
+  {
+    "mode": "chars",
+    "iteration": 2,
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-q",
+      "-s",
+      "tests/tiers/t3_behaviours.pl",
+      "-g",
+      "run_tests([supervisor_restart:automatic_failure_respects_numeric_and_brutal_shutdown,supervisor_restart:cleanup_error_preserves_restart_error_and_still_stops_other_children]),halt"
+    ],
+    "log": "supervisor-control-chars-2.log"
+  },
+  {
+    "mode": "chars",
+    "iteration": 3,
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-q",
+      "-s",
+      "tests/tiers/t3_behaviours.pl",
+      "-g",
+      "run_tests([supervisor_restart:automatic_failure_respects_numeric_and_brutal_shutdown,supervisor_restart:cleanup_error_preserves_restart_error_and_still_stops_other_children]),halt"
+    ],
+    "log": "supervisor-control-chars-3.log"
+  }
+]

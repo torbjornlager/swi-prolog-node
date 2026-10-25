@@ -174,3 +174,20 @@ Assessment starting points are the [ISO Prolog working documents and DCG referen
 and the [phrase/2-3 comparison cases](https://www.complang.tuwien.ac.at/ulrich/iso-prolog/phrase).
 The comparison identifies tested implementation versions; its SWI 9.3.17 column
 is not evidence about the current engine without rerunning the relevant cases.
+
+### Experimental portable-text configuration
+
+A disposable SWI process can opt into the experimental character-list draft
+with `WP_EXPERIMENTAL_TEXT=portable-text-0.2`. Public goal/option/input readers,
+private/copied/generated source, statechart expressions and **shared-database
+source (including reloads)** use the same literal semantics. Host implementation
+and library modules retain native strings; the ordinary default is unchanged.
+The TEXT tier runs focused regressions in either configuration.
+
+The [configuration and conversion audit](docs/verification/portable-text-configuration-2026-10-25/REPORT.md)
+records 26/26 text cases in each direction with the separate Trealla Unicode
+candidate and 90/90 shared ACTOR/interoperability selections. It also records
+native-string/code-list migration assertions and separate T3 diagnostics; this
+is not approval to deploy the configuration or a claim that all native extension
+semantics already match. Installed engines, n3/n5 and the demonstrator pin are
+unchanged.

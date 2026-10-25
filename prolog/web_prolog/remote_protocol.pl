@@ -9,6 +9,8 @@
     reify_json_row/2
 ]).
 
+:- use_module(text_config, [text_double_quotes/1]).
+
 /** <module> Remote Wire Protocol Helpers
 
 Shared helpers for actor/toplevel remote WebSocket transport:
@@ -63,9 +65,10 @@ goal_template_to_wire_atoms(Goal, Template, GoalAtom, TemplateAtom) :-
 
 %!  ws_json_down_reason(+Dict, -Reason) is semidet.
 ws_json_down_reason(Dict, Reason) :-
+    text_double_quotes(TextMode),
     get_dict(type, Dict, "down"),
     (   get_dict(reason, Dict, ReasonStr)
-    ->  (   catch(term_string(Reason, ReasonStr, [double_quotes(string)]), _, fail)
+    ->  (   catch(term_string(Reason, ReasonStr, [double_quotes(TextMode)]), _, fail)
         ->  true
         ;   atom_string(Reason, ReasonStr)
         )
@@ -119,10 +122,11 @@ ws_json_to_actor_event(Dict, CompoundPid, error(CompoundPid, Error)) :-
     (get_dict(data, Dict, ErrorStr) -> true ; ErrorStr = "Unknown remote error"),
     Error = remote_error(ErrorStr).
 ws_json_to_actor_event(Dict, CompoundPid, output(CompoundPid, Term)) :-
+    text_double_quotes(TextMode),
     get_dict(type, Dict, "output"),
     !,
     (   get_dict(data, Dict, DataStr)
-    ->  (   catch(term_string(Term, DataStr, [double_quotes(string)]), _, fail)
+    ->  (   catch(term_string(Term, DataStr, [double_quotes(TextMode)]), _, fail)
         ->  true
         ;   Term = DataStr
         )
@@ -158,9 +162,10 @@ event_term(Dict, Term) :-
 
 %!  reify_json_row(+JSONRow, -PrologRow) is det.
 reify_json_row(Str, Term) :-
+    text_double_quotes(TextMode),
     string(Str),
     !,
-    (   catch(term_string(Term, Str, [double_quotes(string)]), _, fail)
+    (   catch(term_string(Term, Str, [double_quotes(TextMode)]), _, fail)
     ->  true
     ;   Term = Str
     ).
@@ -173,9 +178,10 @@ reify_json_row(DictIn, DictOut) :-
 reify_json_row(V, V).
 
 reify_json_pair(K-V, K-VOut) :-
+    text_double_quotes(TextMode),
     string(V),
     !,
-    (   catch(term_string(VOut, V, [double_quotes(string)]), _, fail)
+    (   catch(term_string(VOut, V, [double_quotes(TextMode)]), _, fail)
     ->  true
     ;   VOut = V
     ).

@@ -15,6 +15,8 @@
     sandbox_check_goal_with_options/4
 ]).
 
+:- use_module(text_config, [text_double_quotes/1]).
+
 /** <module> Node Sandbox Policy
 
 One node-owned sandbox layer around `library(sandbox)` for all public
@@ -429,7 +431,8 @@ precheck_source_text(Profile, Module, SourceText) :-
     ).
 
 precheck_source_terms(Profile, Module, Stream) :-
-    read_term(Stream, Term, [module(Module)]),
+    text_double_quotes(TextMode),
+    read_term(Stream, Term, [module(Module), double_quotes(TextMode)]),
     (   Term == end_of_file
     ->  true
     ;   precheck_source_term(Profile, Module, Term),
@@ -990,7 +993,9 @@ format_to_atom_safe(Format, Atom) :-
     ;   string(Format)
     ->  atom_string(Atom, Format)
     ;   is_list(Format)
-    ->  catch(atom_codes(Atom, Format), _, Atom = '')
+    ->  ( catch(atom_codes(Atom, Format), _, fail) -> true
+        ; catch(atom_chars(Atom, Format), _, Atom = '')
+        )
     ;   Atom = ''
     ).
 

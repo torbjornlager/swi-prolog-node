@@ -22,6 +22,8 @@
     admin_terminate_isotope_session/2
 ]).
 
+:- use_module(text_config, [text_double_quotes/1]).
+
 /** <module> ISOTOPE Session Helpers
 
 Session lifecycle and queue/message normalization for node ISOTOPE endpoints.
@@ -371,11 +373,12 @@ session_message_event(Pid, Message, error(Pid, Unexpected)) :-
 %   `read/1` semantics. Other prompts keep the historical URL-parameter
 %   convenience and may omit the final period.
 read_response_input(Pid0, InputAtom, Input) :-
+    text_double_quotes(TextMode),
     session_pid_key(Pid0, Pid),
     (   retract(isotope_pending_prompt(Pid, '|:'))
     ->  read_period_terminated_term(InputAtom, Input)
     ;   retractall(isotope_pending_prompt(Pid, _)),
-        read_term_from_atom(InputAtom, Input, [double_quotes(string)])
+        read_term_from_atom(InputAtom, Input, [double_quotes(TextMode)])
     ).
 
 
@@ -394,7 +397,8 @@ read_period_terminated_term(InputAtom, Input) :-
 
 
 read_period_terminated_stream(Stream, Input) :-
-    read_term(Stream, Input, [syntax_errors(error), double_quotes(string)]),
+    text_double_quotes(TextMode),
+    read_term(Stream, Input, [syntax_errors(error), double_quotes(TextMode)]),
     read_string(Stream, _, Rest),
     (   string_codes(Rest, Codes),
         forall(member(Code, Codes), code_type(Code, space))
@@ -487,7 +491,8 @@ rewrite_isotope_source_text(SourceIn, SourceOut) :-
 
 %!  read_rewritten_isotope_terms(+In, -Terms:list) is det.
 read_rewritten_isotope_terms(In, Terms) :-
-    read_term(In, Term0, [double_quotes(string)]),
+    text_double_quotes(TextMode),
+    read_term(In, Term0, [double_quotes(TextMode)]),
     (   Term0 == end_of_file
     ->  Terms = []
     ;   rewrite_isotope_source_term(Term0, Term),

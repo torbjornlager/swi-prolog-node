@@ -66,6 +66,7 @@ Own hooks (multifile, implemented by the node layer in Phase 6):
 ]).
 :- use_module(control_guard, [rethrow_reserved/1]).
 :- use_module(isolation, [rewrite_source_options/3]).
+:- use_module(text_config, [text_double_quotes/1]).
 :- use_module(toplevel_actors, []).
 
 :- multifile
@@ -357,7 +358,16 @@ normalize_goal_module(Module, _, Module).
 %   Strip local-only options before sending spawn options to the remote node.
 remote_spawn_options(Options0, SourceModule, RemoteOptions) :-
     rewrite_source_options(Options0, SourceModule, Options1),
-    exclude(local_only_spawn_option, Options1, RemoteOptions).
+    exclude(local_only_spawn_option, Options1, Options2),
+    maplist(source_text_wire_option, Options2, RemoteOptions).
+
+% Source builders use native strings internally. Source text is a text field,
+% not a native-string value being sent as application data.
+source_text_wire_option(src_text(Text), src_text(Atom)) :-
+    text_double_quotes(chars), string(Text), !, atom_string(Atom, Text).
+source_text_wire_option(src_uri(Text), src_uri(Atom)) :-
+    text_double_quotes(chars), string(Text), !, atom_string(Atom, Text).
+source_text_wire_option(Option, Option).
 
 local_only_spawn_option(node(_)).
 local_only_spawn_option(link(_)).
@@ -748,7 +758,8 @@ spawn_remote_toplevel(RemotePid, NodeURL, SourceModule, Options) :-
 
 remote_toplevel_spawn_options(Options0, SourceModule, RemoteOptions) :-
     rewrite_source_options(Options0, SourceModule, Options),
-    exclude(remote_toplevel_local_option, Options, RemoteOptions).
+    exclude(remote_toplevel_local_option, Options, Options1),
+    maplist(source_text_wire_option, Options1, RemoteOptions).
 
 remote_toplevel_local_option(node(_)).
 remote_toplevel_local_option(link(_)).

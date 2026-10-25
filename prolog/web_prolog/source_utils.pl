@@ -12,6 +12,8 @@
      append_source_text/3       % +Left, +Right, -Combined
    ]).
 
+:- use_module(text_config, [text_double_quotes/1]).
+
 /** <module> Source and URI Helpers (layer 1)
 
 Utility predicates for turning different source representations into
@@ -102,7 +104,8 @@ restore_serialized_source(Module, Source0, Source) :-
                           ]))).
 
 read_serialized_terms(Module, In, Terms) :-
-    read_term(In, Term0, [module(Module)]),
+    text_double_quotes(TextMode),
+    read_term(In, Term0, [module(Module), double_quotes(TextMode)]),
     (   Term0 == end_of_file
     ->  Terms = []
     ;   (   restore_serialized_term(Module, Term0, Term)

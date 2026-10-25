@@ -4,6 +4,8 @@
     relation_check_call/3
 ]).
 
+:- use_module(text_config, [text_double_quotes/1]).
+
 /** <module> RELATION Query Policy
 
 RELATION nodes do not accept arbitrary Prolog goals. They answer only
@@ -139,7 +141,8 @@ relation_patterns_from_shared_db_source([]).
 
 
 read_relation_source_patterns(Stream, Patterns) :-
-    read_term(Stream, Term0, []),
+    text_double_quotes(TextMode),
+    read_term(Stream, Term0, [double_quotes(TextMode)]),
     (   Term0 == end_of_file
     ->  Patterns = []
     ;   relation_source_pattern(Term0, Pattern)

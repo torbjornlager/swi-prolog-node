@@ -1,0 +1,94 @@
+{
+  "focused-chars.log": {
+    "passed_selections": 22,
+    "failed_selections": 0,
+    "failed_lines": []
+  },
+  "final-tiers-default.log": {
+    "passed_selections": 2358,
+    "failed_selections": 0,
+    "failed_lines": []
+  },
+  "focused-final-chars.log": {
+    "passed_selections": 26,
+    "failed_selections": 0,
+    "failed_lines": []
+  },
+  "focused-final-default.log": {
+    "passed_selections": 26,
+    "failed_selections": 0,
+    "failed_lines": []
+  },
+  "tiers-chars.log": {
+    "passed_selections": 804,
+    "failed_selections": 0,
+    "failed_lines": []
+  },
+  "supervisor-control-default-1.log": {
+    "passed_selections": 2,
+    "failed_selections": 0,
+    "failed_lines": []
+  },
+  "supervisor-control-default-3.log": {
+    "passed_selections": 2,
+    "failed_selections": 0,
+    "failed_lines": []
+  },
+  "supervisor-control-default-2.log": {
+    "passed_selections": 2,
+    "failed_selections": 0,
+    "failed_lines": []
+  },
+  "final-tiers-chars.log": {
+    "passed_selections": 2351,
+    "failed_selections": 7,
+    "failed_lines": [
+      "% [22/23] t5_golden:call_parse_error .............. **FAILED (0.046 sec)",
+      "% [106/294] supervisor_restar..and_brutal_shutdown .. **FAILED (0.109 sec)",
+      "% [480/1041] node:double_quote.._string_on_the_wire .. **FAILED (0.053 sec)",
+      "% [481/1041] node:rpc_term_text_is_canonical ...... **FAILED (0.032 sec)",
+      "% [528/1041] public_goal_guard..literal_stays_codes .. **FAILED (0.009 sec)",
+      "% [713-1/1041] toplevel_correlat..and_legacy_fallback .. **FAILED (0.008 sec)",
+      "% [944/1041] cross_node_lifecy..rs_keep_exact_terms .. **FAILED (0.026 sec)"
+    ]
+  },
+  "recheck-chars.log": {
+    "passed_selections": 469,
+    "failed_selections": 1,
+    "failed_lines": [
+      "% [222/294] statechart_profile:parse_simple_root .. **FAILED (0.001 sec)"
+    ]
+  },
+  "supervisor-control-chars-1.log": {
+    "passed_selections": 2,
+    "failed_selections": 0,
+    "failed_lines": []
+  },
+  "supervisor-control-chars-3.log": {
+    "passed_selections": 2,
+    "failed_selections": 0,
+    "failed_lines": []
+  },
+  "supervisor-control-chars-2.log": {
+    "passed_selections": 2,
+    "failed_selections": 0,
+    "failed_lines": []
+  },
+  "t3-chars-preloaded.log": {
+    "passed_selections": 421,
+    "failed_selections": 1,
+    "failed_lines": [
+      "% [107/294] supervisor_restar..tops_other_children .. **FAILED (0.057 sec)"
+    ]
+  },
+  "final-t4-chars.log": {
+    "passed_selections": 1525,
+    "failed_selections": 4,
+    "failed_lines": [
+      "% [480/1041] node:double_quote.._string_on_the_wire .. **FAILED (0.082 sec)",
+      "% [481/1041] node:rpc_term_text_is_canonical ...... **FAILED (0.047 sec)",
+      "% [528/1041] public_goal_guard..literal_stays_codes .. **FAILED (0.009 sec)",
+      "% [944/1041] cross_node_lifecy..rs_keep_exact_terms .. **FAILED (0.095 sec)"
+    ]
+  }
+}

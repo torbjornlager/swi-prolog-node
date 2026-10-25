@@ -7,6 +7,8 @@
     rethrow_reserved/1       % +Exception
 ]).
 
+:- use_module(text_config, [text_double_quotes/1]).
+
 /** <module> Untrappable Web Prolog control transfers (layer 1)
 
 Web Prolog uses Prolog exceptions for two runtime control transfers that are
@@ -586,7 +588,8 @@ rewrite_source_text(Module, Source0, Source) :-
                           ]))).
 
 read_rewritten_terms(Module, In, Terms) :-
-    read_term(In, Term0, [module(Module)]),
+    text_double_quotes(TextMode),
+    read_term(In, Term0, [module(Module), double_quotes(TextMode)]),
     (   Term0 == end_of_file
     ->  Terms = []
     ;   rewrite_source_term(Module, Term0, RewrittenTerms),

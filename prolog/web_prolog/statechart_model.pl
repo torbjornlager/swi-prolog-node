@@ -6,6 +6,8 @@
     statechart_spawn_source/3
 ]).
 
+:- use_module(text_config, [text_double_quotes/1]).
+
 /** <module> Statechart Model Parsing
 
 Parsing and model-building helpers for the statechart actor profile.
@@ -297,7 +299,8 @@ my_atom_to_term(Atom, Term, Bindings) :-
 my_atom_to_term_2('', '', []) :-
     !.
 my_atom_to_term_2(Atom, Term, Bindings) :-
-    atom_to_term(Atom, Term, Bindings).
+    text_double_quotes(TextMode),
+    read_term_from_atom(Atom, Term, [variable_names(Bindings),double_quotes(TextMode)]).
 
 spawn_element_options(Type, Attrs0, Options) :-
     select_option(options(OptionsText), Attrs0, Attrs1, []),
@@ -309,7 +312,8 @@ spawn_element_options(Type, Attrs0, Options) :-
 parse_spawn_options([], []) :-
     !.
 parse_spawn_options(Text, Options) :-
-    catch(atom_to_term(Text, Term, _Bindings), _, fail),
+    text_double_quotes(TextMode),
+    catch(read_term_from_atom(Text, Term, [double_quotes(TextMode)]), _, fail),
     !,
     (   is_list(Term)
     ->  Options = Term
@@ -379,7 +383,8 @@ reject_remaining_spawn_attributes(Type, [Name=_|_]) :-
 typed_attribute_value(Value0, Value) :-
     atom(Value0),
     !,
-    atom_to_term(Value0, Parsed, _Bindings),
+    text_double_quotes(TextMode),
+    read_term_from_atom(Value0, Parsed, [double_quotes(TextMode)]),
     Value = Parsed.
 typed_attribute_value(Value, Value).
 

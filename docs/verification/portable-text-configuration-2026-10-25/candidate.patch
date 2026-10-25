@@ -1,0 +1,742 @@
+diff --git a/prolog/web_prolog/actor_io_support.pl b/prolog/web_prolog/actor_io_support.pl
+index f3e14ab..49d52c6 100644
+--- a/prolog/web_prolog/actor_io_support.pl
++++ b/prolog/web_prolog/actor_io_support.pl
+@@ -72,7 +72,9 @@ actor_io_prelude_text(Text) :-
+         "    ;   string(Format)\n",
+         "    ->  atom_string(Atom, Format)\n",
+         "    ;   is_list(Format)\n",
+-        "    ->  catch(atom_codes(Atom, Format), _, Atom = '')\n",
++        "    ->  ( catch(atom_codes(Atom, Format), _, fail) -> true\n",
++        "        ; catch(atom_chars(Atom, Format), _, Atom = '')\n",
++        "        )\n",
+         "    ;   Atom = ''\n",
+         "    ).\n",
+         "format_has_call_specifier(Format) :-\n",
+diff --git a/prolog/web_prolog/actor_io_template.pl b/prolog/web_prolog/actor_io_template.pl
+index 27da88f..bb878fb 100644
+--- a/prolog/web_prolog/actor_io_template.pl
++++ b/prolog/web_prolog/actor_io_template.pl
+@@ -103,7 +103,9 @@ format_to_atom_safe(Format, Atom) :-
+     ;   string(Format)
+     ->  atom_string(Atom, Format)
+     ;   is_list(Format)
+-    ->  catch(atom_codes(Atom, Format), _, Atom = '')
++    ->  ( catch(atom_codes(Atom, Format), _, fail) -> true
++        ; catch(atom_chars(Atom, Format), _, Atom = '')
++        )
+     ;   Atom = ''
+     ).
+ 
+diff --git a/prolog/web_prolog/control_guard.pl b/prolog/web_prolog/control_guard.pl
+index 643f4a1..b31c9de 100644
+--- a/prolog/web_prolog/control_guard.pl
++++ b/prolog/web_prolog/control_guard.pl
+@@ -7,6 +7,8 @@
+     rethrow_reserved/1       % +Exception
+ ]).
+ 
++:- use_module(text_config, [text_double_quotes/1]).
++
+ /** <module> Untrappable Web Prolog control transfers (layer 1)
+ 
+ Web Prolog uses Prolog exceptions for two runtime control transfers that are
+@@ -586,7 +588,8 @@ rewrite_source_text(Module, Source0, Source) :-
+                           ]))).
+ 
+ read_rewritten_terms(Module, In, Terms) :-
+-    read_term(In, Term0, [module(Module)]),
++    text_double_quotes(TextMode),
++    read_term(In, Term0, [module(Module), double_quotes(TextMode)]),
+     (   Term0 == end_of_file
+     ->  Terms = []
+     ;   rewrite_source_term(Module, Term0, RewrittenTerms),
+diff --git a/prolog/web_prolog/distribution.pl b/prolog/web_prolog/distribution.pl
+index 21591fb..34c90b4 100644
+--- a/prolog/web_prolog/distribution.pl
++++ b/prolog/web_prolog/distribution.pl
+@@ -66,6 +66,7 @@ Own hooks (multifile, implemented by the node layer in Phase 6):
+ ]).
+ :- use_module(control_guard, [rethrow_reserved/1]).
+ :- use_module(isolation, [rewrite_source_options/3]).
++:- use_module(text_config, [text_double_quotes/1]).
+ :- use_module(toplevel_actors, []).
+ 
+ :- multifile
+@@ -357,7 +358,16 @@ normalize_goal_module(Module, _, Module).
+ %   Strip local-only options before sending spawn options to the remote node.
+ remote_spawn_options(Options0, SourceModule, RemoteOptions) :-
+     rewrite_source_options(Options0, SourceModule, Options1),
+-    exclude(local_only_spawn_option, Options1, RemoteOptions).
++    exclude(local_only_spawn_option, Options1, Options2),
++    maplist(source_text_wire_option, Options2, RemoteOptions).
++
++% Source builders use native strings internally. Source text is a text field,
++% not a native-string value being sent as application data.
++source_text_wire_option(src_text(Text), src_text(Atom)) :-
++    text_double_quotes(chars), string(Text), !, atom_string(Atom, Text).
++source_text_wire_option(src_uri(Text), src_uri(Atom)) :-
++    text_double_quotes(chars), string(Text), !, atom_string(Atom, Text).
++source_text_wire_option(Option, Option).
+ 
+ local_only_spawn_option(node(_)).
+ local_only_spawn_option(link(_)).
+@@ -748,7 +758,8 @@ spawn_remote_toplevel(RemotePid, NodeURL, SourceModule, Options) :-
+ 
+ remote_toplevel_spawn_options(Options0, SourceModule, RemoteOptions) :-
+     rewrite_source_options(Options0, SourceModule, Options),
+-    exclude(remote_toplevel_local_option, Options, RemoteOptions).
++    exclude(remote_toplevel_local_option, Options, Options1),
++    maplist(source_text_wire_option, Options1, RemoteOptions).
+ 
+ remote_toplevel_local_option(node(_)).
+ remote_toplevel_local_option(link(_)).
+diff --git a/prolog/web_prolog/isolation.pl b/prolog/web_prolog/isolation.pl
+index 33c51ca..258d5ec 100644
+--- a/prolog/web_prolog/isolation.pl
++++ b/prolog/web_prolog/isolation.pl
+@@ -73,6 +73,7 @@ actor-coupled.
+ :- use_module(library(modules)).
+ :- use_module(library(option)).
+ :- use_module(library(memfile)).
++:- use_module(text_config, []).
+ :- use_module(library(error)).
+ :- use_module(actors, [
+     self/1,
+@@ -377,10 +378,10 @@ configure_actor_operators(Module) :-
+     configure_actor_syntax(Module).
+ 
+ %   The profiles fix the meaning of a double-quoted literal rather than
+-%   inheriting the host's default (Semantic Contracts D5): "abc" is a
+-%   string in actor source and in goals read on behalf of an actor.
++%   inheriting the host's default. The default uses native strings; the
++%   isolated portable-text experiment selects character lists consistently.
+ configure_actor_syntax(Module) :-
+-    set_prolog_flag(Module:double_quotes, string).
++    text_config:configure_text_module(Module).
+ 
+ prepare_actor_io(Module, Options, Options0, PreparedOptions) :-
+     actor_io_mode(Options, Mode),
+diff --git a/prolog/web_prolog/node.pl b/prolog/web_prolog/node.pl
+index 2ed6af3..e91516f 100644
+--- a/prolog/web_prolog/node.pl
++++ b/prolog/web_prolog/node.pl
+@@ -37,6 +37,7 @@ Design notes:
+                  *        NODE DEPENDENCIES      *
+                  *******************************/    
+                  
++:- use_module(text_config, []).
+ :- use_module(actor_api).
+ :- use_module(node_glue).
+ :- use_module(node_assets, [node_asset_file/2, node_wasm_source_directory/1]).
+@@ -379,6 +380,7 @@ load_shared_db_source(SourceId, Module, Text) :-
+         close(Stream)).
+ 
+ configure_shared_db_module(SharedModule) :-
++    text_config:configure_text_module(SharedModule),
+     add_import_module(SharedModule, actor_api, start),
+     SharedModule:op(800, xfx, !),
+     SharedModule:op(200, xfx, @),
+diff --git a/prolog/web_prolog/node_call_context.pl b/prolog/web_prolog/node_call_context.pl
+index 0ad0f9d..a392935 100644
+--- a/prolog/web_prolog/node_call_context.pl
++++ b/prolog/web_prolog/node_call_context.pl
+@@ -4,6 +4,8 @@
+     parse_call_options_context/9
+ ]).
+ 
++:- use_module(text_config, [text_double_quotes/1]).
++
+ /** <module> Node Call Request Parsing
+ 
+ Shared request parsing and execution context normalization for stateless
+@@ -94,10 +96,11 @@ parse_call_context(GoalAtom, TemplateAtom0, Format, Once0, RequestedTimeout0,
+ %   transport-owned options such as `target/1` are deliberately not accepted.
+ parse_call_options_context(GoalAtom, OptionsAtom, Goal, Template,
+                            Offset, Limit, Once, RequestedTimeout, Options) :-
++    text_double_quotes(TextMode),
+     atomic_list_concat(['(', GoalAtom, ')+(', OptionsAtom, ')'], CallAtom),
+     read_term_from_atom(CallAtom, Goal+Options0,
+                         [ module(actor),
+-                          double_quotes(string),
++                          double_quotes(TextMode),
+                           variable_names(Bindings)
+                         ]),
+     check_term(Goal+Options0),
+@@ -144,10 +147,11 @@ template_atom(_, GoalAtom, GoalAtom).
+ %
+ %   Parse goal/template together so template can refer to goal variables.
+ parse_goal_template(GoalAtom, TemplateAtom, Goal, Template, Bindings) :-
++    text_double_quotes(TextMode),
+     atomic_list_concat(['(', GoalAtom, ')+(', TemplateAtom, ')'], QTAtom),
+     read_term_from_atom(QTAtom, Goal+Template,
+                         [ module(actor),
+-                          double_quotes(string),
++                          double_quotes(TextMode),
+                           variable_names(Bindings)
+                         ]),
+     check_term(Goal+Template).
+diff --git a/prolog/web_prolog/node_isotope_options.pl b/prolog/web_prolog/node_isotope_options.pl
+index 6833338..a783f48 100644
+--- a/prolog/web_prolog/node_isotope_options.pl
++++ b/prolog/web_prolog/node_isotope_options.pl
+@@ -2,6 +2,8 @@
+     isotope_spawn_options/6
+ ]).
+ 
++:- use_module(text_config, [text_double_quotes/1]).
++
+ /** <module> ISOTOPE Spawn Option Parsing
+ 
+ Parse and normalize spawn options for ISOTOPE endpoints.
+@@ -137,7 +139,8 @@ parse_spawn_options_value(Value, _) :-
+ 
+ %!  parse_spawn_options_atom(+OptionsAtom, -SpawnOptions:list) is det.
+ parse_spawn_options_atom(OptionsAtom, SpawnOptions) :-
+-    read_term_from_atom(OptionsAtom, SpawnOptions, [double_quotes(string)]),
++    text_double_quotes(TextMode),
++    read_term_from_atom(OptionsAtom, SpawnOptions, [double_quotes(TextMode)]),
+     must_be(list, SpawnOptions).
+ 
+ 
+diff --git a/prolog/web_prolog/node_profile_policy.pl b/prolog/web_prolog/node_profile_policy.pl
+index c37f036..8dd0b56 100644
+--- a/prolog/web_prolog/node_profile_policy.pl
++++ b/prolog/web_prolog/node_profile_policy.pl
+@@ -12,6 +12,8 @@
+     profile_check_source_options/3
+ ]).
+ 
++:- use_module(text_config, [text_double_quotes/1]).
++
+ /** <module> Node Profile Policy
+ 
+ Explicit profile ceilings for node routes and submitted Web Prolog code.
+@@ -538,7 +540,8 @@ goal_required_profile(read_term(_, _, _), isotope).
+ 
+ 
+ profile_check_source_terms(Profile, Stream) :-
+-    read_term(Stream, Term, [double_quotes(string)]),
++    text_double_quotes(TextMode),
++    read_term(Stream, Term, [double_quotes(TextMode)]),
+     (   Term == end_of_file
+     ->  true
+     ;   forall(hook_check_source_term(Term), true),
+diff --git a/prolog/web_prolog/node_relation_policy.pl b/prolog/web_prolog/node_relation_policy.pl
+index 7dca55c..d2f76e6 100644
+--- a/prolog/web_prolog/node_relation_policy.pl
++++ b/prolog/web_prolog/node_relation_policy.pl
+@@ -4,6 +4,8 @@
+     relation_check_call/3
+ ]).
+ 
++:- use_module(text_config, [text_double_quotes/1]).
++
+ /** <module> RELATION Query Policy
+ 
+ RELATION nodes do not accept arbitrary Prolog goals. They answer only
+@@ -139,7 +141,8 @@ relation_patterns_from_shared_db_source([]).
+ 
+ 
+ read_relation_source_patterns(Stream, Patterns) :-
+-    read_term(Stream, Term0, []),
++    text_double_quotes(TextMode),
++    read_term(Stream, Term0, [double_quotes(TextMode)]),
+     (   Term0 == end_of_file
+     ->  Patterns = []
+     ;   relation_source_pattern(Term0, Pattern)
+diff --git a/prolog/web_prolog/node_response.pl b/prolog/web_prolog/node_response.pl
+index 83319c4..673d547 100644
+--- a/prolog/web_prolog/node_response.pl
++++ b/prolog/web_prolog/node_response.pl
+@@ -12,6 +12,7 @@ Response writers and JSON/error encoding helpers used by `node.pl`.
+ :- op(800, xfx, !).
+ 
+ :- use_module(library(http/http_json)).
++:- use_module(text_config, [text_double_quotes/1]).
+ :- use_module(rpc, [text_to_string/2]).
+ :- use_module(node_runtime_state, [current_node_url/1]).
+ :- use_module(term_display, [term_to_display_string/3]).
+@@ -670,9 +671,17 @@ prompt_to_json_string(Prompt, PromptString) :-
+     atom(Prompt),
+     !,
+     atom_string(Prompt, PromptString).
++prompt_to_json_string(Prompt, PromptString) :-
++    text_double_quotes(chars),
++    is_list(Prompt),
++    maplist(character_atom, Prompt),
++    !,
++    string_chars(PromptString, Prompt).
+ prompt_to_json_string(Prompt, PromptString) :-
+     term_to_json_string(Prompt, PromptString).
+ 
++character_atom(Char) :- atom(Char), atom_length(Char, 1).
++
+ strip_terminal_trailing_newline_marker(Text0, Text) :-
+     strip_last_literal_tilde_n(Text0, Text),
+     !.
+diff --git a/prolog/web_prolog/node_sandbox.pl b/prolog/web_prolog/node_sandbox.pl
+index ae3f47a..9d469fa 100644
+--- a/prolog/web_prolog/node_sandbox.pl
++++ b/prolog/web_prolog/node_sandbox.pl
+@@ -15,6 +15,8 @@
+     sandbox_check_goal_with_options/4
+ ]).
+ 
++:- use_module(text_config, [text_double_quotes/1]).
++
+ /** <module> Node Sandbox Policy
+ 
+ One node-owned sandbox layer around `library(sandbox)` for all public
+@@ -429,7 +431,8 @@ precheck_source_text(Profile, Module, SourceText) :-
+     ).
+ 
+ precheck_source_terms(Profile, Module, Stream) :-
+-    read_term(Stream, Term, [module(Module)]),
++    text_double_quotes(TextMode),
++    read_term(Stream, Term, [module(Module), double_quotes(TextMode)]),
+     (   Term == end_of_file
+     ->  true
+     ;   precheck_source_term(Profile, Module, Term),
+@@ -990,7 +993,9 @@ format_to_atom_safe(Format, Atom) :-
+     ;   string(Format)
+     ->  atom_string(Atom, Format)
+     ;   is_list(Format)
+-    ->  catch(atom_codes(Atom, Format), _, Atom = '')
++    ->  ( catch(atom_codes(Atom, Format), _, fail) -> true
++        ; catch(atom_chars(Atom, Format), _, Atom = '')
++        )
+     ;   Atom = ''
+     ).
+ 
+diff --git a/prolog/web_prolog/node_session.pl b/prolog/web_prolog/node_session.pl
+index e4bd0b4..13e4086 100644
+--- a/prolog/web_prolog/node_session.pl
++++ b/prolog/web_prolog/node_session.pl
+@@ -22,6 +22,8 @@
+     admin_terminate_isotope_session/2
+ ]).
+ 
++:- use_module(text_config, [text_double_quotes/1]).
++
+ /** <module> ISOTOPE Session Helpers
+ 
+ Session lifecycle and queue/message normalization for node ISOTOPE endpoints.
+@@ -371,11 +373,12 @@ session_message_event(Pid, Message, error(Pid, Unexpected)) :-
+ %   `read/1` semantics. Other prompts keep the historical URL-parameter
+ %   convenience and may omit the final period.
+ read_response_input(Pid0, InputAtom, Input) :-
++    text_double_quotes(TextMode),
+     session_pid_key(Pid0, Pid),
+     (   retract(isotope_pending_prompt(Pid, '|:'))
+     ->  read_period_terminated_term(InputAtom, Input)
+     ;   retractall(isotope_pending_prompt(Pid, _)),
+-        read_term_from_atom(InputAtom, Input, [double_quotes(string)])
++        read_term_from_atom(InputAtom, Input, [double_quotes(TextMode)])
+     ).
+ 
+ 
+@@ -394,7 +397,8 @@ read_period_terminated_term(InputAtom, Input) :-
+ 
+ 
+ read_period_terminated_stream(Stream, Input) :-
+-    read_term(Stream, Input, [syntax_errors(error), double_quotes(string)]),
++    text_double_quotes(TextMode),
++    read_term(Stream, Input, [syntax_errors(error), double_quotes(TextMode)]),
+     read_string(Stream, _, Rest),
+     (   string_codes(Rest, Codes),
+         forall(member(Code, Codes), code_type(Code, space))
+@@ -487,7 +491,8 @@ rewrite_isotope_source_text(SourceIn, SourceOut) :-
+ 
+ %!  read_rewritten_isotope_terms(+In, -Terms:list) is det.
+ read_rewritten_isotope_terms(In, Terms) :-
+-    read_term(In, Term0, [double_quotes(string)]),
++    text_double_quotes(TextMode),
++    read_term(In, Term0, [double_quotes(TextMode)]),
+     (   Term0 == end_of_file
+     ->  Terms = []
+     ;   rewrite_isotope_source_term(Term0, Term),
+diff --git a/prolog/web_prolog/node_ws.pl b/prolog/web_prolog/node_ws.pl
+index 496b69c..9323189 100644
+--- a/prolog/web_prolog/node_ws.pl
++++ b/prolog/web_prolog/node_ws.pl
+@@ -7,6 +7,8 @@
+     abort_inherited_ws_actor_spawn/1
+ ]).
+ 
++:- use_module(text_config, [text_double_quotes/1]).
++
+ /** <module> WebSocket Actor Profile
+ 
+ Full actor capabilities for browser clients over WebSocket.
+@@ -1867,6 +1869,7 @@ ws_parse_enabled_atom(Value, _) :-
+ %   and !/2.  The size check is enforced here so that every call site
+ %   is protected regardless of how the text was obtained.
+ ws_read_term(Field, Text, Term) :-
++    text_double_quotes(TextMode),
+     check_term_text_size(Field, Text),
+-    read_term_from_atom(Text, Term, [module(node_ws), double_quotes(string)]),
++    read_term_from_atom(Text, Term, [module(node_ws), double_quotes(TextMode)]),
+     node_lifetime:check_term(Term).
+diff --git a/prolog/web_prolog/public_goal_guard.pl b/prolog/web_prolog/public_goal_guard.pl
+index 0de6cce..f5e3ae4 100644
+--- a/prolog/web_prolog/public_goal_guard.pl
++++ b/prolog/web_prolog/public_goal_guard.pl
+@@ -6,6 +6,8 @@
+     restore_goal/3
+ ]).
+ 
++:- use_module(text_config, [text_double_quotes/1]).
++
+ /** <module> Public Blacklist Goal Rewriting
+ 
+ Runtime/load-time rewriting that inserts guarded execution wrappers around
+@@ -62,7 +64,8 @@ rewrite_source_text(Module, SourceIn, SourceOut) :-
+ 
+ 
+ read_rewritten_terms(Module, In, Terms) :-
+-    read_term(In, Term0, [module(Module)]),
++    text_double_quotes(TextMode),
++    read_term(In, Term0, [module(Module), double_quotes(TextMode)]),
+     (   Term0 == end_of_file
+     ->  Terms = []
+     ;   rewrite_source_term(Module, Term0, RewrittenTerms),
+diff --git a/prolog/web_prolog/remote_protocol.pl b/prolog/web_prolog/remote_protocol.pl
+index 2d01293..929ee17 100644
+--- a/prolog/web_prolog/remote_protocol.pl
++++ b/prolog/web_prolog/remote_protocol.pl
+@@ -9,6 +9,8 @@
+     reify_json_row/2
+ ]).
+ 
++:- use_module(text_config, [text_double_quotes/1]).
++
+ /** <module> Remote Wire Protocol Helpers
+ 
+ Shared helpers for actor/toplevel remote WebSocket transport:
+@@ -63,9 +65,10 @@ goal_template_to_wire_atoms(Goal, Template, GoalAtom, TemplateAtom) :-
+ 
+ %!  ws_json_down_reason(+Dict, -Reason) is semidet.
+ ws_json_down_reason(Dict, Reason) :-
++    text_double_quotes(TextMode),
+     get_dict(type, Dict, "down"),
+     (   get_dict(reason, Dict, ReasonStr)
+-    ->  (   catch(term_string(Reason, ReasonStr, [double_quotes(string)]), _, fail)
++    ->  (   catch(term_string(Reason, ReasonStr, [double_quotes(TextMode)]), _, fail)
+         ->  true
+         ;   atom_string(Reason, ReasonStr)
+         )
+@@ -119,10 +122,11 @@ ws_json_to_actor_event(Dict, CompoundPid, error(CompoundPid, Error)) :-
+     (get_dict(data, Dict, ErrorStr) -> true ; ErrorStr = "Unknown remote error"),
+     Error = remote_error(ErrorStr).
+ ws_json_to_actor_event(Dict, CompoundPid, output(CompoundPid, Term)) :-
++    text_double_quotes(TextMode),
+     get_dict(type, Dict, "output"),
+     !,
+     (   get_dict(data, Dict, DataStr)
+-    ->  (   catch(term_string(Term, DataStr, [double_quotes(string)]), _, fail)
++    ->  (   catch(term_string(Term, DataStr, [double_quotes(TextMode)]), _, fail)
+         ->  true
+         ;   Term = DataStr
+         )
+@@ -158,9 +162,10 @@ event_term(Dict, Term) :-
+ 
+ %!  reify_json_row(+JSONRow, -PrologRow) is det.
+ reify_json_row(Str, Term) :-
++    text_double_quotes(TextMode),
+     string(Str),
+     !,
+-    (   catch(term_string(Term, Str, [double_quotes(string)]), _, fail)
++    (   catch(term_string(Term, Str, [double_quotes(TextMode)]), _, fail)
+     ->  true
+     ;   Term = Str
+     ).
+@@ -173,9 +178,10 @@ reify_json_row(DictIn, DictOut) :-
+ reify_json_row(V, V).
+ 
+ reify_json_pair(K-V, K-VOut) :-
++    text_double_quotes(TextMode),
+     string(V),
+     !,
+-    (   catch(term_string(VOut, V, [double_quotes(string)]), _, fail)
++    (   catch(term_string(VOut, V, [double_quotes(TextMode)]), _, fail)
+     ->  true
+     ;   VOut = V
+     ).
+diff --git a/prolog/web_prolog/server_actor.pl b/prolog/web_prolog/server_actor.pl
+index b55d58f..ef76cd1 100644
+--- a/prolog/web_prolog/server_actor.pl
++++ b/prolog/web_prolog/server_actor.pl
+@@ -16,6 +16,8 @@
+ 
+    ]).
+ 
++:- use_module(text_config, [text_double_quotes/1]).
++
+ /** <module> Generic Server Behaviour
+ 
+ Implements the server behaviour described in the Web Prolog book: a
+@@ -303,7 +305,8 @@ abolish_local_callback(Module, PlainPred) :-
+     ).
+ 
+ read_upgrade_source(Stream, Module) :-
+-    read_term(Stream, Term, [module(Module)]),
++    text_double_quotes(TextMode),
++    read_term(Stream, Term, [module(Module), double_quotes(TextMode)]),
+     (   Term == end_of_file
+     ->  true
+     ;   Module:expand_term(Term, Expanded),
+diff --git a/prolog/web_prolog/source_utils.pl b/prolog/web_prolog/source_utils.pl
+index 10883a6..6ba19e3 100644
+--- a/prolog/web_prolog/source_utils.pl
++++ b/prolog/web_prolog/source_utils.pl
+@@ -12,6 +12,8 @@
+      append_source_text/3       % +Left, +Right, -Combined
+    ]).
+ 
++:- use_module(text_config, [text_double_quotes/1]).
++
+ /** <module> Source and URI Helpers (layer 1)
+ 
+ Utility predicates for turning different source representations into
+@@ -102,7 +104,8 @@ restore_serialized_source(Module, Source0, Source) :-
+                           ]))).
+ 
+ read_serialized_terms(Module, In, Terms) :-
+-    read_term(In, Term0, [module(Module)]),
++    text_double_quotes(TextMode),
++    read_term(In, Term0, [module(Module), double_quotes(TextMode)]),
+     (   Term0 == end_of_file
+     ->  Terms = []
+     ;   (   restore_serialized_term(Module, Term0, Term)
+diff --git a/prolog/web_prolog/statechart_model.pl b/prolog/web_prolog/statechart_model.pl
+index 562a737..d52dcd2 100644
+--- a/prolog/web_prolog/statechart_model.pl
++++ b/prolog/web_prolog/statechart_model.pl
+@@ -6,6 +6,8 @@
+     statechart_spawn_source/3
+ ]).
+ 
++:- use_module(text_config, [text_double_quotes/1]).
++
+ /** <module> Statechart Model Parsing
+ 
+ Parsing and model-building helpers for the statechart actor profile.
+@@ -297,7 +299,8 @@ my_atom_to_term(Atom, Term, Bindings) :-
+ my_atom_to_term_2('', '', []) :-
+     !.
+ my_atom_to_term_2(Atom, Term, Bindings) :-
+-    atom_to_term(Atom, Term, Bindings).
++    text_double_quotes(TextMode),
++    read_term_from_atom(Atom, Term, [variable_names(Bindings),double_quotes(TextMode)]).
+ 
+ spawn_element_options(Type, Attrs0, Options) :-
+     select_option(options(OptionsText), Attrs0, Attrs1, []),
+@@ -309,7 +312,8 @@ spawn_element_options(Type, Attrs0, Options) :-
+ parse_spawn_options([], []) :-
+     !.
+ parse_spawn_options(Text, Options) :-
+-    catch(atom_to_term(Text, Term, _Bindings), _, fail),
++    text_double_quotes(TextMode),
++    catch(read_term_from_atom(Text, Term, [double_quotes(TextMode)]), _, fail),
+     !,
+     (   is_list(Term)
+     ->  Options = Term
+@@ -379,7 +383,8 @@ reject_remaining_spawn_attributes(Type, [Name=_|_]) :-
+ typed_attribute_value(Value0, Value) :-
+     atom(Value0),
+     !,
+-    atom_to_term(Value0, Parsed, _Bindings),
++    text_double_quotes(TextMode),
++    read_term_from_atom(Value0, Parsed, [double_quotes(TextMode)]),
+     Value = Parsed.
+ typed_attribute_value(Value, Value).
+ 
+diff --git a/prolog/web_prolog/text_config.pl b/prolog/web_prolog/text_config.pl
+new file mode 100644
+index 0000000..c81b36b
+--- /dev/null
++++ b/prolog/web_prolog/text_config.pl
+@@ -0,0 +1,25 @@
++:- module(text_config, [text_double_quotes/1, configure_text_module/1]).
++
++/** <module> Experimental language text configuration
++
++Selected once when this module loads. Only disposable processes should set
++WP_EXPERIMENTAL_TEXT=portable-text-0.2. Host implementation/library modules
++retain native strings; Web Prolog readers and generated language modules use
++chars in that configuration. There is deliberately no live-node switch.
++*/
++:- dynamic selected_double_quotes/1.
++:- initialization(select_text_configuration).
++
++select_text_configuration :-
++    ( getenv('WP_EXPERIMENTAL_TEXT', Value), Value \== ''
++    -> ( Value == 'portable-text-0.2' -> Mode = chars
++       ; throw(error(domain_error(experimental_text_configuration, Value), _)) )
++    ; Mode = string
++    ),
++    assertz(selected_double_quotes(Mode)).
++
++text_double_quotes(Mode) :- selected_double_quotes(Mode).
++
++configure_text_module(Module) :-
++    text_double_quotes(Mode),
++    set_prolog_flag(Module:double_quotes, Mode).
+diff --git a/prolog/web_prolog/wire_text.pl b/prolog/web_prolog/wire_text.pl
+index bfef4a7..caf9579 100644
+--- a/prolog/web_prolog/wire_text.pl
++++ b/prolog/web_prolog/wire_text.pl
+@@ -5,6 +5,8 @@
+     wire_read_options/1         % -Options
+ ]).
+ 
++:- use_module(text_config, [text_double_quotes/1]).
++
+ /** <module> Canonical Term Text
+ 
+ The one normative way of writing a term as text when it crosses a node
+@@ -23,7 +25,8 @@ The text is
+   - written with explicit variable names, so terms written together share
+     their variables when they are read back together.
+ 
+-It is read with `double_quotes` set to `string`.  A conformance suite
++It is read with the selected language text configuration (native strings by
++default, character lists in the isolated experimental process). A conformance suite
+ compares the decoded terms, not this text; the text is how this node meets
+ the contract.
+ */
+@@ -60,7 +63,8 @@ wire_variable_names([Var|Vars], N, [Name=Var|Names]) :-
+ %!  wire_read_options(-Options) is det.
+ %
+ %   Reader options for term text received from another node or a client.
+-wire_read_options([double_quotes(string)]).
++wire_read_options([double_quotes(TextMode)]) :-
++    text_double_quotes(TextMode).
+ 
+ %!  wire_text_to_term(+Text, -Term) is det.
+ wire_text_to_term(Text, Term) :-
+diff --git a/tests/tiers/node/portable_text_tests.pl b/tests/tiers/node/portable_text_tests.pl
+new file mode 100644
+index 0000000..368ce27
+--- /dev/null
++++ b/tests/tiers/node/portable_text_tests.pl
+@@ -0,0 +1,85 @@
++:- module(test_portable_text, []).
++:- use_module('../../../prolog/web_prolog/node.pl', []).
++:- use_module('../../../prolog/web_prolog/text_config.pl').
++:- use_module('../../../prolog/web_prolog/wire_text.pl').
++:- use_module('../../../prolog/web_prolog/isolation.pl', []).
++:- use_module('../../../prolog/web_prolog/source_utils.pl', []).
++:- use_module(library(plunit)).
++:- use_module(library(modules)).
++
++expected(Text, Value) :-
++    text_double_quotes(Mode),
++    (Mode == chars -> string_chars(Text, Value); Value = Text).
++read_expected(Text, Term) :- expected(Text, Expected), assertion(Term == Expected).
++
++:- begin_tests(portable_text_configuration).
++test(host_modules_keep_native_strings) :- assertion(string("abc")).
++test(wire,[forall(member(Text,["abc","","😀","é","👩‍💻","a\\b\"c"]))]) :-
++    with_output_to(atom(Wire),write_term(Text,[quoted(true)])), wire_text_to_term(Wire, Term),
++    test_portable_text:read_expected(Text,Term).
++test(http_goal_and_template) :-
++    node_call_context:parse_goal_template('X="ab"','X',Goal,Template,_),
++    Goal = (X=Value), assertion(X == Template), test_portable_text:read_expected("ab",Value).
++test(http_options_sharing) :-
++    node_call_context:parse_call_options_context('X="ab"','[template(X),limit(1),format(prolog)]',Goal,Template,_,_,_,_,_),
++    Goal=(X=Value), assertion(X == Template), test_portable_text:read_expected("ab",Value).
++test(websocket_input) :-
++    node_ws:ws_read_term(input,'"ab"',Term), test_portable_text:read_expected("ab",Term).
++test(http_input) :-
++    node_session:read_period_terminated_term('"ab".',Term),test_portable_text:read_expected("ab",Term).
++test(input_suffix_rejected,[throws(error(syntax_error(unexpected_input_after_full_stop),_))]) :-
++    node_session:read_period_terminated_term('"ab". true.',_).
++test(spawn_option_reader) :-
++    node_isotope_options:parse_spawn_options_atom('[src_list([p("ab")])]',[src_list([p(Text)])]),
++    test_portable_text:read_expected("ab",Text).
++test(private_source) :-
++    in_temporary_module(M,true,(text_config:configure_text_module(M),
++      isolation:load_source_text('p("ab").',M,portable_private),
++      M:p(Text),test_portable_text:read_expected("ab",Text))).
++test(constructed_source_preserves_numbers_and_sharing) :-
++    source_utils:terms_to_source([p([97,98]),same(X,X)],Source),assertion(var(X)),
++    in_temporary_module(M,true,(text_config:configure_text_module(M),
++      isolation:load_source_text(Source,M,portable_constructed),
++      M:p(Numbers),assertion(Numbers == [97,98]),M:same(A,B),assertion(A==B),assertion(var(A)))).
++test(shared_database_and_reload) :-
++    node:set_node_shared_db('portable_shared("ab").'),
++    node:call_current_shared_db(portable_shared(First)),test_portable_text:read_expected("ab",First),
++    node:set_node_shared_db('portable_shared("😀").'),
++    node:call_current_shared_db(portable_shared(Second)),test_portable_text:read_expected("😀",Second).
++test(statechart_expression_reader) :-
++    statechart_model:my_atom_to_term('X="ab"',X=Text,Bindings),
++    assertion(Bindings == ['X'=X]),test_portable_text:read_expected("ab",Text).
++test(shared_database_visible_in_actor) :-
++    node:set_node_shared_db('portable_shared("ab").'),
++    actors:self(Parent),
++    actors:spawn((portable_shared(Text),send(Parent,portable_shared_reply(Text))),Pid,[monitor(true)]),
++    actors:receive({portable_shared_reply(Reply)->true},[timeout(2),on_timeout(fail)]),
++    actors:receive({down(Pid,Pid,true)->true},[timeout(2),on_timeout(fail)]),
++    test_portable_text:read_expected("ab",Reply).
++test(native_text_boundary) :-
++    source_utils:text_to_string([a,b],String),assertion(String=="ab").
++test(no_implicit_numeric_conversion_on_wire) :-
++    term_to_wire_text(pair([97,98],X,X),Wire),wire_text_to_term(Wire,pair(N,A,B)),
++    assertion(N==[97,98]),assertion(A==B),assertion(var(A)).
++test(character_list_format_guard,
++     [throws(error(permission_error(use,format_specifier,'~@'),_))]) :-
++    actor_io_template:reject_format_call_specifier(['~','@']).
++test(generated_character_list_format_guard,
++     [throws(error(permission_error(use,format_specifier,'~@'),_))]) :-
++    actor_io_support:actor_io_prelude_text(Source),
++    in_temporary_module(M,text_config:configure_text_module(M),
++      (isolation:load_source_text(Source,M,portable_generated),M:format(['~','@'],[true]))).
++test(character_list_sandbox_format_guard,
++     [throws(error(permission_error(use,format_specifier,'~@'),_))]) :-
++    node_sandbox:reject_format_call_specifier(['~','@']).
++test(character_list_prompt) :-
++    node_response:prompt_to_json_string([h,i],Prompt),
++    (text_double_quotes(chars) -> assertion(Prompt == "hi") ; assertion(Prompt == "[h,i]")).
++test(remote_source_native_boundary) :-
++    distribution:remote_spawn_options([src_text("p(1).")],user,[src_text(Text)]),
++    (text_double_quotes(chars) -> assertion(Text == 'p(1).') ; assertion(Text == "p(1)." )).
++test(native_library_return_explicit_conversion) :-
++    system:format(string(Native),'~w',[abc]),assertion(string(Native)),
++    string_chars(Native,Chars),assertion(Chars==[a,b,c]),
++    term_to_wire_text(pair(Chars),Wire),wire_text_to_term(Wire,pair(Reply)),assertion(Reply==Chars).
++:- end_tests(portable_text_configuration).
+diff --git a/tools/generate_dependency_graph.py b/tools/generate_dependency_graph.py
+index 69d3074..3fee776 100644
+--- a/tools/generate_dependency_graph.py
++++ b/tools/generate_dependency_graph.py
+@@ -286,6 +286,7 @@ LAYERS = {
+     # layer 0 — stand-alone actor core
+     _WP + "actors.pl": 0,
+     _WP + "wire_text.pl": 0,
++    _WP + "text_config.pl": 0,
+     # layer 1 — isolation
+     _WP + "source_utils.pl": 1,
+     _WP + "actor_io_support.pl": 1,
+diff --git a/tools/test.sh b/tools/test.sh
+index 01d512d..fdea5d6 100755
+--- a/tools/test.sh
++++ b/tools/test.sh
+@@ -13,7 +13,7 @@ SWIPL="${SWIPL:-swipl}"
+ SELECT="$*"
+ # Native checkout default; external content and legacy-layout gates stay explicit.
+ if [ -z "$SELECT" ]; then
+-    SELECT="LINT T0 T1_NATIVE T2 T3_NATIVE T4_NATIVE T5"
++    SELECT="LINT TEXT T0 T1_NATIVE T2 T3_NATIVE T4_NATIVE T5"
+ fi
+ FAILED=0
+ 
+@@ -47,6 +47,7 @@ if selected LINT; then
+     fi
+ fi
+ 
++run_tier TEXT   tests/tiers/node/portable_text_tests.pl run_tests
+ run_tier T0     tests/tiers/t0_actors.pl     run_tier
+ run_tier T1     tests/tiers/t1_isolation.pl  run_tier
+ run_tier T2     tests/tiers/t2_toplevel.pl   run_tier

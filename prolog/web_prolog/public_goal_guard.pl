@@ -6,6 +6,8 @@
     restore_goal/3
 ]).
 
+:- use_module(text_config, [text_double_quotes/1]).
+
 /** <module> Public Blacklist Goal Rewriting
 
 Runtime/load-time rewriting that inserts guarded execution wrappers around
@@ -62,7 +64,8 @@ rewrite_source_text(Module, SourceIn, SourceOut) :-
 
 
 read_rewritten_terms(Module, In, Terms) :-
-    read_term(In, Term0, [module(Module)]),
+    text_double_quotes(TextMode),
+    read_term(In, Term0, [module(Module), double_quotes(TextMode)]),
     (   Term0 == end_of_file
     ->  Terms = []
     ;   rewrite_source_term(Module, Term0, RewrittenTerms),

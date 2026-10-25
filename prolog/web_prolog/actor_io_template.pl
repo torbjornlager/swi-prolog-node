@@ -103,7 +103,9 @@ format_to_atom_safe(Format, Atom) :-
     ;   string(Format)
     ->  atom_string(Atom, Format)
     ;   is_list(Format)
-    ->  catch(atom_codes(Atom, Format), _, Atom = '')
+    ->  ( catch(atom_codes(Atom, Format), _, fail) -> true
+        ; catch(atom_chars(Atom, Format), _, Atom = '')
+        )
     ;   Atom = ''
     ).
 

@@ -16,6 +16,8 @@
 
    ]).
 
+:- use_module(text_config, [text_double_quotes/1]).
+
 /** <module> Generic Server Behaviour
 
 Implements the server behaviour described in the Web Prolog book: a
@@ -303,7 +305,8 @@ abolish_local_callback(Module, PlainPred) :-
     ).
 
 read_upgrade_source(Stream, Module) :-
-    read_term(Stream, Term, [module(Module)]),
+    text_double_quotes(TextMode),
+    read_term(Stream, Term, [module(Module), double_quotes(TextMode)]),
     (   Term == end_of_file
     ->  true
     ;   Module:expand_term(Term, Expanded),
