@@ -1,0 +1,1 @@
+{"answers": ["['B'=true]" ],"classification":"match","double_quotes":"string","exception":"","formal":"","id":"SC-001","iso":false,"mode":"guarded","prepared":"public_goal_guard:'$sandbox_asserta'(dcg_assessment,(a-->b)),public_goal_guard:'$sandbox_clause'(dcg_assessment,(a-->b),A)","stage":"execution","terminal":"exhausted"}

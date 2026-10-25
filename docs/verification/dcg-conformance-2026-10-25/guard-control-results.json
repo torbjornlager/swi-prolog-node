@@ -1,0 +1,134 @@
+[
+  {
+    "case_id": "GC-001",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 183,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(permission_error(call,sandboxed,nb_getval(dcg_forbidden,A)),context(node_sandbox:reject_forbidden_goal/3,stateful_term_storage))",
+      "formal": "permission_error(call,sandboxed,nb_getval(dcg_forbidden,A))",
+      "id": "GC-001",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,{nb_getval(dcg_forbidden,A)}),[])",
+      "stage": "execution",
+      "terminal": "exception"
+    }
+  },
+  {
+    "case_id": "GC-002",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 183,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(permission_error(call,sandboxed,system:nb_getval(dcg_forbidden,A)),context(node_sandbox:reject_forbidden_goal/3,'module-qualified goal is disabled in blacklist sandbox mode'))",
+      "formal": "permission_error(call,sandboxed,system:nb_getval(dcg_forbidden,A))",
+      "id": "GC-002",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,system:{nb_getval(dcg_forbidden,A)}),[])",
+      "stage": "execution",
+      "terminal": "exception"
+    }
+  },
+  {
+    "case_id": "GC-003",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 184,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(permission_error(call,sandboxed,public_goal_guard:'$sandbox_dcg'(dcg_assessment,{nb_getval(dcg_forbidden,A)},[],[])),context(node_sandbox:sandbox_check_goal/2,'top-level module-qualified goal is disabled in blacklist sandbox mode'))",
+      "formal": "permission_error(call,sandboxed,public_goal_guard:'$sandbox_dcg'(dcg_assessment,{nb_getval(dcg_forbidden,A)},[],[]))",
+      "id": "GC-003",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,public_goal_guard:'$sandbox_dcg'(dcg_assessment,{nb_getval(dcg_forbidden,A)})),[])",
+      "stage": "execution",
+      "terminal": "exception"
+    }
+  },
+  {
+    "case_id": "GC-004",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 177,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "'$abort_goal'",
+      "formal": "'$abort_goal'",
+      "id": "GC-004",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,{catch(throw('$abort_goal'),A,B=true)}),[])",
+      "stage": "execution",
+      "terminal": "exception"
+    }
+  }
+]

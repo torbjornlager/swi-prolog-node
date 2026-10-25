@@ -1,0 +1,1 @@
+{"answers": [],"classification":"different","double_quotes":"string","exception":"error(type_error(callable,1),A)","formal":"type_error(callable,1)","id":"30","iso":false,"mode":"direct","prepared":"phrase(([a],\\+1;[]),[])","stage":"execution","terminal":"exception"}

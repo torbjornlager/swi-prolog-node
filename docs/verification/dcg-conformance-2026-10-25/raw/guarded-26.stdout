@@ -1,0 +1,1 @@
+{"answers": [],"classification":"culprit_difference","double_quotes":"string","exception":"error(existence_error(procedure,dcg_assessment:(-->)/2),context(dcg_assessment:enumerate/2,A))","formal":"existence_error(procedure,dcg_assessment:(-->)/2)","id":"26","iso":false,"mode":"guarded","prepared":"A-->B","stage":"execution","terminal":"exception"}

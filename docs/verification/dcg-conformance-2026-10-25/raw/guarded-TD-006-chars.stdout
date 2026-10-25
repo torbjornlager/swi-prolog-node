@@ -1,0 +1,1 @@
+{"answers": ["['L'=[é,😀]]" ],"classification":"match","double_quotes":"chars","exception":"","formal":"","id":"TD-006-chars","iso":false,"mode":"guarded","prepared":"phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,tokens),A)","stage":"execution","terminal":"exhausted"}

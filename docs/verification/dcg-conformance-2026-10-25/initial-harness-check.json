@@ -1,0 +1,14 @@
+{
+  "issue": "Explicit qualification of with_public_execution_profile/2 qualified an unqualified harness enumerate/2 call to node_execution_context. Fixed the test harness by explicitly qualifying dcg_assessment:enumerate/2 before the recorded assessment. Runtime source unchanged.",
+  "example": {
+    "answers": [],
+    "classification": "different",
+    "exception": "error(existence_error(procedure,node_execution_context:enumerate/2),context(system:'<meta-call>'/1,A))",
+    "formal": "existence_error(procedure,node_execution_context:enumerate/2)",
+    "id": "c1",
+    "mode": "guarded",
+    "stage": "execution",
+    "terminal": "exception"
+  },
+  "text_fixture_correction": "The initial text probe set and reported an unqualified double_quotes flag instead of the explicitly selected reader module flag. Corrected the harness to set/report dcg_assessment:double_quotes and read expected constraints in that module; no runtime reader changed."
+}

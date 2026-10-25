@@ -1,0 +1,1 @@
+{"answers": [],"classification":"match","double_quotes":"string","exception":"error(type_error(callable,1),context(system:call/1,A))","formal":"type_error(callable,1)","id":"c1","iso":false,"mode":"direct","prepared":"call(1)","stage":"execution","terminal":"exception"}

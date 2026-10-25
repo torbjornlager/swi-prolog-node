@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "native_prolog": true,
+    "trealla_sources": true,
+    "engines": true,
+    "library": true,
+    "live": true,
+    "pin": true,
+    "installed": true,
+    "tracked_working": true
+  },
+  "source_revision": "70c88e21d2019b2dedf449a0b8b11a7049ab0e16",
+  "engine_sha256": "915c4758b6aba3d01ade4fe4f46332b6f526ad6c70a8e2574dd05278c2b0ce9c",
+  "script_sha256": "09daf80c31f7045e2a14355787b05eb47cc00c0997df29b26d432e73476b8da3"
+}

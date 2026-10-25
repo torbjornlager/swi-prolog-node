@@ -1,0 +1,1 @@
+{"answers": [],"classification":"match","double_quotes":"string","exception":"error(instantiation_error,context(system:functor/3,A))","formal":"instantiation_error","id":"f1","iso":false,"mode":"guarded","prepared":"functor(A,B,C)","stage":"execution","terminal":"exception"}

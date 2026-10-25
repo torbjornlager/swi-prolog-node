@@ -1,0 +1,1118 @@
+[
+  {
+    "case_id": "TD-001-string",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 31,
+    "observation": {
+      "answers": [
+        "['X'=\"ab\"]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-001-string",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "A=\"ab\"",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-001-string",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 206,
+    "observation": {
+      "answers": [
+        "['X'=\"ab\"]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-001-string",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "A=\"ab\"",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-001-chars",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['X'=[a,b]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-001-chars",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "A=[a,b]",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-001-chars",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 193,
+    "observation": {
+      "answers": [
+        "['X'=[a,b]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-001-chars",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "A=[a,b]",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-002-string",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 24,
+    "observation": {
+      "answers": [
+        "['X'=\"\"]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-002-string",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "A=\"\"",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-002-string",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 204,
+    "observation": {
+      "answers": [
+        "['X'=\"\"]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-002-string",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "A=\"\"",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-002-chars",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['X'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-002-chars",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "A=[]",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-002-chars",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 186,
+    "observation": {
+      "answers": [
+        "['X'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-002-chars",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "A=[]",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-003-string",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['X'=\"é😀\"]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-003-string",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "A=\"é😀\"",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-003-string",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 178,
+    "observation": {
+      "answers": [
+        "['X'=\"é😀\"]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-003-string",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "A=\"é😀\"",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-003-chars",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['X'=[é,😀]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-003-chars",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "A=[é,😀]",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-003-chars",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 184,
+    "observation": {
+      "answers": [
+        "['X'=[é,😀]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-003-chars",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "A=[é,😀]",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-004-string",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['L'=[97,98]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-004-string",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(tokens,A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-004-string",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 184,
+    "observation": {
+      "answers": [
+        "['L'=[97,98]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-004-string",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,tokens),A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-004-chars",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['L'=[a,b]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-004-chars",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(tokens,A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-004-chars",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 184,
+    "observation": {
+      "answers": [
+        "['L'=[a,b]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-004-chars",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,tokens),A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-005-string",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['L'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-005-string",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(tokens,A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-005-string",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 186,
+    "observation": {
+      "answers": [
+        "['L'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-005-string",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,tokens),A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-005-chars",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['L'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-005-chars",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(tokens,A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-005-chars",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 187,
+    "observation": {
+      "answers": [
+        "['L'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-005-chars",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,tokens),A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-006-string",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['L'=[233,128512]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-006-string",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(tokens,A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-006-string",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 191,
+    "observation": {
+      "answers": [
+        "['L'=[233,128512]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-006-string",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,tokens),A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-006-chars",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['L'=[é,😀]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-006-chars",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(tokens,A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-006-chars",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 178,
+    "observation": {
+      "answers": [
+        "['L'=[é,😀]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-006-chars",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,tokens),A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-007-string",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-007-string",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "A=\"ab\",A=[a,b]",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-007-string",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 183,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-007-string",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "A=\"ab\",A=[a,b]",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-007-chars",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['X'=[a,b]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-007-chars",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "A=[a,b],A=[a,b]",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-007-chars",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 183,
+    "observation": {
+      "answers": [
+        "['X'=[a,b]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-007-chars",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "A=[a,b],A=[a,b]",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-008-string",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 24,
+    "observation": {
+      "answers": [
+        "['L'=[97,98]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-008-string",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(\"ab\",A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-008-string",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 178,
+    "observation": {
+      "answers": [
+        "['L'=[97,98]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "TD-008-string",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,\"ab\"),A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-008-chars",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['L'=[a,b]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-008-chars",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase([a,b],A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "TD-008-chars",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 188,
+    "observation": {
+      "answers": [
+        "['L'=[a,b]]"
+      ],
+      "classification": "match",
+      "double_quotes": "chars",
+      "exception": "",
+      "formal": "",
+      "id": "TD-008-chars",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[a,b]),A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  }
+]

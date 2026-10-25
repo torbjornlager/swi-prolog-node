@@ -1,0 +1,72 @@
+[
+  {
+    "case_id": "SC-001",
+    "mode": "direct",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "direct",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['B'=true]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "SC-001",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "asserta((a-->b)),clause((a-->b),A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  },
+  {
+    "case_id": "SC-001",
+    "mode": "guarded",
+    "exit_code": 0,
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/dcg-conformance-2026-10-25/probe.pl",
+      "-g",
+      "dcg_assessment:main",
+      "--",
+      "guarded",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/case.json",
+      "/var/folders/8p/_fp_26cs6zz3_d8pdwtnh_ym0000gp/T/dcg-text-controls-1laqk2d3/source"
+    ],
+    "duration_ms": 183,
+    "observation": {
+      "answers": [
+        "['B'=true]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "SC-001",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "public_goal_guard:'$sandbox_asserta'(dcg_assessment,(a-->b)),public_goal_guard:'$sandbox_clause'(dcg_assessment,(a-->b),A)",
+      "stage": "execution",
+      "terminal": "exhausted"
+    }
+  }
+]

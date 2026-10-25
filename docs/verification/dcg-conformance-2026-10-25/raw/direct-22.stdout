@@ -1,0 +1,1 @@
+{"answers": ["['L'=[x,y]]" ],"classification":"match","double_quotes":"string","exception":"","formal":"","id":"22","iso":false,"mode":"direct","prepared":"phrase(([x]->[y]|[z]),A)","stage":"execution","terminal":"exhausted"}

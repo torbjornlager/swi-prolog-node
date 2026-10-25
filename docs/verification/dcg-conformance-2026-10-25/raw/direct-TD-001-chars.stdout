@@ -1,0 +1,1 @@
+{"answers": ["['X'=[a,b]]" ],"classification":"match","double_quotes":"chars","exception":"","formal":"","id":"TD-001-chars","iso":false,"mode":"direct","prepared":"A=[a,b]","stage":"execution","terminal":"exhausted"}

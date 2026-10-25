@@ -1,0 +1,25 @@
+{
+  "retrieved_at": "2026-10-25T10:06:31.975945+00:00",
+  "author": "Ulrich Neumerkel / ISO Prolog comparison",
+  "sources": [
+    {
+      "file": "comparison.html",
+      "url": "https://www.complang.tuwien.ac.at/ulrich/iso-prolog/phrase",
+      "sha256": "3d42f9d03fa4c9198a73e2e0bf57ff97ca0f61b6940856b2b8290236b1912614",
+      "bytes": 48630
+    },
+    {
+      "file": "phrase_quad.pl",
+      "url": "https://www.complang.tuwien.ac.at/ulrich/iso-prolog/phrase_quad.pl",
+      "sha256": "42d88c6a4a659593342c614bf056847291897cacfa49366818e6cc65a40ae1f9",
+      "bytes": 3679
+    },
+    {
+      "file": "errors-draft.html",
+      "url": "https://www.complang.tuwien.ac.at/ulrich/iso-prolog/draft-8.18.1.3",
+      "sha256": "beb65ba12166ab92ecb99d81dbffd7ef7d37e92deb565e1bf259e89c330c80b1",
+      "bytes": 3450
+    }
+  ],
+  "note": "Expected outcomes are comparison-page evidence, not a certification against the complete published 2025 TS. Comparison SWI header is 9.3.17; individual cells may retain older comments."
+}

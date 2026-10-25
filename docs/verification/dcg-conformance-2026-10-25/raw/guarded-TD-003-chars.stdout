@@ -1,0 +1,1 @@
+{"answers": ["['X'=[é,😀]]" ],"classification":"match","double_quotes":"chars","exception":"","formal":"","id":"TD-003-chars","iso":false,"mode":"guarded","prepared":"A=[é,😀]","stage":"execution","terminal":"exhausted"}

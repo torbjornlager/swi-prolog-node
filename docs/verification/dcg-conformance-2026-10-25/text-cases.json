@@ -1,0 +1,214 @@
+[
+  {
+    "id": "TD-001-string",
+    "query": "X=\"ab\".",
+    "quote_mode": "string",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "X=\"ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "TD-001-chars",
+    "query": "X=\"ab\".",
+    "quote_mode": "chars",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "X=\"ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "TD-002-string",
+    "query": "X=\"\".",
+    "quote_mode": "string",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "X=\"\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "TD-002-chars",
+    "query": "X=\"\".",
+    "quote_mode": "chars",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "X=\"\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "TD-003-string",
+    "query": "X=\"é😀\".",
+    "quote_mode": "string",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "X=\"é😀\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "TD-003-chars",
+    "query": "X=\"é😀\".",
+    "quote_mode": "chars",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "X=\"é😀\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "TD-004-string",
+    "query": "phrase(tokens,L).",
+    "quote_mode": "string",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "L=[97,98]"
+        ]
+      }
+    ],
+    "source": "tokens --> \"ab\"."
+  },
+  {
+    "id": "TD-004-chars",
+    "query": "phrase(tokens,L).",
+    "quote_mode": "chars",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "L=[a,b]"
+        ]
+      }
+    ],
+    "source": "tokens --> \"ab\"."
+  },
+  {
+    "id": "TD-005-string",
+    "query": "phrase(tokens,L).",
+    "quote_mode": "string",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "L=[]"
+        ]
+      }
+    ],
+    "source": "tokens --> \"\"."
+  },
+  {
+    "id": "TD-005-chars",
+    "query": "phrase(tokens,L).",
+    "quote_mode": "chars",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "L=[]"
+        ]
+      }
+    ],
+    "source": "tokens --> \"\"."
+  },
+  {
+    "id": "TD-006-string",
+    "query": "phrase(tokens,L).",
+    "quote_mode": "string",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "L=[233,128512]"
+        ]
+      }
+    ],
+    "source": "tokens --> \"é😀\"."
+  },
+  {
+    "id": "TD-006-chars",
+    "query": "phrase(tokens,L).",
+    "quote_mode": "chars",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "L=['é','😀']"
+        ]
+      }
+    ],
+    "source": "tokens --> \"é😀\"."
+  },
+  {
+    "id": "TD-007-string",
+    "query": "X=\"ab\",X=[a,b].",
+    "quote_mode": "string",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": []
+      }
+    ]
+  },
+  {
+    "id": "TD-007-chars",
+    "query": "X=\"ab\",X=[a,b].",
+    "quote_mode": "chars",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "X=[a,b]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "TD-008-string",
+    "query": "phrase(\"ab\",L).",
+    "quote_mode": "string",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "L=[97,98]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "TD-008-chars",
+    "query": "phrase(\"ab\",L).",
+    "quote_mode": "chars",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "L=[a,b]"
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,1 @@
+{"answers": ["['L'=[97,98]]" ],"classification":"match","double_quotes":"string","exception":"","formal":"","id":"TD-004-string","iso":false,"mode":"guarded","prepared":"phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,tokens),A)","stage":"execution","terminal":"exhausted"}

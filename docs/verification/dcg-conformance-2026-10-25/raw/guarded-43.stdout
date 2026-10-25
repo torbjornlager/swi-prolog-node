@@ -1,0 +1,1 @@
+{"answers": [],"classification":"match","double_quotes":"string","exception":"error(type_error(list,non_list),A)","formal":"type_error(list,non_list)","id":"43","iso":false,"mode":"guarded","prepared":"phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[]),A,non_list)","stage":"execution","terminal":"exception"}

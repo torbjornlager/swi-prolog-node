@@ -1,0 +1,1 @@
+{"answers": [],"classification":"match","double_quotes":"string","exception":"error(type_error(atom,1),context(system:functor/3,A))","formal":"type_error(atom,1)","id":"f2","iso":false,"mode":"direct","prepared":"functor(A,1,2)","stage":"execution","terminal":"exception"}

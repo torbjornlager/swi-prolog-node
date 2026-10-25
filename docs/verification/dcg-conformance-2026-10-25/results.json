@@ -1,0 +1,2272 @@
+[
+  {
+    "case_id": "c1",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),context(system:call/1,A))",
+      "formal": "type_error(callable,1)",
+      "id": "c1",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "call(1)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "c1",
+    "mode": "guarded",
+    "duration_ms": 183,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "c1",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "public_goal_guard:'$sandbox_call'(dcg_assessment,1)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "c2",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,(1,fail)),context(system:call/1,A))",
+      "formal": "type_error(callable,(1,fail))",
+      "id": "c2",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "call((1,fail))",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "c2",
+    "mode": "guarded",
+    "duration_ms": 180,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,(1,fail)),context(public_goal_guard:runtime_call_goal/2,A))",
+      "formal": "type_error(callable,(1,fail))",
+      "id": "c2",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "public_goal_guard:'$sandbox_call'(dcg_assessment,(1,fail))",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "c3",
+    "mode": "direct",
+    "duration_ms": 22,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,(fail,1)),context(system:call/1,A))",
+      "formal": "type_error(callable,(fail,1))",
+      "id": "c3",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "call((fail,1))",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "c3",
+    "mode": "guarded",
+    "duration_ms": 194,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,(fail,1)),context(public_goal_guard:runtime_call_goal/2,A))",
+      "formal": "type_error(callable,(fail,1))",
+      "id": "c3",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "public_goal_guard:'$sandbox_call'(dcg_assessment,(fail,1))",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "c4",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,(!;1)),context(system:call/1,A))",
+      "formal": "type_error(callable,(!;1))",
+      "id": "c4",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "call((!;1))",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "c4",
+    "mode": "guarded",
+    "duration_ms": 188,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,(!;1)),context(public_goal_guard:runtime_call_goal/2,A))",
+      "formal": "type_error(callable,(!;1))",
+      "id": "c4",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "public_goal_guard:'$sandbox_call'(dcg_assessment,(!;1))",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "c5",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,(!;\\+1)),context(system:call/1,A))",
+      "formal": "type_error(callable,(!;\\+1))",
+      "id": "c5",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "call((!;\\+1))",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "c5",
+    "mode": "guarded",
+    "duration_ms": 195,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,(!;\\+1)),context(public_goal_guard:runtime_call_goal/2,A))",
+      "formal": "type_error(callable,(!;\\+1))",
+      "id": "c5",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "public_goal_guard:'$sandbox_call'(dcg_assessment,(!;\\+1))",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "c6",
+    "mode": "direct",
+    "duration_ms": 22,
+    "observation": {
+      "answers": [
+        "[]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "c6",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "call((!;call(1)))",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "c6",
+    "mode": "guarded",
+    "duration_ms": 182,
+    "observation": {
+      "answers": [
+        "[]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "c6",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "public_goal_guard:'$sandbox_call'(dcg_assessment,(!;call(1)))",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "c7",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['X'=a]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "c7",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "call((\\+!;A=a))",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "c7",
+    "mode": "guarded",
+    "duration_ms": 183,
+    "observation": {
+      "answers": [
+        "['X'=a]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "c7",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "public_goal_guard:'$sandbox_call'(dcg_assessment,(\\+!;A=a))",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "f1",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(instantiation_error,context(system:functor/3,A))",
+      "formal": "instantiation_error",
+      "id": "f1",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "functor(A,B,C)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "f1",
+    "mode": "guarded",
+    "duration_ms": 186,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(instantiation_error,context(system:functor/3,A))",
+      "formal": "instantiation_error",
+      "id": "f1",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "functor(A,B,C)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "f2",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(atom,1),context(system:functor/3,A))",
+      "formal": "type_error(atom,1)",
+      "id": "f2",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "functor(A,1,2)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "f2",
+    "mode": "guarded",
+    "duration_ms": 181,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(atom,1),context(system:functor/3,A))",
+      "formal": "type_error(atom,1)",
+      "id": "f2",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "functor(A,1,2)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "f3",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "f3",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "functor([A],'.',2)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "f3",
+    "mode": "guarded",
+    "duration_ms": 182,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "f3",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "functor([A],'.',2)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "1",
+    "mode": "direct",
+    "duration_ms": 22,
+    "observation": {
+      "answers": [
+        "['L'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "1",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(=,A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "1",
+    "mode": "guarded",
+    "duration_ms": 182,
+    "observation": {
+      "answers": [
+        "['L'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "1",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,=),A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "2",
+    "mode": "direct",
+    "duration_ms": 22,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),context('$dcg':call_dcg/3,A))",
+      "formal": "type_error(callable,1)",
+      "id": "2",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(1,A)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "2",
+    "mode": "guarded",
+    "duration_ms": 182,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "2",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,1),A)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "39",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(instantiation_error,context('$dcg':call_dcg/3,A))",
+      "formal": "instantiation_error",
+      "id": "39",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(A,B)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "39",
+    "mode": "guarded",
+    "duration_ms": 189,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(instantiation_error,phrase/3)",
+      "formal": "instantiation_error",
+      "id": "39",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,A),B)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "40",
+    "mode": "direct",
+    "duration_ms": 24,
+    "observation": {
+      "answers": [
+        "['K'=[],'L'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "40",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "A=[],phrase(A,B)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "40",
+    "mode": "guarded",
+    "duration_ms": 182,
+    "observation": {
+      "answers": [
+        "['K'=[],'L'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "40",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "A=[],phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,A),B)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "24",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "[]"
+      ],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "24",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "asserta((a-->b))",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "24",
+    "mode": "guarded",
+    "duration_ms": 183,
+    "observation": {
+      "answers": [
+        "[]"
+      ],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "24",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "public_goal_guard:'$sandbox_asserta'(dcg_assessment,(a-->b))",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "25",
+    "mode": "direct",
+    "duration_ms": 22,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "25",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "clause((a-->b),A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "25",
+    "mode": "guarded",
+    "duration_ms": 188,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "25",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "public_goal_guard:'$sandbox_clause'(dcg_assessment,(a-->b),A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "26",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "culprit_difference",
+      "double_quotes": "string",
+      "exception": "error(existence_error(procedure,dcg_assessment:(-->)/2),context(dcg_assessment:enumerate/2,A))",
+      "formal": "existence_error(procedure,dcg_assessment:(-->)/2)",
+      "id": "26",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "A-->B",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "26",
+    "mode": "guarded",
+    "duration_ms": 182,
+    "observation": {
+      "answers": [],
+      "classification": "culprit_difference",
+      "double_quotes": "string",
+      "exception": "error(existence_error(procedure,dcg_assessment:(-->)/2),context(dcg_assessment:enumerate/2,A))",
+      "formal": "existence_error(procedure,dcg_assessment:(-->)/2)",
+      "id": "26",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "A-->B",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "3",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['L'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "3",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(!,A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "3",
+    "mode": "guarded",
+    "duration_ms": 182,
+    "observation": {
+      "answers": [
+        "['L'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "3",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,!),A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "4",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['L'=[a]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "4",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase([a],A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "4",
+    "mode": "guarded",
+    "duration_ms": 183,
+    "observation": {
+      "answers": [
+        "['L'=[a]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "4",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[a]),A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "5",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|b]),A)",
+      "formal": "type_error(list,[a|b])",
+      "id": "5",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase([a|b],A)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "5",
+    "mode": "guarded",
+    "duration_ms": 181,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|b]),A)",
+      "formal": "type_error(list,[a|b])",
+      "id": "5",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[a|b]),A)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "6",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|A]),B)",
+      "formal": "type_error(list,[a|A])",
+      "id": "6",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase([a|A],B)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "6",
+    "mode": "guarded",
+    "duration_ms": 184,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|A]),B)",
+      "formal": "type_error(list,[a|A])",
+      "id": "6",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[a|A]),B)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "38",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|A]),B)",
+      "formal": "type_error(list,[a|A])",
+      "id": "38",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase([a|A],A)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "38",
+    "mode": "guarded",
+    "duration_ms": 187,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|A]),B)",
+      "formal": "type_error(list,[a|A])",
+      "id": "38",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[a|A]),A)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "7",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|A]),B)",
+      "formal": "type_error(list,[a|A])",
+      "id": "7",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase([a|A],[a,b])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "7",
+    "mode": "guarded",
+    "duration_ms": 188,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|A]),B)",
+      "formal": "type_error(list,[a|A])",
+      "id": "7",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[a|A]),[a,b])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "8",
+    "mode": "direct",
+    "duration_ms": 24,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|A]),B)",
+      "formal": "type_error(list,[a|A])",
+      "id": "8",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase([a|A],[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "8",
+    "mode": "guarded",
+    "duration_ms": 185,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|A]),B)",
+      "formal": "type_error(list,[a|A])",
+      "id": "8",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[a|A]),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "9",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "[]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "9",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(([a],[]),[a])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "9",
+    "mode": "guarded",
+    "duration_ms": 189,
+    "observation": {
+      "answers": [
+        "[]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "9",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,([a],[])),[a])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "10",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,([]=[a|A],1,[]=A)),context('$dcg':call_dcg/3,B))",
+      "formal": "type_error(callable,([]=[a|A],1,[]=A))",
+      "id": "10",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(([a],{1}),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "10",
+    "mode": "guarded",
+    "duration_ms": 183,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,([]=[a|A],1,[]=A)),context(public_goal_guard:runtime_call_goal/2,B))",
+      "formal": "type_error(callable,([]=[a|A],1,[]=A))",
+      "id": "10",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,([a],{1})),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "37",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,((!,A=[]),A=[a|B],1,[]=B)),context('$dcg':call_dcg/3,C))",
+      "formal": "type_error(callable,((!,A=[]),A=[a|B],1,[]=B))",
+      "id": "37",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase((!,[a],{1}),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "37",
+    "mode": "guarded",
+    "duration_ms": 193,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,((!,A=[]),A=[a|B],1,[]=B)),context(public_goal_guard:runtime_call_goal/2,C))",
+      "formal": "type_error(callable,((!,A=[]),A=[a|B],1,[]=B))",
+      "id": "37",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,(!,[a],{1})),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "11",
+    "mode": "direct",
+    "duration_ms": 24,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "11",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(({!,fail};[]),A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "11",
+    "mode": "guarded",
+    "duration_ms": 184,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "11",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,({!,fail};[])),A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "12",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "[]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "12",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(([]|[a]),[a])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "12",
+    "mode": "guarded",
+    "duration_ms": 183,
+    "observation": {
+      "answers": [
+        "[]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "12",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,([]|[a])),[a])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "13",
+    "mode": "direct",
+    "duration_ms": 22,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "13",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(({fail},1),A)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "13",
+    "mode": "guarded",
+    "duration_ms": 189,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "13",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,({fail},1)),A)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "14",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['L'=[a]]",
+        "['L'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "14",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(([a];[]),A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "14",
+    "mode": "guarded",
+    "duration_ms": 181,
+    "observation": {
+      "answers": [
+        "['L'=[a]]",
+        "['L'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "14",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,([a];[])),A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "15",
+    "mode": "direct",
+    "duration_ms": 22,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,((fail,1),[]=A)),context('$dcg':call_dcg/3,B))",
+      "formal": "type_error(callable,((fail,1),[]=A))",
+      "id": "15",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase({fail,1},A)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "15",
+    "mode": "guarded",
+    "duration_ms": 187,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,((fail,1),[]=A)),context(public_goal_guard:runtime_call_goal/2,B))",
+      "formal": "type_error(callable,((fail,1),[]=A))",
+      "id": "15",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,{fail,1}),A)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "16",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "h",
+      "formal": "h",
+      "id": "16",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase({throw(h)},[a])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "16",
+    "mode": "guarded",
+    "duration_ms": 182,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "h",
+      "formal": "h",
+      "id": "16",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,{throw(h)}),[a])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "17",
+    "mode": "direct",
+    "duration_ms": 22,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|A]),B)",
+      "formal": "type_error(list,[a|A])",
+      "id": "17",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(({A=[]},[a|A]),[a])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "17",
+    "mode": "guarded",
+    "duration_ms": 183,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|A]),B)",
+      "formal": "type_error(list,[a|A])",
+      "id": "17",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,({A=[]},[a|A])),[a])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "18",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|A]),B)",
+      "formal": "type_error(list,[a|A])",
+      "id": "18",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase([a|A],B),A=[b]",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "18",
+    "mode": "guarded",
+    "duration_ms": 181,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|A]),B)",
+      "formal": "type_error(list,[a|A])",
+      "id": "18",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[a|A]),B),A=[b]",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "19",
+    "mode": "direct",
+    "duration_ms": 24,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|A]),B)",
+      "formal": "type_error(list,[a|A])",
+      "id": "19",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(([a|A],1),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "19",
+    "mode": "guarded",
+    "duration_ms": 182,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,[a|A]),B)",
+      "formal": "type_error(list,[a|A])",
+      "id": "19",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,([a|A],1)),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "20",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "20",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase((1,[a|A]),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "20",
+    "mode": "guarded",
+    "duration_ms": 183,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "20",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,(1,[a|A])),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "21",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "21",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase((1,[a|b]),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "21",
+    "mode": "guarded",
+    "duration_ms": 182,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "21",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,(1,[a|b])),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "46",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "46",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase((1,{2}),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "46",
+    "mode": "guarded",
+    "duration_ms": 186,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "46",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,(1,{2})),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "47",
+    "mode": "direct",
+    "duration_ms": 22,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "47",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(({2},1),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "47",
+    "mode": "guarded",
+    "duration_ms": 181,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "47",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,({2},1)),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "48",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "48",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase((1,(2,[A|B],3),4),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "48",
+    "mode": "guarded",
+    "duration_ms": 184,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "48",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,(1,(2,[A|B],3),4)),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "22",
+    "mode": "direct",
+    "duration_ms": 25,
+    "observation": {
+      "answers": [
+        "['L'=[x,y]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "22",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(([x]->[y]|[z]),A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "22",
+    "mode": "guarded",
+    "duration_ms": 185,
+    "observation": {
+      "answers": [
+        "['L'=[x,y]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "22",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,([x]->[y]|[z])),A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "23",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['L'=[x,y]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "23",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(([x]->[y];[z]),A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "23",
+    "mode": "guarded",
+    "duration_ms": 185,
+    "observation": {
+      "answers": [
+        "['L'=[x,y]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "23",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,([x]->[y];[z])),A)",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "45",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "45",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(([a],phrase(2)),[])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "45",
+    "mode": "guarded",
+    "duration_ms": 185,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "45",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,([a],phrase(2))),[])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "27",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "[]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "27",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(\\+[a],[])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "27",
+    "mode": "guarded",
+    "duration_ms": 183,
+    "observation": {
+      "answers": [
+        "[]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "27",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,\\+[a]),[])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "28",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "28",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(\\+1,A)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "28",
+    "mode": "guarded",
+    "duration_ms": 189,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "28",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,\\+1),A)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "29",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "29",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(([a],\\+1),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "29",
+    "mode": "guarded",
+    "duration_ms": 181,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "29",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,([a],\\+1)),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "30",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "30",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(([a],\\+1;[]),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "30",
+    "mode": "guarded",
+    "duration_ms": 181,
+    "observation": {
+      "answers": [],
+      "classification": "different",
+      "double_quotes": "string",
+      "exception": "error(type_error(callable,1),A)",
+      "formal": "type_error(callable,1)",
+      "id": "30",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,([a],\\+1;[])),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "31",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "culprit_difference",
+      "double_quotes": "string",
+      "exception": "error(existence_error(procedure,dcg_assessment:phrase/4),context('$dcg':call_dcg/3,A))",
+      "formal": "existence_error(procedure,dcg_assessment:phrase/4)",
+      "id": "31",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(phrase(phrase,[]),A)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "31",
+    "mode": "guarded",
+    "duration_ms": 184,
+    "observation": {
+      "answers": [],
+      "classification": "culprit_difference",
+      "double_quotes": "string",
+      "exception": "error(existence_error(procedure,dcg_assessment:phrase/4),context(public_goal_guard:runtime_call_goal/2,A))",
+      "formal": "existence_error(procedure,dcg_assessment:phrase/4)",
+      "id": "31",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,phrase(phrase,[])),A)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "32",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "culprit_difference",
+      "double_quotes": "string",
+      "exception": "error(existence_error(procedure,dcg_assessment:[]/2),context(system:call/3,A))",
+      "formal": "existence_error(procedure,dcg_assessment:[]/2)",
+      "id": "32",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(call([]),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "32",
+    "mode": "guarded",
+    "duration_ms": 185,
+    "observation": {
+      "answers": [],
+      "classification": "culprit_difference",
+      "double_quotes": "string",
+      "exception": "error(existence_error(procedure,dcg_assessment:[]/2),context(public_goal_guard:runtime_call_goal/2,A))",
+      "formal": "existence_error(procedure,dcg_assessment:[]/2)",
+      "id": "32",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,call([])),[])",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "33",
+    "mode": "direct",
+    "duration_ms": 22,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "33",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "A=[],phrase([a|A],[b])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "33",
+    "mode": "guarded",
+    "duration_ms": 183,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "33",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "A=[],phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[a|A]),[b])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "36",
+    "mode": "direct",
+    "duration_ms": 22,
+    "observation": {
+      "answers": [
+        "['L'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "36",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "A=[],phrase([a|A],[a])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "36",
+    "mode": "guarded",
+    "duration_ms": 182,
+    "observation": {
+      "answers": [
+        "['L'=[]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "36",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "A=[],phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[a|A]),[a])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "34",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "34",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase([a],[b])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "34",
+    "mode": "guarded",
+    "duration_ms": 182,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "34",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[a]),[b])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "35",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['L'=1]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "35",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase(!,[A]);B=1",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "35",
+    "mode": "guarded",
+    "duration_ms": 183,
+    "observation": {
+      "answers": [
+        "['L'=1]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "35",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,!),[A]);B=1",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "41",
+    "mode": "direct",
+    "duration_ms": 22,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,non_list),A)",
+      "formal": "type_error(list,non_list)",
+      "id": "41",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase([],non_list)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "41",
+    "mode": "guarded",
+    "duration_ms": 182,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,non_list),A)",
+      "formal": "type_error(list,non_list)",
+      "id": "41",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[]),non_list)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "42",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "42",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase([],[a|non_list])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "42",
+    "mode": "guarded",
+    "duration_ms": 196,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "42",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[]),[a|non_list])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "43",
+    "mode": "direct",
+    "duration_ms": 26,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,non_list),A)",
+      "formal": "type_error(list,non_list)",
+      "id": "43",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase([],A,non_list)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "43",
+    "mode": "guarded",
+    "duration_ms": 186,
+    "observation": {
+      "answers": [],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "error(type_error(list,non_list),A)",
+      "formal": "type_error(list,non_list)",
+      "id": "43",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[]),A,non_list)",
+      "stage": "execution",
+      "terminal": "exception",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "44",
+    "mode": "direct",
+    "duration_ms": 23,
+    "observation": {
+      "answers": [
+        "['L'=[a|non_list]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "44",
+      "iso": false,
+      "mode": "direct",
+      "prepared": "phrase([],A,[a|non_list])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  },
+  {
+    "case_id": "44",
+    "mode": "guarded",
+    "duration_ms": 182,
+    "observation": {
+      "answers": [
+        "['L'=[a|non_list]]"
+      ],
+      "classification": "match",
+      "double_quotes": "string",
+      "exception": "",
+      "formal": "",
+      "id": "44",
+      "iso": false,
+      "mode": "guarded",
+      "prepared": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[]),A,[a|non_list])",
+      "stage": "execution",
+      "terminal": "exhausted",
+      "exit_code": 0
+    }
+  }
+]

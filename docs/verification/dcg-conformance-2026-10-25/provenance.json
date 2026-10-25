@@ -1,0 +1,52 @@
+{
+  "started_at": "2026-10-25T10:12:51.504707+00:00",
+  "runtime_revision": "70c88e21d2019b2dedf449a0b8b11a7049ab0e16",
+  "archive_sha256": "ae205854a9c0bb390c3625cf9d0b59c6ee822fb5ec44edeff90766a0c3db558d",
+  "engine": "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+  "engine_sha256": "915c4758b6aba3d01ade4fe4f46332b6f526ad6c70a8e2574dd05278c2b0ce9c",
+  "version": "SWI-Prolog version 10.1.18 for arm64-darwin",
+  "process_timeout_seconds": 4,
+  "goal_timeout_seconds": 1,
+  "answer_limit": 11,
+  "source_pending_edits_excluded": true,
+  "mode": "no servers started; disposable process/module per case",
+  "input_hashes": {
+    "probe.pl": "23549ebfa18145c377aa88e3ea6db7cb4c556c5e30a896e7261aefe7bae20adc",
+    "assess.py": "f52457f249f27568b35a511af5a5e58b444881f456eaebfba56533708cccc3ec",
+    "cases.json": "329d9503b93d1135766f14fd632cabf4e68f0bb20db9915f90b6240cffacddd6",
+    "cases-with-expectations.json": "0fe0523c413ee3c19bc6ece5fb74be4950a52376e484f9404e9d7c5bd41185a0",
+    "phrase_quad.pl": "42d88c6a4a659593342c614bf056847291897cacfa49366818e6cc65a40ae1f9"
+  },
+  "boot_dcg": {
+    "path": "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/lib/swipl/boot/dcg.pl",
+    "sha256": "1ca6250ac9022058d7fe0e44be8875358728bb0d981ec47a2fbc8ba8c7cbb133",
+    "inspected_lines": [
+      [
+        117,
+        129
+      ],
+      [
+        165,
+        169
+      ]
+    ]
+  },
+  "supporting_inputs": {
+    "matcher_tests.pl": "9ca0afc9e7ae07cd2c1b791da605b2f1d8a3a7498684adff9618a8abcf89b92d",
+    "text_and_controls.py": "09daf80c31f7045e2a14355787b05eb47cc00c0997df29b26d432e73476b8da3",
+    "text-cases.json": "e99928acea09093bbae9ce6c3272d958093272cd42ff81aae061e35c9b1e9137",
+    "guard-controls.json": "3e1a727c826170bd0d01de9b6f6c2f98cfb28bc7a50ea2def9f1e08da8be58df",
+    "sequence-cases.json": "74f9f3bc977f41e07b13bbcfebe329afeeb424b0818e214316f60a43aec2be49",
+    "matrix.py": "b9b66dc14f18182472cff719525c06520274eb257fdca805f879470bf6e0951c"
+  },
+  "preservation_final": {
+    "native_prolog": true,
+    "trealla_sources": true,
+    "engines": true,
+    "library": true,
+    "live": true,
+    "pin": true,
+    "installed": true,
+    "tracked_working": true
+  }
+}

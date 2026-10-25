@@ -1,0 +1,1 @@
+{"answers": ["['L'=[a]]" ],"classification":"match","double_quotes":"string","exception":"","formal":"","id":"4","iso":false,"mode":"guarded","prepared":"phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,[a]),A)","stage":"execution","terminal":"exhausted"}

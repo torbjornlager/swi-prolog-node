@@ -1,0 +1,408 @@
+[
+  {
+    "id": "c1",
+    "query": "call(1).",
+    "expected_description": "type_error(callable,1).",
+    "html_expected_description": "type_error(callable,1).",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "c2",
+    "query": "call((1,fail)).",
+    "expected_description": "type_error(callable,(1,fail)).",
+    "html_expected_description": "type_error(callable,(1,fail)).",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "c3",
+    "query": "call((fail,1)).",
+    "expected_description": "type_error(callable,(fail,1)).",
+    "html_expected_description": "type_error(callable,(fail,1)).",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "c4",
+    "query": "call((!;1)).",
+    "expected_description": "type_error(callable,(!;1)).",
+    "html_expected_description": "type_error(callable,(!;1)).",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "c5",
+    "query": "call((!;\\+1)).",
+    "expected_description": "true.",
+    "html_expected_description": "true.",
+    "historical_swi": "t._e.(c.,...)"
+  },
+  {
+    "id": "c6",
+    "query": "call((!;call(1))).",
+    "expected_description": "true.",
+    "html_expected_description": "true.",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "c7",
+    "query": "call((\\+!;X=a)).",
+    "expected_description": "X=a.",
+    "html_expected_description": "X=a.",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "f1",
+    "query": "functor(T,F,A).",
+    "expected_description": "instantiation_error.",
+    "html_expected_description": "instantiation_error.",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "f2",
+    "query": "functor(T,1,2).",
+    "expected_description": "type_error(atom,1).",
+    "html_expected_description": "type_error(atom,1).",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "f3",
+    "query": "functor([_],.,2).",
+    "expected_description": "true.",
+    "html_expected_description": "true.",
+    "historical_swi": "false"
+  },
+  {
+    "id": "1",
+    "query": "phrase(=,L).",
+    "expected_description": "L = []\n   |  existence_error(non_terminal,(=)//0).",
+    "html_expected_description": "L = []\n\n| existence_error(non_terminal,(=)//0).",
+    "historical_swi": "L"
+  },
+  {
+    "id": "2",
+    "query": "phrase(1,L).",
+    "expected_description": "type_error(callable,1).",
+    "html_expected_description": "type_error(callable,1).",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "39",
+    "query": "phrase(K,L).",
+    "expected_description": "instantiation_error.",
+    "html_expected_description": "instantiation_error.",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "40",
+    "query": "K = [], phrase(K,L).",
+    "expected_description": "K = [], L = [].",
+    "html_expected_description": "K = [], L = [].",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "24",
+    "query": "asserta((a-->b)).",
+    "expected_description": "permission_error(modify,static_procedure,(-->)/2).",
+    "html_expected_description": "permission_error(modify,static_procedure,(-->)/2).",
+    "historical_swi": "true"
+  },
+  {
+    "id": "25",
+    "query": "clause((a-->b),B).",
+    "expected_description": "permission_error(access,private_procedure,(-->)/2).",
+    "html_expected_description": "permission_error(access,private_procedure,(-->)/2).",
+    "historical_swi": "B=true"
+  },
+  {
+    "id": "26",
+    "query": "(X-->Y).",
+    "expected_description": "existence_error(procedure,(-->)/2).",
+    "html_expected_description": "existence_error(procedure,(-->)/2).",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "3",
+    "query": "phrase(!,L).",
+    "expected_description": "L = [].",
+    "html_expected_description": "L = [].",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "4",
+    "query": "phrase([a],L).",
+    "expected_description": "L = [a].",
+    "html_expected_description": "L = [a].",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "5",
+    "query": "phrase([a|b],L).",
+    "expected_description": "type_error(list,[a|b]).",
+    "html_expected_description": "type_error(list,[a|b]).",
+    "historical_swi": "..(l._o._p.,..)"
+  },
+  {
+    "id": "6",
+    "query": "phrase([a|L],K).",
+    "expected_description": "instantiation_error.",
+    "html_expected_description": "instantiation_error.",
+    "historical_swi": "L = [], K = [a] ; ..."
+  },
+  {
+    "id": "38",
+    "query": "phrase([a|L],L).",
+    "expected_description": "instantiation_error.",
+    "html_expected_description": "instantiation_error.",
+    "historical_swi": "loops"
+  },
+  {
+    "id": "7",
+    "query": "phrase([a|L],[a,b]).",
+    "expected_description": "instantiation_error.",
+    "html_expected_description": "instantiation_error.",
+    "historical_swi": "L = [b]"
+  },
+  {
+    "id": "8",
+    "query": "phrase([a|L],[]).",
+    "expected_description": "instantiation_error.",
+    "html_expected_description": "instantiation_error.",
+    "historical_swi": "false"
+  },
+  {
+    "id": "9",
+    "query": "phrase(([a],[]),[a]).",
+    "expected_description": "true.",
+    "html_expected_description": "true.",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "10",
+    "query": "phrase(([a],{1}),[]).",
+    "expected_description": "type_error(callable,(...,...)).",
+    "html_expected_description": "type_error(callable,(...,...)).",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "37",
+    "query": "phrase((!,[a],{1}),[]).",
+    "expected_description": "type_error(callable,(...,...)).",
+    "html_expected_description": "type_error(callable,(...,...)).",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "11",
+    "query": "phrase(({!,fail};[]),L).",
+    "expected_description": "false.",
+    "html_expected_description": "false.",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "12",
+    "query": "phrase('|'([],[a]),[a]).",
+    "expected_description": "true.",
+    "html_expected_description": "true.",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "13",
+    "query": "phrase(({fail},1),L).",
+    "expected_description": "type_error(callable,1).",
+    "html_expected_description": "type_error(callable,1).",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "14",
+    "query": "phrase(([a];[]),L).",
+    "expected_description": "L = [a] ; L = [].",
+    "html_expected_description": "L = [a] ; L = [].",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "15",
+    "query": "phrase({fail,1},L).",
+    "expected_description": "type_error(callable,((fail,1),[]=_A))\n   |  type_error(callable,((fail,1),...)).",
+    "html_expected_description": "type_error(callable,((fail,1),[]=_A))\n\n| type_error(callable,((fail,1),...)).",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "16",
+    "query": "phrase({throw(h)},[a]).",
+    "expected_description": "throw(h).",
+    "html_expected_description": "throw(h).",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "17",
+    "query": "phrase(({L=[]},[a|L]),[a]).",
+    "expected_description": "instantiation_error.",
+    "html_expected_description": "instantiation_error.",
+    "historical_swi": "L = []"
+  },
+  {
+    "id": "18",
+    "query": "phrase([a|L],K), L=[b].",
+    "expected_description": "instantiation_error.",
+    "html_expected_description": "instantiation_error.",
+    "historical_swi": "K = [a,b] ; loops"
+  },
+  {
+    "id": "19",
+    "query": "phrase(([a|L],1),[]).",
+    "expected_description": "type_error(callable,1)\n   |  instantiation_error.",
+    "html_expected_description": "type_error(callable,1)\n\n| instantiation_error.",
+    "historical_swi": "t"
+  },
+  {
+    "id": "20",
+    "query": "phrase((1,[a|L]),[]).",
+    "expected_description": "type_error(callable,1)\n   |  instantiation_error.",
+    "html_expected_description": "type_error(callable,1)\n\n| instantiation_error.",
+    "historical_swi": "t"
+  },
+  {
+    "id": "21",
+    "query": "phrase((1,[a|b]),[]).",
+    "expected_description": "type_error(callable,1)\n   |  type_error(list,[a|b]).",
+    "html_expected_description": "type_error(callable,1)\n\n|  type_error(list,[a|b]).",
+    "historical_swi": "c"
+  },
+  {
+    "id": "46",
+    "query": "phrase((1,{2}),[]).",
+    "expected_description": "type_error(callable,1).",
+    "html_expected_description": "type_error(callable,1).",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "47",
+    "query": "phrase(({2},1),[]).",
+    "expected_description": "type_error(callable,1).",
+    "html_expected_description": "type_error(callable,1).",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "48",
+    "query": "phrase((1,(2,[_|_],3),4),[]).",
+    "expected_description": "type_error(callable,1)\n   |  type_error(callable,2)\n   |  instantiation_error\n   |  type_error(callable,3)\n   |  type_error(callable,4).",
+    "html_expected_description": "type_error(callable,1)\n\n|  type_error(callable,2)\n\n|  instantiation_error\n\n|  type_error(callable,3)\n\n|  type_error(callable,4).",
+    "historical_swi": "1"
+  },
+  {
+    "id": "22",
+    "query": "phrase('|'(([x]->[y]),[z]),L).",
+    "expected_description": "representation_error(dcg_body)\n   |  L=[x,y].",
+    "html_expected_description": "representation_error(dcg_body)\n\n| L=[x,y].",
+    "historical_swi": "L"
+  },
+  {
+    "id": "23",
+    "query": "phrase(;(([x]->[y]),[z]),L).",
+    "expected_description": "L=[x,y].",
+    "html_expected_description": "L=[x,y].",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "45",
+    "query": "phrase(([a],phrase(2)),[]).",
+    "expected_description": "false.",
+    "html_expected_description": "false.",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "27",
+    "query": "phrase(\\+[a],[]).",
+    "expected_description": "representation_error(dcg_body)\n   |  true.",
+    "html_expected_description": "representation_error(dcg_body)\n\n| true.",
+    "historical_swi": "t"
+  },
+  {
+    "id": "28",
+    "query": "phrase(\\+1,L).",
+    "expected_description": "representation_error(dcg_body)\n   |  type_error(callable,1).",
+    "html_expected_description": "representation_error(dcg_body)\n\n| type_error(callable,1).",
+    "historical_swi": "t"
+  },
+  {
+    "id": "29",
+    "query": "phrase(([a],\\+1),[]).",
+    "expected_description": "representation_error(dcg_body)\n   |  false.",
+    "html_expected_description": "representation_error(dcg_body)\n\n| false.",
+    "historical_swi": "t._e.(..,1)"
+  },
+  {
+    "id": "30",
+    "query": "phrase(([a],\\+1;[]),[]).",
+    "expected_description": "representation_error(dcg_body)\n   |  true.",
+    "html_expected_description": "representation_error(dcg_body)\n\n| true.",
+    "historical_swi": "t._e.(..,1)"
+  },
+  {
+    "id": "31",
+    "query": "phrase(phrase(phrase,[]),L).",
+    "expected_description": "existence_error(procedure,phrase/4)\n   |  existence_error(non_terminal,phrase//2)\n   |  L = [].",
+    "html_expected_description": "existence_error(procedure,phrase/4)\n\n| existence_error(non_terminal,phrase//2)\n\n| L = [].",
+    "historical_swi": "p"
+  },
+  {
+    "id": "32",
+    "query": "phrase(call([]),[]).",
+    "expected_description": "existence_error(procedure,[]/2)\n   |  true.",
+    "html_expected_description": "existence_error(procedure,[]/2)\n\n| true.",
+    "historical_swi": "e"
+  },
+  {
+    "id": "33",
+    "query": "L=[],phrase([a|L],[b]).",
+    "expected_description": "false.",
+    "html_expected_description": "false.",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "36",
+    "query": "L=[],phrase([a|L],[a]).",
+    "expected_description": "L=[].",
+    "html_expected_description": "L=[].",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "34",
+    "query": "phrase([a],[b]).",
+    "expected_description": "false.",
+    "html_expected_description": "false.",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "35",
+    "query": "phrase(!,[_]) ; L=1.",
+    "expected_description": "L=1.",
+    "html_expected_description": "L=1.",
+    "historical_swi": "OK"
+  },
+  {
+    "id": "41",
+    "query": "phrase([], non_list).",
+    "expected_description": "false\n   |  type_error(list,non_list).",
+    "html_expected_description": "false\n\n| type_error(list,non_list).",
+    "historical_swi": "t"
+  },
+  {
+    "id": "42",
+    "query": "phrase([], [a|non_list]).",
+    "expected_description": "false\n   |  type_error(list,[a|non_list]).",
+    "html_expected_description": "false\n\n| type_error(list,[a|non_list]).",
+    "historical_swi": "f"
+  },
+  {
+    "id": "43",
+    "query": "phrase([], L,non_list).",
+    "expected_description": "L = non_list\n   |  type_error(list,non_list).",
+    "html_expected_description": "L = non_list\n\n| type_error(list,non_list).",
+    "historical_swi": "t"
+  },
+  {
+    "id": "44",
+    "query": "phrase([], L,[a|non_list]).",
+    "expected_description": "L = [a|non_list]\n   |  type_error(list,[a|non_list]).",
+    "html_expected_description": "L = [a|non_list]\n\n| type_error(list,[a|non_list]).",
+    "historical_swi": "L"
+  }
+]

@@ -1,0 +1,27 @@
+{
+  "direct": {
+    "listed-outcome match": 42,
+    "comparison difference": 13,
+    "qualified error indicator": 3
+  },
+  "guarded": {
+    "listed-outcome match": 42,
+    "comparison difference": 13,
+    "qualified error indicator": 3
+  },
+  "dcg_numeric_cases": {
+    "direct": {
+      "listed-outcome match": 34,
+      "comparison difference": 11,
+      "qualified error indicator": 3
+    },
+    "guarded": {
+      "listed-outcome match": 34,
+      "comparison difference": 11,
+      "qualified error indicator": 3
+    }
+  },
+  "paired_semantic_outcomes_equal": 58,
+  "timeouts": 0,
+  "answer_caps": 0
+}

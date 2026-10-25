@@ -1,0 +1,42 @@
+[
+  {
+    "id": "GC-001",
+    "query": "phrase({nb_getval(dcg_forbidden,_)},[]).",
+    "expected": [
+      {
+        "kind": "error",
+        "formal": "permission_error(call,sandboxed,...)"
+      }
+    ]
+  },
+  {
+    "id": "GC-002",
+    "query": "phrase(system:({nb_getval(dcg_forbidden,_)}),[]).",
+    "expected": [
+      {
+        "kind": "error",
+        "formal": "permission_error(call,sandboxed,...)"
+      }
+    ]
+  },
+  {
+    "id": "GC-003",
+    "query": "phrase(public_goal_guard:'$sandbox_dcg'(dcg_assessment,{nb_getval(dcg_forbidden,_)}),[]).",
+    "expected": [
+      {
+        "kind": "error",
+        "formal": "permission_error(call,sandboxed,...)"
+      }
+    ]
+  },
+  {
+    "id": "GC-004",
+    "query": "phrase({catch(throw('$abort_goal'),_,Recovered=true)},[]).",
+    "expected": [
+      {
+        "kind": "error",
+        "formal": "'$abort_goal'"
+      }
+    ]
+  }
+]

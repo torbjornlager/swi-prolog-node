@@ -1,0 +1,20 @@
+{
+  "core_observations": 116,
+  "paired_semantic_outcomes_equal": 58,
+  "text_observations_match": 32,
+  "guard_controls_match": 4,
+  "sequence_controls_match": 2,
+  "matcher_tests_pass": 12,
+  "preservation": {
+    "native_prolog": true,
+    "trealla_sources": true,
+    "engines": true,
+    "library": true,
+    "live": true,
+    "pin": true,
+    "installed": true,
+    "tracked_working": true
+  },
+  "input_hashes_current": true,
+  "note": "Raw empty stderr/stdout files omitted; structured outcomes and nonempty streams retained."
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "SC-001",
+    "query": "asserta((a-->b)),clause((a-->b),B).",
+    "expected": [
+      {
+        "kind": "solutions",
+        "answers": [
+          "B=true"
+        ]
+      }
+    ]
+  }
+]

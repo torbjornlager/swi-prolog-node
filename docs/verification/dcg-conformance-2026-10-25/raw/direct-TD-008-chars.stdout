@@ -1,0 +1,1 @@
+{"answers": ["['L'=[a,b]]" ],"classification":"match","double_quotes":"chars","exception":"","formal":"","id":"TD-008-chars","iso":false,"mode":"direct","prepared":"phrase([a,b],A)","stage":"execution","terminal":"exhausted"}
