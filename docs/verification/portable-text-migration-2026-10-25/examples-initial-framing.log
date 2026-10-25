@@ -1,0 +1,49 @@
+Warning: /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:16:
+Warning:    Local definition of test_text_examples:input/2 overrides weak import from actors
+% [1/10] portable_text_exa..rial_receive_format ... **FAILED (0.052 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:30:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_receive_format: assertion
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:30:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_receive_format: assertion failed
+	Assertion: error(error(syntax_error(operator_expected),string("(self(Self),\r\n   Self ! goodbye(bob),\r\n   receive({\r\n       hello(Name) ->\r\n           format(\"Hello, ~w!~n\", [Name]) ;\r\n       goodbye(Name) ->\r\n           format(\"Goodbye, ~w!~n\", [Name])\r\n   }). ",195)))==success([true],false)
+
+% [2/10] portable_text_exa..torial_guard_format ... **FAILED (0.050 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:32:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_guard_format: assertion
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:32:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_guard_format: assertion at /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/lib/swipl/boot/init.pl:695 failed
+	Assertion: error(error(syntax_error(operator_expected),string("(self(Self),\r\n   Self ! number(-2),\r\n   receive({\r\n       number(N) if N > 0 ->\r\n           format(\"Positive number: ~p~n\", [N]) ;\r\n       number(N) if N =< 0 ->\r\n           format(\"Non-positive number: ~p~n\", [N])\r\n   }). ",220)))==success([true],false)
+
+% [3/10] portable_text_exa..rial_timeout_format ... **FAILED (0.033 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:34:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_timeout_format: assertion
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:34:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_timeout_format: assertion at /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/lib/swipl/boot/init.pl:695 failed
+	Assertion: error(error(syntax_error(operator_expected),string("(receive({\r\n       person(Name) ->\r\n           format(\"Hello, ~w!~n\", [Name])\r\n   }, [\r\n       timeout(1),\r\n       on_timeout(writeln('No person arrived.'))\r\n   ]). ",162)))==success([true],false)
+
+% [4/10] portable_text_exa..rivate_source_price ... **FAILED (0.033 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:36:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_private_source_price: assertion
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:36:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_private_source_price: assertion at /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/lib/swipl/boot/init.pl:695 failed
+	Assertion: error(error(syntax_error(punct(',',')')),string("(self(Self),\r\n   spawn(\r\n       ( price(widget, Price),\r\n         Self ! discounted_price(Price)\r\n       ),\r\n       _,\r\n       [ src_text(\"\r\n             price(Item, Price) :-\r\n                 list_price(Item, ListPrice),\r\n                 Price is ListPrice * 0.9.\r\n         \")\r\n       ]\r\n   ),\r\n   receive({discounted_price(Price) -> true}).)+(Price) . ",343)))==success([90.0],false)
+
+% [5/10] portable_text_exa..private_source_list ... **FAILED (0.035 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:38:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_private_source_list: assertion
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:38:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_private_source_list: assertion at /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/lib/swipl/boot/init.pl:695 failed
+	Assertion: error(error(syntax_error(punct(',',')')),string("(self(Self),\r\n   spawn(\r\n       ( findall(Item-Price,\r\n                 list_price(Item, Price),\r\n                 Prices),\r\n         Self ! private_prices(Prices)\r\n       ),\r\n       _,\r\n       [\r\n        src_text(\"list_price(widget, 80).\")\r\n       ]\r\n   ),\r\n   receive({private_prices(Prices) -> true}).)+(Prices) . ",303)))==success([[widget-80]],false)
+
+% [6/10] portable_text_exa..s:word_list_grammar ..... passed (0.003 sec)
+% [7/10] portable_text_exa..mmon_and_n3_overlay ... **FAILED (0.050 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:46:
+ERROR: [Thread main]     test portable_text_example_checks:shared_db_common_and_n3_overlay: assertion
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:46:
+ERROR: [Thread main]     test portable_text_example_checks:shared_db_common_and_n3_overlay: assertion at /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/lib/swipl/boot/init.pl:695 failed
+	Assertion: success([100-n3_shared_db],true)==success([100-n3_shared_db],false)
+
+% [8/10] portable_text_exa..ist_at_native_guard ..... passed (0.002 sec)
+% [9/10] portable_text_exa..ice_validation_only ..... passed (0.002 sec)
+% [10/10] portable_text_exa..ice_validation_only .... passed (0.004 sec)
+ERROR: [Thread main] 6 tests failed

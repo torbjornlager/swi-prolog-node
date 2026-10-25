@@ -1,0 +1,7 @@
+{
+  "default_test_bodies_preserved": true,
+  "final_test_logs_have_no_failures": true,
+  "all_examples_unchanged": true,
+  "runtime_modules_unchanged": true,
+  "installed_and_live_nodes_unchanged": true
+}

@@ -1,0 +1,52 @@
+[
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "mpc-receive-clauses",
+    "line": 542,
+    "text": "?- self(Self),\n   Self ! goodbye(bob),\n   receive({\n       hello(Name) ->\n           format(\"Hello, ~w!~n\", [Name]) ;\n       goodbye(Name) ->\n           format(\"Goodbye, ~w!~n\", [Name])\n   }).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "mpc-guard",
+    "line": 610,
+    "text": "?- self(Self),\n   Self ! number(-2),\n   receive({\n       number(N) if N > 0 ->\n           format(\"Positive number: ~p~n\", [N]) ;\n       number(N) if N =< 0 ->\n           format(\"Non-positive number: ~p~n\", [N])\n   }).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "mpc-timeout",
+    "line": 630,
+    "text": "?- receive({\n       person(Name) ->\n           format(\"Hello, ~w!~n\", [Name])\n   }, [\n       timeout(1),\n       on_timeout(writeln('No person arrived.'))\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "shadow-private-price",
+    "line": 947,
+    "text": "?- self(Self),\n   spawn(\n       ( price(widget, Price),\n         Self ! discounted_price(Price)\n       ),\n       _,\n       [ src_text(\"\n             price(Item, Price) :-\n                 list_price(Item, ListPrice),\n                 Price is ListPrice * 0.9.\n         \")\n       ]\n   ),\n   receive({discounted_price(Price) -> true})."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "shadow-private-list",
+    "line": 998,
+    "text": "?- self(Self),\n   spawn(\n       ( findall(Item-Price,\n                 list_price(Item, Price),\n                 Prices),\n         Self ! private_prices(Prices)\n       ),\n       _,\n       [\n        src_text(\"list_price(widget, 80).\")\n       ]\n   ),\n   receive({private_prices(Prices) -> true})."
+  }
+]

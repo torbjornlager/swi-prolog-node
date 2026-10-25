@@ -9147,7 +9147,8 @@ test(rpc_constrained_answer_after_solutions,
 %  D5: double-quoted text is a string on the wire, whatever the host's
 %  default double_quotes flag.
 test(double_quotes_fixed_as_string_on_the_wire,
-     true((GoalString == true, AnswerValue == "ab", SourceString == true))) :-
+     [condition(text_config:text_double_quotes(string)),
+      true((GoalString == true, AnswerValue == "ab", SourceString == true))]) :-
     current_prolog_flag(double_quotes, Old),
     setup_call_cleanup(
         set_prolog_flag(double_quotes, codes),
@@ -9163,6 +9164,26 @@ test(double_quotes_fixed_as_string_on_the_wire,
             )),
         set_prolog_flag(double_quotes, Old)).
 
+% The opt-in reader has its own exact assertions. Keep the native default
+% tests above/below unchanged rather than silently weakening their contract.
+test(double_quotes_fixed_as_chars_on_the_wire,
+     [condition(text_config:text_double_quotes(chars)),
+      true((GoalChars == true, AnswerValue == [a,b], SourceChars == true))]) :-
+    current_prolog_flag(double_quotes, Old),
+    setup_call_cleanup(
+        set_prolog_flag(double_quotes, codes),
+        with_node_server(URI,
+            (   call_url(URI, '(X = "ab", (X == [a,b] -> S = true ; S = false))',
+                         'S', 0, 1, '', none, URL1),
+                read_answer(URL1, success([GoalChars], _)),
+                rpc(URI, X0 = "ab"),
+                AnswerValue = X0,
+                call_url(URI, '(p(X), (X == [q] -> S = true ; S = false))', 'S',
+                         0, 1, 'p("q").', none, URL2),
+                read_answer(URL2, success([SourceChars], _))
+            )),
+        set_prolog_flag(double_quotes, Old)).
+
 %  D5: rpc writes goals as canonical term text: no portray hooks, no
 %  operator syntax, no numbervars.
 :- op(700, xfx, ===>).
@@ -9170,7 +9191,14 @@ test(double_quotes_fixed_as_string_on_the_wire,
 user:portray(d5_secret) :- write(d5_public).
 
 test(rpc_term_text_is_canonical,
-     true(X == f('$VAR'(1), "s", 'a b', {x}, -(1), (a ===> b), d5_secret))) :-
+     [condition(text_config:text_double_quotes(string)),
+      true(X == f('$VAR'(1), "s", 'a b', {x}, -(1), (a ===> b), d5_secret))]) :-
+    with_node_server(URI,
+        rpc(URI, X = f('$VAR'(1), "s", 'a b', {x}, -(1), (a ===> b), d5_secret))).
+
+test(rpc_term_text_is_canonical_chars,
+     [condition(text_config:text_double_quotes(chars)),
+      true(X == f('$VAR'(1), [s], 'a b', {x}, -(1), (a ===> b), d5_secret))]) :-
     with_node_server(URI,
         rpc(URI, X = f('$VAR'(1), "s", 'a b', {x}, -(1), (a ===> b), d5_secret))).
 

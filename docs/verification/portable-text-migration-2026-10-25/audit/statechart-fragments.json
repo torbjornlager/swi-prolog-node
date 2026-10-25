@@ -1,0 +1,202 @@
+[
+  {
+    "path": "examples/statecharts/01 pause-and-resume.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 5,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/02 spaghetti.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 13,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/03 emotions.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 6,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/04 clock.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 5,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/05 pingpong.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 5,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/06 parallel.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 7,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/07 deferred-events.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 6,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/08 closure.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 5,
+    "review_fragments": [
+      {
+        "element": "go",
+        "field": "text",
+        "text": "format(\"Closure: ~w\", [List])"
+      }
+    ]
+  },
+  {
+    "path": "examples/statecharts/09 gcd.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 7,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/10 shared-database.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 4,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/11 boxshop-1.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 12,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/12 boxshop-2.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 16,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/13 spawn-actor.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 8,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/14 spawn-toplevel.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 8,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/15 spawn-server.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 5,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/16 spawn-supervisor.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 4,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/17 spawn-statechart.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 7,
+    "review_fragments": [
+      {
+        "element": "spawn",
+        "field": "text",
+        "text": "<statechart version=\"0.2\" initial=\"Waiting\">\n                <state id=\"Waiting\">\n                    <onentry>child_value(Value), output(nested(Value))</onentry>\n                    <go to=\"Finished\" on=\"finish\" />\n                </state>\n                <final id=\"Finished\" />\n            </statechart>"
+      }
+    ]
+  },
+  {
+    "path": "examples/statecharts/18 service-request.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 57,
+    "review_fragments": []
+  },
+  {
+    "path": "examples/statecharts/19 model-statechart.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 24,
+    "review_fragments": [
+      {
+        "element": "datamodel",
+        "field": "text",
+        "text": "/* Each chart owns these facts in its isolated Prolog datamodel.\n       History contains complete user/assistant exchanges. pending/4 is\n       only the in-flight request; failures never enter history. */\n    :- dynamic history/1, pending/4, worker/1.\n    history([]).\n\n    valid_prompt(Text) :-\n        string(Text), string_length(Text, N), N > 0, N =< 500.\n\n    prepare(From, Ref, Text) :-\n        history(History), append(History, [user(Text)], Messages),\n        make_ref(Token), assertz(pending(Token, From, Ref, Messages)).\n\n    /* Run the blocking capability in a linked adapter so SXML can still\n       process reset, stop and timeout while inference is underway. The\n       protected backend worker retains its slot even if we kill this\n       adapter. Only the chart updates conversation history. */\n    launch_model :-\n        pending(Token, _, _, Messages), self(Self),\n        spawn(( catch(model_chat(Messages, Result), error(_, _),\n                      Result = error(model_unavailable)),\n                send(Self, model_result(Token, Result))\n              ), Pid, [link(true)]),\n        assertz(worker(Pid)).\n\n    stop_worker :-\n        ( retract(worker(Pid)) -> exit(Pid, kill) ; true ).\n\n    current_request(Token) :-\n        pending(Expected, _, _, _), Token == Expected.\n\n    valid_answer(Text) :-\n        string(Text), string_length(Text, N), N =< 4000.\n\n    remember_and_reply(Text) :-\n        retract(pending(_, From, Ref, Messages)),\n        append(Messages, [assistant(Text)], Complete),\n        trim_history(Complete, Kept),\n        retractall(history(_)), assertz(history(Kept)),\n        From ! answer(Ref, Text).\n\n    fail_request(Reason) :-\n        ( retract(pending(_, From, Ref, _))\n        -> From ! model_error(Ref, Reason)\n        ; true ).\n\n    clear_history :- retractall(history(_)), assertz(history([])).\n\n    trim_history(History, Kept) :-\n        length(History, Count), history_size(History, Size),\n        ( Count =< 4, Size =< 1500\n        -> Kept = History\n        ; History = [user(_), assistant(_)|Rest], trim_history(Rest, Kept) ).\n\n    history_size([], 0).\n    history_size([Message|Rest], Size) :-\n        arg(1, Message, Text), string_length(Text, N),\n        history_size(Rest, Tail), Size is N + Tail."
+      }
+    ]
+  },
+  {
+    "path": "examples/statecharts/20 jev-deployment-assistant.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 30,
+    "review_fragments": [
+      {
+        "element": "go",
+        "field": "text",
+        "text": "report(From, Ref, Text, unavailable(Error), idle, none,\n             retry_later, \"Jev is unavailable; no state change was made.\")"
+      },
+      {
+        "element": "go",
+        "field": "text",
+        "text": "report(From, Ref, Text, Observation, idle, none,\n             clarify, \"I am not confident enough to act. Please rephrase.\")"
+      },
+      {
+        "element": "go",
+        "field": "text",
+        "text": "remember_proposal(Ref, Text, Observation),\n      report(From, Ref, Text, Observation, idle,\n             idle-awaiting_confirmation, ask_confirmation,\n             \"Deployment is prepared. Say yes to confirm or no to cancel.\")"
+      },
+      {
+        "element": "go",
+        "field": "text",
+        "text": "report(From, Ref, Text, Observation, idle, none,\n             show_status, \"No deployment is currently awaiting confirmation.\")"
+      },
+      {
+        "element": "go",
+        "field": "text",
+        "text": "report(From, Ref, Text, Observation, idle, none,\n             explain_context, \"Yes to what? No deployment is awaiting confirmation.\")"
+      },
+      {
+        "element": "go",
+        "field": "text",
+        "text": "report(From, Ref, Text, Observation, idle, none,\n             clarify, \"Tell me if you want to prepare a deployment.\")"
+      },
+      {
+        "element": "go",
+        "field": "text",
+        "text": "report(From, Ref, Text, unavailable(Error), awaiting_confirmation, none,\n             retry_later, \"Jev is unavailable; the pending deployment remains unchanged.\")"
+      },
+      {
+        "element": "go",
+        "field": "text",
+        "text": "report(From, Ref, Text, Observation, awaiting_confirmation, none,\n             clarify, \"I could not confidently interpret that; please say yes or no.\")"
+      },
+      {
+        "element": "go",
+        "field": "text",
+        "text": "take_proposal(Proposal),\n      report(From, Ref, Text, Observation, awaiting_confirmation,\n             awaiting_confirmation-idle, simulate_deploy(Proposal),\n             \"Confirmed. The demonstrator records the deployment action.\")"
+      },
+      {
+        "element": "go",
+        "field": "text",
+        "text": "take_proposal(Proposal),\n      report(From, Ref, Text, Observation, awaiting_confirmation,\n             awaiting_confirmation-idle, cancel(Proposal),\n             \"Cancelled. No deployment action was recorded.\")"
+      },
+      {
+        "element": "go",
+        "field": "text",
+        "text": "report(From, Ref, Text, Observation, awaiting_confirmation, none,\n             ask_confirmation, \"A deployment is pending; please say yes or no.\")"
+      }
+    ]
+  },
+  {
+    "path": "examples/statecharts/game.xml",
+    "xml_status": "parsed",
+    "prolog_fragment_count": 4,
+    "review_fragments": []
+  }
+]

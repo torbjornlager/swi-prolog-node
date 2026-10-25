@@ -1,0 +1,32 @@
+{
+  "t4-default.log": {
+    "pass_selections": 1529,
+    "failed_selections": 0,
+    "errors": 0
+  },
+  "t4-chars.log": {
+    "pass_selections": 1529,
+    "failed_selections": 0,
+    "errors": 0
+  },
+  "boundaries-default.log": {
+    "pass_selections": 40,
+    "failed_selections": 0,
+    "errors": 0
+  },
+  "boundaries-chars.log": {
+    "pass_selections": 40,
+    "failed_selections": 0,
+    "errors": 0
+  },
+  "examples-default.log": {
+    "pass_selections": 10,
+    "failed_selections": 0,
+    "errors": 0
+  },
+  "examples-chars.log": {
+    "pass_selections": 10,
+    "failed_selections": 0,
+    "errors": 0
+  }
+}

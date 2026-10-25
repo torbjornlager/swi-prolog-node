@@ -1,0 +1,41 @@
+% [1/10] portable_text_exa..rial_receive_format ... **FAILED (0.054 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:39:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_receive_format: assertion
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:39:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_receive_format: assertion failed
+	Assertion: error(error(profile_violation(isobase,goal(self(_15550))),context(node_profile_policy:profile_check_goal/2,'goal is not available in the current profile')))==success([true],false)
+
+% [2/10] portable_text_exa..torial_guard_format ... **FAILED (0.051 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:41:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_guard_format: assertion
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:41:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_guard_format: assertion at /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/lib/swipl/boot/init.pl:695 failed
+	Assertion: error(error(profile_violation(isobase,goal(self(_29722))),context(node_profile_policy:profile_check_goal/2,'goal is not available in the current profile')))==success([true],false)
+
+% [3/10] portable_text_exa..rial_timeout_format ... **FAILED (0.035 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:43:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_timeout_format: assertion
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:43:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_timeout_format: assertion at /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/lib/swipl/boot/init.pl:695 failed
+	Assertion: error(error(profile_violation(isobase,goal(receive({person(_28178)->format(['H',e,l,l,o,',',' ',~,w,!,~,n],[_28178])},[timeout(1),on_timeout(writeln('No person arrived.'))]))),context(node_profile_policy:profile_check_goal/2,'goal is not available in the current profile')))==success([true],false)
+
+% [4/10] portable_text_exa..rivate_source_price ... **FAILED (0.035 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:45:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_private_source_price: assertion
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:45:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_private_source_price: assertion at /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/lib/swipl/boot/init.pl:695 failed
+	Assertion: error(error(profile_violation(isobase,goal(self(_1486))),context(node_profile_policy:profile_check_goal/2,'goal is not available in the current profile')))==success([90.0],false)
+
+% [5/10] portable_text_exa..private_source_list ... **FAILED (0.035 sec)
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:47:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_private_source_list: assertion
+ERROR: [Thread main] /Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl:47:
+ERROR: [Thread main]     test portable_text_example_checks:tutorial_private_source_list: assertion at /Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/lib/swipl/boot/init.pl:695 failed
+	Assertion: error(error(profile_violation(isobase,goal(self(_1320))),context(node_profile_policy:profile_check_goal/2,'goal is not available in the current profile')))==success([[widget-80]],false)
+
+% [6/10] portable_text_exa..s:word_list_grammar ..... passed (0.004 sec)
+% [7/10] portable_text_exa..mmon_and_n3_overlay ..... passed (0.048 sec)
+% [8/10] portable_text_exa..ist_at_native_guard ..... passed (0.002 sec)
+% [9/10] portable_text_exa..ice_validation_only ..... passed (0.002 sec)
+% [10/10] portable_text_exa..ice_validation_only .... passed (0.004 sec)
+ERROR: [Thread main] 5 tests failed

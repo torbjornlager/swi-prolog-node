@@ -1,0 +1,338 @@
+[
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/prolog/web_prolog/shared_db.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 19
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/Deployment/shared_db_actor_common.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 13
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/Deployment/shared_db_admin.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 5
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/Deployment/shared_db_common.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 12
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/Deployment/shared_db_n1.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 21
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/Deployment/shared_db_n2.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 4
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/Deployment/shared_db_n3.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 10
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/Deployment/shared_db_n4.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 6
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/Deployment/shared_db_n5.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 3
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/Deployment/shared_db_paths.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 5
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/01 queens.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 7
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/02 grammar.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 17
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/03 expert-system.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 13
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/04 count_server.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 1
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/05 fridge.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 3
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/06 ping-pong.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 4
+  },
+  {
+    "flags": [
+      "format_text_input"
+    ],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/07 selective-receive.pl",
+    "status": "parsed",
+    "string_literals": 2,
+    "terms": 3
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/08 priority_queue.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 2
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/09 alarm.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 1
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/10 links.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 3
+  },
+  {
+    "flags": [
+      "format_text_input"
+    ],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/11 ring.pl",
+    "status": "parsed",
+    "string_literals": 1,
+    "terms": 6
+  },
+  {
+    "flags": [
+      "format_text_input"
+    ],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/12 dining_philosophers.pl",
+    "status": "parsed",
+    "string_literals": 7,
+    "terms": 10
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/13 parallel.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 10
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/14 backtracking.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 3
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/15 simple_toplevel.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 6
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/16 fridge_server.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 7
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/17 rpc.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 6
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/18 proof-trees.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 8
+  },
+  {
+    "flags": [
+      "source_text_input"
+    ],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/19 promise-and-yield.pl",
+    "status": "parsed",
+    "string_literals": 1,
+    "terms": 4
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/20 expert-system-agent.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 16
+  },
+  {
+    "flags": [
+      "native_string_api(string/1)",
+      "native_string_api(string_length/2)"
+    ],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/21 model-actor.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 8
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/22 service-policy.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 9
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/23 jev-agent.pl",
+    "status": "parsed",
+    "string_literals": 6,
+    "terms": 12
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/actors/24 jev-sxml-agent.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 4
+  },
+  {
+    "flags": [
+      "native_string_type_requirement"
+    ],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/jev/deployment_observation.pl",
+    "status": "parsed",
+    "string_literals": 11,
+    "terms": 34
+  },
+  {
+    "flags": [
+      "native_string_api(atom_string/2)",
+      "native_string_api(string/1)"
+    ],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/jev/jev.pl",
+    "status": "parsed",
+    "string_literals": 4,
+    "terms": 27
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/jev/jev_actor.pl",
+    "status": "parsed",
+    "string_literals": 6,
+    "terms": 13
+  },
+  {
+    "flags": [
+      "native_string_api(atom_string/2)",
+      "native_string_api(read_string/3)",
+      "native_string_api(string/1)",
+      "native_string_api(string_length/2)"
+    ],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/jev/jev_http.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 21
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/jev/jev_sxml_demo.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 11
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/jev/live_demo.pl",
+    "status": "parsed",
+    "string_literals": 5,
+    "terms": 6
+  },
+  {
+    "flags": [
+      "native_string_api(string/1)",
+      "native_string_api(string_length/2)"
+    ],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/services/jev_service.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 18
+  },
+  {
+    "flags": [
+      "native_string_api(read_string/3)",
+      "native_string_api(string/1)",
+      "native_string_api(string_length/2)"
+    ],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/examples/services/model_service.pl",
+    "status": "parsed",
+    "string_literals": 5,
+    "terms": 19
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/prolog/web_prolog/shared_db.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 19
+  },
+  {
+    "flags": [],
+    "path": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator/prolog/web_prolog/wasm/shared_db.pl",
+    "status": "parsed",
+    "string_literals": 0,
+    "terms": 20
+  }
+]

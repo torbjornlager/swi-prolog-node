@@ -1,0 +1,4 @@
+% [1/4] node:double_quote..s_chars_on_the_wire ...... passed (0.088 sec)
+% [2/4] node:rpc_term_text_is_canonical_chars ....... passed (0.045 sec)
+% [3/4] public_goal_guard..literal_stays_chars ...... passed (0.009 sec)
+% [4/4] cross_node_lifecy..keep_portable_chars ...... passed (0.079 sec)

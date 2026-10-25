@@ -1,0 +1,30 @@
+[
+  {
+    "file": "tests/tiers/node/node_tests.pl",
+    "test": "double_quotes_fixed_as_string_on_the_wire",
+    "body_identical": true,
+    "body_sha256": "3f0e116d7c1841c4e8a17a546006f4297b0fdc7b94ca1b01ed359e997e0b9cb4",
+    "selection": "default only; exact character-list counterpart added separately"
+  },
+  {
+    "file": "tests/tiers/node/node_tests.pl",
+    "test": "rpc_term_text_is_canonical",
+    "body_identical": true,
+    "body_sha256": "0d0b9c00bcb5837ab2a2fbdfa992d622aff9be8f1c0f56d22145adf46f253878",
+    "selection": "default only; exact character-list counterpart added separately"
+  },
+  {
+    "file": "tests/tiers/node/public_goal_guard_tests.pl",
+    "test": "dcg_composed_native_literal_stays_codes",
+    "body_identical": true,
+    "body_sha256": "b81defa19eacc2b4ff533b395bdb880a2d5b3fc30295d85377daf6e69563b36c",
+    "selection": "default only; exact character-list counterpart added separately"
+  },
+  {
+    "file": "tests/tiers/node/cross_node_lifecycle_tests.plt",
+    "test": "remote_toplevel_answers_keep_exact_terms",
+    "body_identical": true,
+    "body_sha256": "34a1a42d56fb84898876716d1eddf461710783ce28968dbb8a8f926a1748d6a0",
+    "selection": "default only; exact character-list counterpart added separately"
+  }
+]

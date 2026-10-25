@@ -181,7 +181,11 @@ test(dcg_composed_private_source, true(Value==[a,b])) :-
     private_observation("tokens --> [a,b]. run(Parent) :- phrase(tokens,Input), send(Parent,observed(Input)).",Value).
 test(dcg_composed_copied_source, true(Value==[c])) :-
     private_observation("tokens --> [a,b]. parse(Input,Rest) :- phrase(tokens,Input,Rest). run(Parent) :- self(Self), spawn((parse([a,b,c],Rest),send(Self,copied(Rest))),Child,[src_predicates([parse/2,tokens/2]),monitor(true)]), receive({copied(Rest)->send(Parent,observed(Rest))},[timeout(2),on_timeout(fail)]), receive({down(Child,Child,true)->true},[timeout(2),on_timeout(fail)]).",Value).
-test(dcg_composed_native_literal_stays_codes, true(Value==[97,98])) :-
+test(dcg_composed_native_literal_stays_codes,
+     [condition(text_config:text_double_quotes(string)),true(Value==[97,98])]) :-
+    private_observation("tokens --> \"ab\". run(Parent) :- phrase(tokens,Input), send(Parent,observed(Input)).",Value).
+test(dcg_composed_portable_literal_stays_chars,
+     [condition(text_config:text_double_quotes(chars)),true(Value==[a,b])]) :-
     private_observation("tokens --> \"ab\". run(Parent) :- phrase(tokens,Input), send(Parent,observed(Input)).",Value).
 test(dcg_composed_exit_runs_cleanup_without_recovery) :-
     self(Parent),

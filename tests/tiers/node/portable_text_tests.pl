@@ -4,6 +4,7 @@
 :- use_module('../../../prolog/web_prolog/wire_text.pl').
 :- use_module('../../../prolog/web_prolog/isolation.pl', []).
 :- use_module('../../../prolog/web_prolog/source_utils.pl', []).
+:- use_module('portable_text_boundary_tests.pl', []).
 :- use_module(library(plunit)).
 :- use_module(library(modules)).
 

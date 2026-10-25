@@ -1,0 +1,4054 @@
+[
+  {
+    "path": "web/actor-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 49,
+    "text": "const protocol = location.protocol === \"https:\" ? \"wss:\" : \"ws:\";\nconst socket = new WebSocket(`${protocol}//${location.host}/ws`);"
+  },
+  {
+    "path": "web/actor-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 53,
+    "text": "// client → node\n{\n  \"command\": \"toplevel_call\",\n  \"pid\": PID,\n  \"goal\": \"member(X,[a,b,c])\",\n  \"options\": \"[limit(1)]\"\n}"
+  },
+  {
+    "path": "web/actor-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 60,
+    "text": "// node → client\n{\n  \"type\": \"success\",\n  \"pid\": PID,\n  \"data\": [{ \"X\": \"a\" }],\n  \"more\": true\n}"
+  },
+  {
+    "path": "web/actor-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 74,
+    "text": "{\n  \"command\": \"toplevel_spawn\",\n  \"options\": \"[session(true)]\"\n}"
+  },
+  {
+    "path": "web/actor-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 78,
+    "text": "{ \"type\": \"spawned\", \"pid\": PID_FROM_SPAWN }"
+  },
+  {
+    "path": "web/actor-api-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "actor-append",
+    "line": 80,
+    "text": "?- append(Xs,Ys,[a,b,c])."
+  },
+  {
+    "path": "web/actor-api-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "actor-output",
+    "line": 108,
+    "text": "?- writeln('pushed over the live carrier')."
+  },
+  {
+    "path": "web/actor-api-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "actor-prompt",
+    "line": 113,
+    "text": "?- read(Term), writeln(Term)."
+  },
+  {
+    "path": "web/actor-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 125,
+    "text": "// 1. Create an independently running actor.\n{\n  \"command\": \"spawn\",\n  \"goal\": \"echo_actor\",\n  \"options\": \"[src_text(\\\"echo_actor :- ...\\\")]\"\n}\n\n// 2. Address it by the PID returned in the spawned event.\n{ \"command\": \"send\", \"pid\": ACTOR_PID, \"message\": \"msg(first)\" }\n{ \"command\": \"send\", \"pid\": ACTOR_PID, \"message\": \"msg(second)\" }\n\n// 3. End it explicitly.\n{ \"command\": \"exit\", \"pid\": ACTOR_PID, \"reason\": \"done\" }"
+  },
+  {
+    "path": "web/actor-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 153,
+    "text": "const actors = new Map();\nconst pendingSpawns = [];\n\nsocket.addEventListener(\"message\", ({ data }) => {\n  const event = JSON.parse(data);\n\n  if (event.type === \"spawned\" && pendingSpawns.length) {\n    pendingSpawns.shift()(event);\n    return;\n  }\n\n  const handler = actors.get(String(event.pid));\n  if (handler) handler(event);\n  else console.warn(\"unrouted event\", event);\n});"
+  },
+  {
+    "path": "web/actor-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 183,
+    "text": "function openActorChannel() {\n  const url = new URL(\"/ws\", location.href);\n  url.protocol = url.protocol === \"https:\" ? \"wss:\" : \"ws:\";\n  const socket = new WebSocket(url);\n  const routes = new Map();\n\n  socket.addEventListener(\"message\", ({ data }) => {\n    let event;\n    try { event = JSON.parse(data); }\n    catch (error) { return console.error(\"invalid frame\", error); }\n\n    const route = routes.get(String(event.pid));\n    if (route) route(event);\n    else handleConnectionEvent(event);\n  });\n\n  socket.addEventListener(\"close\", () => {\n    for (const route of routes.values()) {\n      route({ type: \"disconnected\" });\n    }\n    routes.clear();\n  });\n\n  return {\n    socket,\n    route(pid, handler) { routes.set(String(pid), handler); },\n    send(command) {\n      if (socket.readyState !== WebSocket.OPEN) {\n        throw new Error(\"actor channel is not open\");\n      }\n      socket.send(JSON.stringify(command));\n    }\n  };\n}"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "append1",
+    "line": 91,
+    "text": "?- append([a],[b,c],Xs).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "append2",
+    "line": 104,
+    "text": "?- append(Xs,Ys,[a,b,c]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "a",
+    "line": 123,
+    "text": "\nancestor_descendant(X, Y) :-\n    parent_child(X, Y).\nancestor_descendant(X, Z) :-\n    parent_child(X, Y),\n    ancestor_descendant(Y, Z).\n\nparent_child(X, Y) :-\n    mother_child(X, Y).\nparent_child(X, Y) :-\n    father_child(X, Y).\n\nmother_child(trude, sally).\n\nfather_child(tom, sally).\nfather_child(tom, erica).\nfather_child(mike, tom).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "ancestor1",
+    "line": 147,
+    "text": "?- ancestor_descendant(mike, Who).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "dcg1",
+    "line": 163,
+    "text": "s(s(NP,VP)) --> np(NP, Num), vp(VP, Num).\n\nnp(NP, Num) --> pn(NP, Num).\nnp(np(Det,N), Num) --> det(Det, Num), n(N, Num).\nnp(np(Det,N,PP), Num) --> det(Det, Num), n(N, Num), pp(PP).\n\nvp(vp(V,NP), Num) --> v(V, Num), np(NP, _).\nvp(vp(V,NP,PP), Num) --> v(V, Num), np(NP, _), pp(PP).\n\npp(pp(P,NP)) --> p(P), np(NP, _).\n\ndet(det(a), sg) --> [a].\ndet(det(the), _) --> [the].\n\npn(pn(john), sg) --> [john].\n\nn(n(man), sg) --> [man].\nn(n(men), pl) --> [men].\nn(n(telescope), sg) --> [telescope].\n\nv(v(sees), sg) --> [sees].\nv(v(see), pl) --> [see].\nv(v(saw), _) --> [saw].\n\np(p(with)) --> [with].\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "dcg2",
+    "line": 198,
+    "text": "?- phrase(s(Tree), [john,saw,a,man,with,a,telescope]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "dcg3",
+    "line": 210,
+    "text": "?- forall((between(1,8,N), length(S,N), phrase(s(_),S)), writeln(S)).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-self",
+    "line": 271,
+    "text": "?- self(Self).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-send-self",
+    "line": 291,
+    "text": "?- $Self ! hello.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-receive-self",
+    "line": 303,
+    "text": "?- receive({Message -> true}).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-send-goodbye",
+    "line": 323,
+    "text": "?- $Self ! hello, $Self ! goodbye.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-flush",
+    "line": 331,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "mpc-echo-source",
+    "line": 351,
+    "text": "echo_actor :-\n    receive({\n        echo(From, Msg) ->\n            From ! echo(Msg),\n            echo_actor\n    }).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-spawn-echo",
+    "line": 363,
+    "text": "?- spawn(echo_actor, Pid).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-talk-echo",
+    "line": 376,
+    "text": "?- self(Self), $Pid ! echo(Self, hi).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-echo-flush",
+    "line": 384,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-monitor",
+    "line": 399,
+    "text": "?- spawn(2 > 1, Pid, [monitor(true)]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-monitor-flush",
+    "line": 412,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-register-shell",
+    "line": 432,
+    "text": "?- self(Self), register(shell, Self).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-send-name",
+    "line": 444,
+    "text": "?- shell ! hello.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-spawn-shell-goodbye",
+    "line": 452,
+    "text": "?- spawn(shell ! goodbye).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-name-flush",
+    "line": 460,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-spawn-monitored-echo",
+    "line": 475,
+    "text": "?- spawn(echo_actor, Pid, [monitor(true)]),\n   register(echo_actor, Pid).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-exit-echo",
+    "line": 484,
+    "text": "?- whereis(echo_actor, Pid),\n   exit(Pid, 'We changed our minds!').\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-exit-flush",
+    "line": 498,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-exit-self",
+    "line": 513,
+    "text": "?- spawn(exit(my_reason), Pid, [monitor(true)]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-exit-self-flush",
+    "line": 521,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "mpc-receive-clauses",
+    "line": 542,
+    "text": "?- self(Self),\n   Self ! goodbye(bob),\n   receive({\n       hello(Name) ->\n           format(\"Hello, ~w!~n\", [Name]) ;\n       goodbye(Name) ->\n           format(\"Goodbye, ~w!~n\", [Name])\n   }).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "mpc-selective-source",
+    "line": 566,
+    "text": "wait_hello :-\n    receive({\n        hello ->\n            writeln('Got hello.'),\n            wait_goodbye\n    }).\n\nwait_goodbye :-\n    receive({\n        goodbye ->\n            writeln('Got goodbye.')\n    }).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-selective-run",
+    "line": 584,
+    "text": "?- self(Self),\n   Self ! goodbye,\n   Self ! hello,\n   wait_hello.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "mpc-guard",
+    "line": 610,
+    "text": "?- self(Self),\n   Self ! number(-2),\n   receive({\n       number(N) if N > 0 ->\n           format(\"Positive number: ~p~n\", [N]) ;\n       number(N) if N =< 0 ->\n           format(\"Non-positive number: ~p~n\", [N])\n   }).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "mpc-timeout",
+    "line": 630,
+    "text": "?- receive({\n       person(Name) ->\n           format(\"Hello, ~w!~n\", [Name])\n   }, [\n       timeout(1),\n       on_timeout(writeln('No person arrived.'))\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-inference-guard",
+    "line": 652,
+    "text": "?- self(Self),\n   spawn(\n       receive({\n           print(User, File0, ReplyTo)\n           if ( authorized(User),\n                owns(User, Printer0),\n                online(Printer0)\n              ) ->\n               ReplyTo ! routed(File0, Printer0)\n       }),\n       Pid\n   ),\n   Pid ! print(alice, report_pdf, Self),\n   receive({routed(File, Printer) -> true}).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "mpc-priority-source",
+    "line": 693,
+    "text": "important(Messages) :-\n    receive({\n        Priority-Message if Priority > 10 ->\n            Messages = [Message|MoreMessages],\n            important(MoreMessages)\n    }, [\n        timeout(0),\n        on_timeout(normal(Messages))\n    ]).\n\nnormal(Messages) :-\n    receive({\n        _-Message ->\n            Messages = [Message|MoreMessages],\n            normal(MoreMessages)\n    }, [\n        timeout(0),\n        on_timeout(Messages = [])\n    ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-priority-send",
+    "line": 722,
+    "text": "?- self(S),\n   S ! 15-high,\n   S ! 7-low,\n   S ! 1-low,\n   S ! 17-high.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-priority-run",
+    "line": 738,
+    "text": "?- important(Messages).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-monitor-twice",
+    "line": 760,
+    "text": "?- spawn(sleep(1), Pid),\n   monitor(Pid, Ref1),\n   monitor(Pid, Ref2),\n   sleep(2),\n   flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-demonitor",
+    "line": 777,
+    "text": "?- spawn(sleep(1), Pid),\n   monitor(Pid, Ref),\n   demonitor(Ref),\n   receive({\n       down(Pid, _, _) ->\n           writeln('Unexpected down message.')\n   }, [\n       timeout(1.2),\n       on_timeout(writeln('No down message arrived.'))\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-visible-actors",
+    "line": 809,
+    "text": "?- spawn(receive({stop -> true}), Pid),\n   actors(Alive),\n   Pid ! stop.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-visible-actors2",
+    "line": 825,
+    "text": "?- actors(Alive).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-link-default",
+    "line": 842,
+    "text": "?- spawn(spawn(receive({}))).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-link-default-actors",
+    "line": 854,
+    "text": "?- actors(Alive).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-link-one-way",
+    "line": 872,
+    "text": "?- spawn((spawn(exit(kill)), receive({})), Pid).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-link-one-way-check",
+    "line": 880,
+    "text": "?- actors(Alive).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-link-one-way-cleanup",
+    "line": 893,
+    "text": "?- exit($Pid, cleanup).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 920,
+    "text": "list_price(widget, 100).\nlist_price(gadget, 250).\nlist_price(gizmo,  400).\n\nprice(Item, Price) :-\n    list_price(Item, Price)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "shadow-shared-price",
+    "line": 932,
+    "text": "?- price(widget, Price)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "shadow-private-price",
+    "line": 947,
+    "text": "?- self(Self),\n   spawn(\n       ( price(widget, Price),\n         Self ! discounted_price(Price)\n       ),\n       _,\n       [ src_text(\"\n             price(Item, Price) :-\n                 list_price(Item, ListPrice),\n                 Price is ListPrice * 0.9.\n         \")\n       ]\n   ),\n   receive({discounted_price(Price) -> true})."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "shadow-ordinary-price",
+    "line": 977,
+    "text": "?- self(Self),\n   spawn(\n       ( price(widget, Price),\n         Self ! ordinary_price(Price)\n       ),\n       _\n   ),\n   receive({ordinary_price(Price) -> true})."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "shadow-private-list",
+    "line": 998,
+    "text": "?- self(Self),\n   spawn(\n       ( findall(Item-Price,\n                 list_price(Item, Price),\n                 Prices),\n         Self ! private_prices(Prices)\n       ),\n       _,\n       [\n        src_text(\"list_price(widget, 80).\")\n       ]\n   ),\n   receive({private_prices(Prices) -> true})."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "shadow-shared-list",
+    "line": 1031,
+    "text": "?- findall(Item-Price,\n           list_price(Item, Price),\n           Prices)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "epa-count-source",
+    "line": 1065,
+    "text": "count_actor(Count0) :-\n    receive({\n        count(From) ->\n            Count is Count0 + 1,\n            From ! count(Count),\n            count_actor(Count) ;\n        stop ->\n            true\n    }).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-spawn",
+    "line": 1083,
+    "text": "?- spawn(count_actor(0), Pid, [\n       monitor(true)\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-send-once",
+    "line": 1093,
+    "text": "?- self(Self), $Pid ! count(Self).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-receive",
+    "line": 1101,
+    "text": "?- receive({Count -> true}).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-send-stop",
+    "line": 1109,
+    "text": "?- $Pid ! count($Self), $Pid ! stop.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-flush",
+    "line": 1117,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-published-counter",
+    "line": 1140,
+    "text": "?- self(Self),\n   counter@'https://n3.elfenbenstornet.se' ! count(Self),\n   receive({\n       count(Count) -> true\n   }, [\n       timeout(5),\n       on_timeout(writeln('Service not available.~n'))\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "epa-fridge-source",
+    "line": 1170,
+    "text": "fridge(FoodList0) :-\n    receive({\n        store(From, Food) ->\n            self(Self),\n            From ! Self-ok,\n            fridge([Food|FoodList0]);\n        take(From, Food) ->\n            self(Self),\n            (   select(Food, FoodList0, FoodList)\n            ->  From ! Self-ok(Food),\n                fridge(FoodList)\n            ;   From ! Self-not_found,\n                fridge(FoodList0)\n            );\n        terminate ->\n            true\n    }).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-spawn",
+    "line": 1193,
+    "text": "?- spawn(fridge([]), Pid, [\n       src_predicates([fridge/1]),\n       monitor(true)\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-store",
+    "line": 1204,
+    "text": "?- self(Me), $Pid ! store(Me, meat), $Pid ! store(Me, cheese).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-store-flush",
+    "line": 1212,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-take",
+    "line": 1220,
+    "text": "?- self(Me), $Pid ! take(Me, cheese).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-take-flush",
+    "line": 1228,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-terminate",
+    "line": 1236,
+    "text": "?- $Pid ! terminate.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-terminate-flush",
+    "line": 1244,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "epa-fridge-api-source",
+    "line": 1259,
+    "text": "% Repeated from above:\n    \nfridge(FoodList0) :-\n    receive({\n        store(From, Food) ->\n            self(Self),\n            From ! Self-ok,\n            fridge([Food|FoodList0]);\n        take(From, Food) ->\n            self(Self),\n            (   select(Food, FoodList0, FoodList)\n            ->  From ! Self-ok(Food),\n                fridge(FoodList)\n            ;   From ! Self-not_found,\n                fridge(FoodList0)\n            );\n        terminate ->\n            true\n    }).\n\n% And here are the wrappers:\n\nstore(Pid, Food, Response) :-\n    self(Self),\n    Pid ! store(Self, Food),\n    receive({\n        Pid-Response -> true\n    }).\n\ntake(Pid, Food, Response) :-\n    self(Self),\n    Pid ! take(Self, Food),\n    receive({\n        Pid-Response -> true\n    }).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-api-spawn",
+    "line": 1304,
+    "text": "?- spawn(fridge([]), Pid, [\n       src_predicates([fridge/1, store/3, take/3]),\n       monitor(true)\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-api-store",
+    "line": 1315,
+    "text": "?- store($Pid, cheese, Response).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-api-take",
+    "line": 1323,
+    "text": "?- take($Pid, cheese, Response).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-api-stop",
+    "line": 1331,
+    "text": "?- $Pid ! terminate.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-api-stop-flush",
+    "line": 1339,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "epa-pingpong-source",
+    "line": 1362,
+    "text": "ping(0, Pong_Pid) :-\n    Pong_Pid ! finished,\n    format('Ping finished.~n',[]).\nping(N, Pong_Pid) :-\n    self(Self),\n    Pong_Pid ! ping(Self),\n    receive({\n        pong ->\n            format('Ping received pong.~n',[])\n    }),\n    N1 is N - 1,\n    ping(N1, Pong_Pid).\n\npong :-\n    receive({\n        finished ->\n            format('Pong finished.~n',[]) ;\n        ping(Ping_Pid) ->\n            format('Pong received ping.~n',[]),\n            Ping_Pid ! pong,\n            pong\n    }).\n\nping_pong :-\n    spawn(pong, Pong_Pid, [\n        src_predicates([pong/0])\n    ]),\n    spawn(ping(3, Pong_Pid), _, [\n        src_predicates([ping/2])\n    ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-pingpong-run",
+    "line": 1398,
+    "text": "?- ping_pong.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-spawn-demo",
+    "line": 1435,
+    "text": "?- toplevel_spawn(Pid, [\n       session(true),\n       monitor(true),\n       src_list([p(a),p(b)])\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-default",
+    "line": 1459,
+    "text": "?- toplevel_call($Pid, p(X)).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-default-flush",
+    "line": 1467,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-template",
+    "line": 1487,
+    "text": "?- toplevel_call($Pid, p(X), [\n       template(X)\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-template-flush",
+    "line": 1497,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-limit-one",
+    "line": 1517,
+    "text": "?- toplevel_call($Pid, p(X), [\n       template(X),\n       limit(1)\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-limit-one-flush",
+    "line": 1528,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-next-basic",
+    "line": 1536,
+    "text": "?- toplevel_next($Pid),\n   receive({Answer -> true}).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-slice",
+    "line": 1557,
+    "text": "?- toplevel_call($Pid, between(1,infinite,I), [\n       offset(100),\n       template(I),\n       limit(3)\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-slice-flush",
+    "line": 1569,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-next-limit-five",
+    "line": 1577,
+    "text": "?- toplevel_next($Pid, [\n       limit(5)\n   ]),\n   receive({Answer -> true}).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-stop",
+    "line": 1588,
+    "text": "?- toplevel_stop($Pid).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-synchronous-pages",
+    "line": 1611,
+    "text": "?- toplevel_spawn(Top, [session(true)]),\n   toplevel_call_synch(Top, member(X,[a,b,c]), First,\n                       [template(X),limit(2)]),\n   toplevel_next_synch(Top, Last),\n   toplevel_halt(Top).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-output",
+    "line": 1644,
+    "text": "?- toplevel_call($Pid, output(hello)).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-output-flush",
+    "line": 1652,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-input",
+    "line": 1670,
+    "text": "?- toplevel_call($Pid, input('Input', X)),\n   receive({Answer -> true}).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-respond",
+    "line": 1683,
+    "text": "?- respond($Pid, hello),\n   receive({Answer -> true}).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 1701,
+    "text": "prove(A) :- askable(A, Q), input(Q, T), T == yes."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "expert-agent-source",
+    "line": 1720,
+    "text": "%% An expert-system agent and a simulation, following chapter 8.\n%\n% The expert asks with input/2; the shell plays the user and answers\n% randomly. Proof search decides which question comes next.\n%\n% The book assumes a node-resident knowledge base. Here we ship the rules\n% too, so the example runs without installing a separate service.\n\n:- dynamic good_pet/1, bird/1, has_feathers/1, tweets/1,\n           small/1, cuddly/1, yellow/1.\n\n% Inference engine\n\nprove(true) :- !.\nprove((A, B)) :- !, prove(A), prove(B).\nprove(A) :- clause(A, B), prove(B).\nprove(A) :- askable(A, Q), input(Q, T), T == yes.\n\n% Knowledge base\n\ngood_pet(X) :- bird(X), small(X).\ngood_pet(X) :- cuddly(X), yellow(X).\n\nbird(X) :- has_feathers(X), tweets(X).\n\naskable(tweets(_), 'Does it tweet?').\naskable(small(_), 'Is it small?').\naskable(cuddly(_), 'Is it cuddly?').\naskable(has_feathers(_), 'Does it have feathers?').\naskable(yellow(_), 'Is it yellow?').\n\n% Expert system\n\nexpert_ask(Query, Pid, Options) :-\n    append([session(false),\n            src_predicates([prove/1, good_pet/1, bird/1, askable/2,\n                            has_feathers/1, tweets/1, small/1,\n                            cuddly/1, yellow/1])], Options, SpawnOptions),\n    toplevel_spawn(Pid, SpawnOptions),\n    toplevel_call(Pid, prove(Query), [\n        limit(1),\n        once(true)\n    ]).\n\n% Simulation\n\nsimulation(Options) :-\n    random_member(Name, [tweety,pingu]),\n    format('A1: Is ~w a good pet?~n', [Name]),\n    expert_ask(good_pet(Name), Pid, Options),\n    interact(Pid, Name).\n\ninteract(Pid, Name) :-\n    receive({\n        failure(Pid) ->\n            format('A2: No, ~w is not a good pet.~n', [Name]) ;\n        success(Pid, _, false) ->\n            format('A2: Yes, ~w is a good pet.~n', [Name]) ;\n        error(Pid, Error) ->\n            throw(Error) ;\n        prompt(Pid, Question) ->\n            format('A2: ~w~n', [Question]),\n            random_member(Answer, [yes,no]),\n            respond(Pid, Answer),\n            format('A1: ~w~n', [Answer]),\n            interact(Pid, Name)\n    })."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "expert-agent-run",
+    "line": 1792,
+    "text": "?- simulation([])."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "expert-agent-known",
+    "line": 1803,
+    "text": "?- simulation([src_list([yellow(tweety)])])."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-assert-loop",
+    "line": 1825,
+    "text": "?- toplevel_call($Pid, assert((p :- p))),\n   receive({Answer -> true}).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-loop",
+    "line": 1834,
+    "text": "?- toplevel_call($Pid, p).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-abort",
+    "line": 1847,
+    "text": "?- toplevel_abort($Pid).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-halt",
+    "line": 1859,
+    "text": "?- toplevel_halt($Pid, Reply).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 1892,
+    "text": "human(plato).\nhuman(aristotle).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 1900,
+    "text": "mortal(Who) :- human(Who).\n\nhuman(socrates).\nhuman(Who) :-\n    rpc('https://n1.elfenbenstornet.se', human(Who)).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "rpc1",
+    "line": 1911,
+    "text": "?- rpc('https://n2.elfenbenstornet.se', mortal(Who)).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "rpc2",
+    "line": 1934,
+    "text": "?- rpc('https://n3.elfenbenstornet.se', q(X), [\n       src_list([(q(X) :- p(X)), p(a), p(b)])\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "rpc-shadow-price",
+    "line": 1958,
+    "text": "?- rpc('https://n1.elfenbenstornet.se',\n       price(widget, Price),\n       [src_text(\"\n           price(Item, Price) :-\n               list_price(Item, ListPrice),\n               Price is ListPrice * 0.9.\n       \")]\n   ).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "rpc-promise-timeout",
+    "line": 1999,
+    "text": "?- promise('https://n1.elfenbenstornet.se', (sleep(1), X=a), Ref),\n   yield(Ref, Answer, [\n       timeout(0.3),\n       on_timeout(Answer = timeout)\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "rpc-promise-poll",
+    "line": 2025,
+    "text": "?- promise('https://n1.elfenbenstornet.se', (sleep(1), X=a), Ref),\n   repeat,\n     yield(Ref, Answer, [\n         timeout(0.3),\n         on_timeout(Answer = timeout)\n     ]),\n     (   Answer == timeout\n     ->  writeln('Still waiting...'),\n         writeln('working...'),\n         sleep(0.1),\n         fail\n     ;   !\n     ).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "dpt-local-source",
+    "line": 2069,
+    "text": "% Knowledge base\n\n:- dynamic mortal/1, human/1.\n\nmortal(X) :- human(X).\nhuman(socrates).\n\n% Interpreter\n\nprove(true, true) :- !.\nprove((A, B), (ProofA, ProofB)) :- !,\n    prove(A, ProofA), prove(B, ProofB).\nprove(A, A/Proof) :- clause(A, B), prove(B, Proof)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "dpt-local-answer",
+    "line": 2083,
+    "text": "?- mortal(Who)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "dpt-local-proof",
+    "line": 2086,
+    "text": "?- prove(mortal(Who), Proof)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 2088,
+    "text": "Who = socrates,\nProof = mortal(socrates)/(human(socrates)/true)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "dpt-prove-source",
+    "line": 2102,
+    "text": "%% From answers to explanations, locally and across nodes.\n%\n% The first two queries need no remote service. The last uses n3 and n4.\n% This follows the proof-producing meta-interpreter in the AI chapter.\n%\n% A/Proof records a goal and its justification. true is a proved leaf;\n% (ProofA,ProofB) records a conjunction. A@URI/Proof marks a remote step.\n% These are ordinary Prolog terms, not a separate explanation language.\n\n% Knowledge base\n\n:- dynamic mortal/1, human/1.\n\nmortal(X) :- human(X).\nhuman(socrates).\n\n% Interpreter\n\nprove(true, true) :- !.\nprove(rpc(URI, A), Proof) :- !,\n    prove(rpc(URI, A, []), Proof).\nprove(rpc(URI, A, Options), Query@URI/Proof) :- !,\n    rpc(URI, prove(A, Query/Proof), [\n        src_predicates([prove/2])\n      | Options\n    ]).\nprove((A, B), (ProofA, ProofB)) :- !,\n    prove(A, ProofA), prove(B, ProofB).\nprove(A, A/Proof) :- clause(A, B), prove(B, Proof)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 2134,
+    "text": "mortal(X) :- human(X).\nhuman(socrates).\nhuman(X) :- rpc('https://n4.elfenbenstornet.se', human(X))."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 2138,
+    "text": "human(plato).\nhuman(aristotle)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "dpt-prove-run",
+    "line": 2140,
+    "text": "?- prove(rpc('https://n3.elfenbenstornet.se', mortal(Who)), Proof)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 2144,
+    "text": "Who = socrates,\nProof = (mortal(socrates)@'https://n3.elfenbenstornet.se')/\n          (human(socrates)/true)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 2148,
+    "text": "Who = plato,\nProof = (mortal(plato)@'https://n3.elfenbenstornet.se')/\n          (human(plato)/\n            ((human(plato)@'https://n4.elfenbenstornet.se')/true))."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "cpw-remote-echo-spawn",
+    "line": 2189,
+    "text": "?- spawn(echo_actor, Pid, [\n       node('{{actor_peer_host}}'),\n       monitor(true),\n       src_text(\"\n           echo_actor :-\n               receive({\n                   echo(From, Msg) ->\n                       From ! echo(Msg),\n                       echo_actor\n               }).\n        \")\n   ]),\n   register(remote_echo_actor, Pid).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-echo-talk",
+    "line": 2214,
+    "text": "?- self(Self),\n   remote_echo_actor ! echo(Self, hello).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-echo-flush",
+    "line": 2223,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-echo-exit",
+    "line": 2241,
+    "text": "?- whereis(remote_echo_actor, Pid),\n   exit(Pid, die).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-echo-down",
+    "line": 2250,
+    "text": "?- receive({A -> true}).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "cpw-remote-pingpong-source",
+    "line": 2270,
+    "text": "ping(0, Pong_Pid) :-\n    Pong_Pid ! finished,\n    format('Ping finished.~n', []).\nping(N, Pong_Pid) :-\n    self(Self),\n    Pong_Pid ! ping(Self),\n    receive({\n        pong ->\n            format('Ping received pong.~n')\n    }),\n    N1 is N - 1,\n    ping(N1, Pong_Pid).\n\npong :-\n    receive({\n        finished ->\n            format('Pong finished.~n') ;\n        ping(Ping_Pid) ->\n            format('Pong received ping.~n'),\n            Ping_Pid ! pong,\n            pong\n    }).\n\nping_pong_remote :-\n    spawn(pong, Pong_Pid, [\n        node('{{actor_peer_host}}'),\n        src_predicates([pong/0]),\n        monitor(true)\n    ]),\n    spawn(ping(3, Pong_Pid), Ping_Pid, [\n        src_predicates([ping/2]),\n        monitor(true)\n    ]),\n    receive({down(Pong_Pid, _, true) -> true}),\n    receive({down(Ping_Pid, _, true) -> true}).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-pingpong-run",
+    "line": 2311,
+    "text": "?- ping_pong_remote.\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-toplevel-spawn",
+    "line": 2333,
+    "text": "?- toplevel_spawn(Pid, [\n       node('{{actor_peer_host}}'),\n       session(true)\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-toplevel-call",
+    "line": 2349,
+    "text": "?- toplevel_call($Pid, human(Who), [\n       template(Who),\n       limit(1)\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-toplevel-receive1",
+    "line": 2364,
+    "text": "?- receive({Msg -> true}).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-toplevel-next",
+    "line": 2372,
+    "text": "?- toplevel_next($Pid),\n   receive({Msg -> true}).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 2412,
+    "text": "Pred(+Request, +OldState, -Response, -NewState)"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "srv-fridge-source",
+    "line": 2418,
+    "text": "fridge(store(Food), List, ok, [Food|List]).\nfridge(take(Food),  List, ok(Food), Rest) :-\n    select(Food, List, Rest), !.\nfridge(take(_Food), List, not_found, List).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-spawn",
+    "line": 2445,
+    "text": "?- supervisor_spawn([\n       child(fridge, [\n           start(server(fridge, [initial_state([])])),\n           restart(permanent)\n       ])\n   ], Sup, [\n       src_predicates([fridge/4])\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-store-1",
+    "line": 2472,
+    "text": "?- server_request(fridge, store(milk), Response).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-take-1",
+    "line": 2479,
+    "text": "?- server_request(fridge, take(milk), Response).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-promise",
+    "line": 2494,
+    "text": "?- server_promise(fridge, store(meat), Ref).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-yield",
+    "line": 2501,
+    "text": "?- server_yield($Ref, Response).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-bad-call",
+    "line": 2516,
+    "text": "?- server_request(fridge, sore(milk), Response).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-after-recovery",
+    "line": 2532,
+    "text": "?- server_request(fridge, store(eggs), Response).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "srv-fridge2-source",
+    "line": 2547,
+    "text": "fridge2(store(Food), List, ok, [Food|List]).\nfridge2(take(Food),  List, ok(Food), Rest) :-\n    select(Food, List, Rest), !.\nfridge2(take(_Food), List, not_found, List).\nfridge2(_Other,      List, error(unknown_request), List).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "srv-upgrade",
+    "line": 2562,
+    "text": "?- server_upgrade(fridge, fridge2, [\n       src_text(\"\n           fridge2(store(Food), List, ok, [Food|List]).\n           fridge2(take(Food), List, ok(Food), Rest) :-\n               select(Food, List, Rest), !.\n           fridge2(take(_Food), List, not_found, List).\n           fridge2(_Other, List, error(unknown_request), List).\n       \")\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-bad-call-2",
+    "line": 2582,
+    "text": "?- server_request(fridge, sore(milk), Response).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-store-after-upgrade",
+    "line": 2594,
+    "text": "?- server_request(fridge, store(butter), Response).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-halt",
+    "line": 2608,
+    "text": "?- supervisor_halt($Sup).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-pr-spawn",
+    "line": 2754,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/01%20pause-and-resume.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 2777,
+    "text": "<statechart version=\"0.2\" initial=\"game\">\n    <state id=\"game\" initial=\"play\">\n        <state id=\"play\" initial=\"s1\">\n            <history id=\"h\">\n                <go to=\"s1\" />\n            </history>\n            <state id=\"s1\">\n                <go to=\"s2\" on=\"play\" />\n            </state>\n            <state id=\"s2\">\n                <go to=\"s1\" on=\"reset\" />\n            </state>\n            <go to=\"interrupted\" on=\"pause\" />\n        </state>\n        <state id=\"interrupted\">\n            <go to=\"h\" on=\"resume\" />\n        </state>\n        <go to=\"final\" on=\"stop\" />\n    </state>\n    <final id=\"final\" />\n</statechart>\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-spaghetti-spawn",
+    "line": 3298,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/02%20spaghetti.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-emotions-spawn",
+    "line": 3442,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/03%20emotions.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 3476,
+    "text": "<statechart version=\"0.2\" initial=\"init\">\n    <datamodel>\n        :- dynamic int/1.\n    </datamodel>\n    <state id=\"init\">\n        <go on=\"integers(List)\" to=\"run\">\n            forall(member(X, List), asserta(int(X)))\n        </go>\n    </state>\n    <state id=\"run\">\n        <go if=\"int(X), int(Y), X > Y\">\n            Z is X-Y,\n            retract(int(X)),\n            assert(int(Z))\n        </go>\n        <go to=\"stop\" if=\"int(X)\">\n            writeln(X)\n        </go>\n    </state>\n    <final id=\"stop\" />\n</statechart>\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-gcd-spawn",
+    "line": 3503,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/09%20gcd.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-gcd-input",
+    "line": 3516,
+    "text": "?- $Pid ! integers([25, 10, 15, 30]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-dialog-spawn",
+    "line": 3540,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/11%20boxshop-1.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-spawn-toplevel-spawn",
+    "line": 3599,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/14%20spawn-toplevel.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 3616,
+    "text": "<statechart version=\"0.2\" initial=\"spawn-ask-collect\">\n    <state id=\"spawn-ask-collect\" initial=\"ask\">\n        <spawn type=\"toplevel\" options=\"[time_limit(30)]\">\n            q(X) :- p(X).\n            p(a). p(b). p(c). p(d).\n        </spawn>\n        <state id=\"ask\">\n            <go to=\"collect\" on=\"spawned(Pid)\">\n                toplevel_call(Pid, q(X), [\n                    limit(1)\n                ])\n            </go>\n        </state>\n        <state id=\"collect\">\n            <go to=\"collect\" on=\"success(Pid, Data, true)\">\n                writeln(Data),\n                toplevel_next(Pid)\n            </go>\n            <go to=\"final\" on=\"success(_, Data, false)\">\n                writeln(Data)\n            </go>\n        </state>\n    </state>\n    <final id=\"final\" />\n</statechart>\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "service-policy-source",
+    "line": 3676,
+    "text": "%% Reasoning about service requests, before adding an agent.\n%\n% These are the policy rules from 18 service-request.xml. They run locally\n% on ISOBASE (including n1), ISOTOPE, ACTOR, and SWI-WASM.\n%\n% classify(+Fields, -Decision) expects validated, ground fields: at most\n% one service/1 and one cost/1. Services are laptop, vpn, restricted, or\n% training; costs are integers from 0 to 10000000. Either field may be\n% missing. The full statechart validates input before calling these rules.\n%\n% This example only classifies a request; it does not approve or send one.\n\n% Policy\n\ncomplete(Fields) :-\n    memberchk(service(_), Fields),\n    memberchk(cost(_), Fields).\n\npermit(Fields) :-\n    memberchk(service(Service), Fields),\n    memberchk(Service, [laptop, vpn]),\n    memberchk(cost(Cost), Fields),\n    Cost =< 1000.\n\nforbid(Fields) :-\n    memberchk(service(restricted), Fields).\nforbid(Fields) :-\n    memberchk(service(vpn), Fields).\n\n% Assessment: the order matters.\n% Check completeness first, then conflict, prohibition, permission, and gap.\n\nclassify(Fields, insufficient(missing_fields)) :-\n    \\+ complete(Fields), !.\nclassify(Fields, conflicting) :-\n    permit(Fields), forbid(Fields), !.\nclassify(Fields, forbidden) :-\n    forbid(Fields), !.\nclassify(Fields, permitted) :-\n    permit(Fields), !.\nclassify(_, insufficient(policy_gap))."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "service-policy-laptop",
+    "line": 3720,
+    "text": "?- classify([service(laptop), cost(700)], Decision)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "service-policy-restricted",
+    "line": 3723,
+    "text": "?- classify([service(restricted), cost(1)], Decision)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "service-policy-vpn",
+    "line": 3726,
+    "text": "?- classify([service(vpn), cost(10)], Decision)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "service-policy-missing",
+    "line": 3729,
+    "text": "?- classify([service(laptop)], Decision)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "service-policy-training",
+    "line": 3732,
+    "text": "?- classify([service(training), cost(500)], Decision)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "service-policy-budget",
+    "line": 3735,
+    "text": "?- classify([service(laptop), cost(1001)], Decision)."
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-sr-start",
+    "line": 3795,
+    "text": "?- make_ref(Key),\n   statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/18%20service-request.xml')\n   ]),\n   Pid ! start(Key, laptop).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-sr-confirm",
+    "line": 3811,
+    "text": "?- $Pid ! authenticated($Key, alice,\n       confirm(1, [cost(700),service(laptop)])).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-sr-vpn",
+    "line": 3823,
+    "text": "?- make_ref(Key),\n   statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/18%20service-request.xml')\n   ]),\n   Pid ! start(Key, vpn).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-sr-confirm-vpn",
+    "line": 3835,
+    "text": "?- $Pid ! authenticated($Key, alice,\n       confirm(1, [cost(10),service(vpn)])).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-sr-approve",
+    "line": 3842,
+    "text": "?- $Pid ! authenticated($Key, reviewer,\n       review(1, [cost(10),service(vpn)], approve)).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-sr-race",
+    "line": 3864,
+    "text": "?- make_ref(Key),\n   statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/18%20service-request.xml')\n   ]),\n   Pid ! start(Key, slow),\n   Pid ! authenticated(Key, alice, correction(1, laptop)).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-sr-stale",
+    "line": 3878,
+    "text": "?- $Pid ! authenticated($Key, alice,\n       confirm(1, [cost(1),service(restricted)])).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-sr-current",
+    "line": 3887,
+    "text": "?- $Pid ! authenticated($Key, alice,\n       confirm(2, [cost(700),service(laptop)])).\n"
+  },
+  {
+    "path": "web/actor-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-sr-halt",
+    "line": 3954,
+    "text": "?- statechart_halt($Pid, Reply, 1)."
+  },
+  {
+    "path": "web/isobase-api-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isobase-append",
+    "line": 47,
+    "text": "?- append(Xs,Ys,[a,b,c])."
+  },
+  {
+    "path": "web/isobase-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 59,
+    "text": "GET /call?goal=append(Xs,Ys,[a,b,c])&offset=0&limit=1&format=json"
+  },
+  {
+    "path": "web/isobase-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 60,
+    "text": "{\n  \"type\": \"success\",\n  \"data\": [{ \"Xs\": \"[]\", \"Ys\": \"[a,b,c]\" }],\n  \"more\": true\n}"
+  },
+  {
+    "path": "web/isobase-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 83,
+    "text": "GET /call?goal=append(Xs,Ys,[a,b,c])&offset=1&limit=1&format=json"
+  },
+  {
+    "path": "web/isobase-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 84,
+    "text": "{\n  \"type\": \"success\",\n  \"data\": [{ \"Xs\": \"[a]\", \"Ys\": \"[b,c]\" }],\n  \"more\": true\n}"
+  },
+  {
+    "path": "web/isobase-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 104,
+    "text": "const params = new URLSearchParams({\n  goal: \"double(21, X)\",\n  src_text: \"double(A, B) :- B is A * 2.\",\n  offset: \"0\",\n  limit: \"1\",\n  format: \"json\"\n});"
+  },
+  {
+    "path": "web/isobase-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 130,
+    "text": "async function call(goal, { offset = 0, limit = 1, source = \"\" } = {}) {\n  const url = new URL(\"/call\", location.origin);\n  url.search = new URLSearchParams({\n    goal,\n    offset: String(offset),\n    limit: String(limit),\n    format: \"json\",\n    ...(source ? { src_text: source } : {})\n  });\n\n  const response = await fetch(url, {\n    headers: { Accept: \"application/json\" }\n  });\n  const event = await response.json();\n\n  if (!response.ok || event.type === \"error\") {\n    throw new Error(event.data || `HTTP ${response.status}`);\n  }\n  return event;\n}"
+  },
+  {
+    "path": "web/isobase-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 43,
+    "text": "request(goal, temporary_source, application_data)\n    → solutions | failure | error | timeout"
+  },
+  {
+    "path": "web/isobase-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isobase-append",
+    "line": 46,
+    "text": "?- append(Xs,Ys,[a,b,c])."
+  },
+  {
+    "path": "web/isobase-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "isobase-basket-source",
+    "line": 54,
+    "text": "valid_item(item(Name, Price)) :-\n    atom(Name),\n    number(Price),\n    Price >= 0.\n\nvalid_basket(Items) :-\n    maplist(valid_item, Items).\n\nbasket_total([], 0).\nbasket_total([item(_, Price)|Items], Total) :-\n    basket_total(Items, Rest),\n    Total is Price + Rest.\n\nstep(Items, add(Name, Price), [item(Name, Price)|Items]) :-\n    valid_item(item(Name, Price)).\nstep(Items, remove(Name), Rest) :-\n    select(item(Name, _), Items, Rest)."
+  },
+  {
+    "path": "web/isobase-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isobase-basket-total",
+    "line": 73,
+    "text": "?- Items = [item(tea,4),item(bread,3),item(cheese,8)],\n   valid_basket(Items),\n   basket_total(Items, Total)."
+  },
+  {
+    "path": "web/isobase-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isobase-state",
+    "line": 83,
+    "text": "?- State0 = [item(tea,4)],\n   step(State0, add(bread,3), State1),\n   step(State1, add(cheese,8), State2),\n   basket_total(State2, Total)."
+  },
+  {
+    "path": "web/isobase-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isobase-remove",
+    "line": 95,
+    "text": "?- step([item(tea,4),item(bread,3),item(cheese,8)],\n        remove(Name), Rest)."
+  },
+  {
+    "path": "web/isobase-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isobase-assert",
+    "line": 115,
+    "text": "?- assertz(saved(isobase))."
+  },
+  {
+    "path": "web/isobase-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isobase-timeout",
+    "line": 120,
+    "text": "?- repeat, fail."
+  },
+  {
+    "path": "web/isotope-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 46,
+    "text": "POST /toplevel_spawn\nContent-Type: application/json\n\n{ \"options\": \"[session(true)]\" }"
+  },
+  {
+    "path": "web/isotope-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 50,
+    "text": "{ \"type\": \"spawned\", \"pid\": PID_FROM_SPAWN }"
+  },
+  {
+    "path": "web/isotope-api-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-append",
+    "line": 53,
+    "text": "?- append(Xs,Ys,[a,b,c])."
+  },
+  {
+    "path": "web/isotope-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 66,
+    "text": "POST /toplevel_call\nContent-Type: application/x-www-form-urlencoded\n\npid=PID_FROM_SPAWN&goal=append(Xs,Ys,[a,b,c])&limit=1&format=json"
+  },
+  {
+    "path": "web/isotope-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 70,
+    "text": "{\n  \"type\": \"success\",\n  \"pid\": PID_FROM_SPAWN,\n  \"data\": [{ \"Xs\": \"[]\", \"Ys\": \"[a,b,c]\" }],\n  \"more\": true\n}"
+  },
+  {
+    "path": "web/isotope-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 81,
+    "text": "POST /toplevel_next\nContent-Type: application/x-www-form-urlencoded\n\npid=PID_FROM_SPAWN&format=json"
+  },
+  {
+    "path": "web/isotope-api-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-assert",
+    "line": 100,
+    "text": "?- assertz(saved(api))."
+  },
+  {
+    "path": "web/isotope-api-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-read",
+    "line": 102,
+    "text": "?- saved(What)."
+  },
+  {
+    "path": "web/isotope-api-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-output",
+    "line": 117,
+    "text": "?- writeln('Hello over semi-stateful HTTP')."
+  },
+  {
+    "path": "web/isotope-api-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-prompt",
+    "line": 122,
+    "text": "?- read(Term), writeln(Term)."
+  },
+  {
+    "path": "web/isotope-api-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-loop",
+    "line": 137,
+    "text": "?- repeat, fail."
+  },
+  {
+    "path": "web/isotope-api-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 157,
+    "text": "async function postForm(path, fields) {\n  const response = await fetch(path, {\n    method: \"POST\",\n    headers: {\n      Accept: \"application/json\",\n      \"Content-Type\": \"application/x-www-form-urlencoded\"\n    },\n    body: new URLSearchParams(fields)\n  });\n  const event = await response.json();\n  if (!response.ok || event.type === \"error\") {\n    throw new Error(event.data || `HTTP ${response.status}`);\n  }\n  return event;\n}\n\nconst spawned = await fetch(\"/toplevel_spawn\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\" },\n  body: JSON.stringify({ options: \"[session(true)]\" })\n}).then(response => response.json());\n\ntry {\n  const first = await postForm(\"/toplevel_call\", {\n    pid: spawned.pid,\n    goal: \"member(X,[a,b,c])\",\n    limit: \"1\",\n    format: \"json\"\n  });\n  // Route first.type, then use next/poll/respond as required.\n} finally {\n  try {\n    await postForm(\"/toplevel_halt\", {\n      pid: spawned.pid,\n      format: \"json\"\n    });\n  } catch (_olderNode) {\n    await postForm(\"/toplevel_abort\", {\n      pid: spawned.pid,\n      format: \"json\"\n    });\n  }\n}"
+  },
+  {
+    "path": "web/isotope-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-append",
+    "line": 49,
+    "text": "?- append(Xs,Ys,[a,b,c])."
+  },
+  {
+    "path": "web/isotope-profile-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "isotope-basket-source",
+    "line": 57,
+    "text": ":- dynamic basket_item/2.\n\nbasket_clear :-\n    retractall(basket_item(_, _)).\n\nbasket_add(Name, Price) :-\n    atom(Name), number(Price), Price >= 0,\n    assertz(basket_item(Name, Price)).\n\nbasket_remove(Name) :-\n    retract(basket_item(Name, _)).\n\nbasket_total(Total) :-\n    findall(Price, basket_item(_, Price), Prices),\n    prices_total(Prices, Total).\n\nprices_total([], 0).\nprices_total([Price|Prices], Total) :-\n    prices_total(Prices, Rest),\n    Total is Price + Rest."
+  },
+  {
+    "path": "web/isotope-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-clear",
+    "line": 79,
+    "text": "?- basket_clear."
+  },
+  {
+    "path": "web/isotope-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-add-tea",
+    "line": 81,
+    "text": "?- basket_add(tea, 4)."
+  },
+  {
+    "path": "web/isotope-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-add-more",
+    "line": 83,
+    "text": "?- basket_add(bread, 3), basket_add(cheese, 8)."
+  },
+  {
+    "path": "web/isotope-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-total",
+    "line": 85,
+    "text": "?- basket_total(Total)."
+  },
+  {
+    "path": "web/isotope-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-items",
+    "line": 93,
+    "text": "?- basket_item(Name, Price)."
+  },
+  {
+    "path": "web/isotope-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-total-after-stop",
+    "line": 100,
+    "text": "?- basket_total(Total)."
+  },
+  {
+    "path": "web/isotope-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-output",
+    "line": 108,
+    "text": "?- basket_total(Total), format('Basket total: ~w~n', [Total])."
+  },
+  {
+    "path": "web/isotope-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-input",
+    "line": 111,
+    "text": "?- read(Item), basket_add(Item, 1)."
+  },
+  {
+    "path": "web/isotope-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-loop",
+    "line": 124,
+    "text": "?- repeat, fail."
+  },
+  {
+    "path": "web/isotope-profile-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isotope-spawn",
+    "line": 133,
+    "text": "?- spawn(writeln(hello), Pid)."
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 50,
+    "text": "WP_JEV_SERVICE=yes\nTYPESAFE_API_KEY=...             # owner environment only"
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 58,
+    "text": "{\n  \"model\": \"jev-latest\",\n  \"state\": {\"message\": \"Please prepare a deployment\"},\n  \"questions\": {\n    \"intent\": {\n      \"type\": \"choice\",\n      \"instructions\": \"Which single intent best describes the message?\",\n      \"criteria\": {\n        \"request_deploy\": \"Ask to prepare or perform a deployment\",\n        \"affirm\": \"Confirm, approve, agree, or say yes\",\n        \"deny\": \"Reject, cancel, disagree, or say no\",\n        \"status\": \"Ask for current deployment status\",\n        \"other\": \"None of the other options is a good fit\"\n      }\n    }\n  }\n}"
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": null,
+    "line": 81,
+    "text": "jev_decide(_{message:Text}, [\n    choice(intent, \"Which intent?\", Criteria, Intent),\n    score(urgency, \"How urgent?\", Levels, Urgency),\n    noul(is_question, \"Is this a question?\", IsQuestion)\n], RawResponse)."
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 87,
+    "text": "Intent     = choice(Symbol, Probabilities, Confidence)\nUrgency    = score(Value, Legend, LevelProbabilities, Confidence)\nIsQuestion = noul(YesProbability)"
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 96,
+    "text": "observation(IntentChoice,\n            UrgencyScore,\n            QuestionNoul,\n            provenance(RawResponse))"
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 101,
+    "text": "unavailable(configuration)\nunavailable(timeout)\nunavailable(rate_limited)\nunavailable(malformed_response)\nunavailable(transport)"
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 112,
+    "text": "jev_agent_loop :-\n    receive({\n        say(From, Ref, Text) ->\n            jev_observation(Text, Observation),\n            jev_stage1_decision(Observation, Action, Reply),\n            From ! agent_reply(Ref,\n                      report(Text, Observation, action(Action), Reply)),\n            jev_agent_loop;\n        stop -> true\n    })."
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "jev-stage1-spawn",
+    "line": 124,
+    "text": "?- jev_agent_spawn(Pid)."
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "jev-stage1-deploy",
+    "line": 126,
+    "text": "?- self(Me), $Pid ! say(Me, deploy, \"Please prepare a deployment\"),\n   receive({agent_reply(deploy, Report) -> true},\n           [timeout(20), on_timeout(fail)])."
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "jev-stage1-status",
+    "line": 130,
+    "text": "?- self(Me), $Pid ! say(Me, status, \"What is the deployment status?\"),\n   receive({agent_reply(status, Report) -> true},\n           [timeout(20), on_timeout(fail)])."
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "jev-stage1-stop",
+    "line": 134,
+    "text": "?- $Pid ! stop."
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 158,
+    "text": "observed(From, Ref, OriginalText, Observation)"
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "jev-stage2-spawn",
+    "line": 169,
+    "text": "?- jev_sxml_agent_spawn(Pid)."
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "jev-idle-yes",
+    "line": 176,
+    "text": "?- self(Me), $Pid ! say(Me, idle_yes, \"yes\"),\n   receive({demo_reply(idle_yes, Report) -> true},\n           [timeout(20), on_timeout(fail)])."
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "jev-stage2-deploy",
+    "line": 183,
+    "text": "?- self(Me), $Pid ! say(Me, deploy, \"Please prepare a deployment\"),\n   receive({demo_reply(deploy, Report) -> true},\n           [timeout(20), on_timeout(fail)])."
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "jev-awaiting-yes",
+    "line": 190,
+    "text": "?- self(Me), $Pid ! say(Me, confirm, \"yes\"),\n   receive({demo_reply(confirm, Report) -> true},\n           [timeout(20), on_timeout(fail)])."
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "jev-awaiting-no",
+    "line": 198,
+    "text": "?- self(Me), $Pid ! say(Me, cancel, \"no\"),\n   receive({demo_reply(cancel, Report) -> true},\n           [timeout(20), on_timeout(fail)])."
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "jev-ambiguous",
+    "line": 207,
+    "text": "?- self(Me), $Pid ! say(Me, ambiguous,\n       \"Yes, deploy it -- actually no, do not deploy it.\"),\n   receive({demo_reply(ambiguous, Report) -> true},\n           [timeout(20), on_timeout(fail)])."
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "jev-swedish",
+    "line": 219,
+    "text": "?- self(Me), $Pid ! say(Me, swedish, \"ja\"),\n   receive({demo_reply(swedish, Report) -> true},\n           [timeout(20), on_timeout(fail)])."
+  },
+  {
+    "path": "web/jev-sxml-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "jev-stage2-stop",
+    "line": 234,
+    "text": "?- $Pid ! stop."
+  },
+  {
+    "path": "web/statechart-behaviour-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 64,
+    "text": "<state id=\"game\" initial=\"play\">\n    <state id=\"play\" initial=\"s1\">\n        <history id=\"h\">\n            <go to=\"s1\"/>\n        </history>\n        <state id=\"s1\">\n            <go to=\"s2\" on=\"play\"/>\n        </state>\n        <state id=\"s2\">\n            <go to=\"s1\" on=\"reset\"/>\n        </state>\n        <go to=\"interrupted\" on=\"pause\"/>\n    </state>\n    <state id=\"interrupted\">\n        <go to=\"h\" on=\"resume\"/>\n    </state>\n</state>"
+  },
+  {
+    "path": "web/statechart-behaviour-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-pause-spawn",
+    "line": 165,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/01%20pause-and-resume.xml')\n   ])."
+  },
+  {
+    "path": "web/statechart-behaviour-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-spaghetti-spawn",
+    "line": 663,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/02%20spaghetti.xml')\n   ])."
+  },
+  {
+    "path": "web/statechart-behaviour-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-emotions-spawn",
+    "line": 788,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/03%20emotions.xml')\n   ])."
+  },
+  {
+    "path": "web/statechart-behaviour-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-emotions-halt",
+    "line": 804,
+    "text": "?- statechart_halt($Pid, Reply, 1)."
+  },
+  {
+    "path": "web/statechart-behaviour-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 827,
+    "text": "<statechart version=\"0.2\" initial=\"init\">\n    <datamodel>\n        :- dynamic int/1.\n    </datamodel>\n    <state id=\"init\">\n        <go on=\"integers(List)\" to=\"run\">\n            forall(member(X, List), asserta(int(X)))\n        </go>\n    </state>\n    <state id=\"run\">\n        <go if=\"int(X), int(Y), X > Y\">\n            Z is X-Y,\n            retract(int(X)),\n            assert(int(Z))\n        </go>\n        <go to=\"stop\" if=\"int(X)\">\n            writeln(X)\n        </go>\n    </state>\n    <final id=\"stop\" />\n</statechart>\n"
+  },
+  {
+    "path": "web/statechart-behaviour-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-gcd-spawn",
+    "line": 849,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/09%20gcd.xml')\n   ])."
+  },
+  {
+    "path": "web/statechart-behaviour-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-gcd-input",
+    "line": 853,
+    "text": "?- $Pid ! integers([25,10,15,30])."
+  },
+  {
+    "path": "web/statechart-behaviour-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 876,
+    "text": "<statechart version=\"0.2\" initial=\"spawn-ask-collect\">\n    <state id=\"spawn-ask-collect\" initial=\"ask\">\n        <spawn type=\"toplevel\" options=\"[time_limit(30)]\">\n            q(X) :- p(X).\n            p(a). p(b). p(c). p(d).\n        </spawn>\n        <state id=\"ask\">\n            <go to=\"collect\" on=\"spawned(Pid)\">\n                toplevel_call(Pid, q(X), [\n                    limit(1)\n                ])\n            </go>\n        </state>\n        <state id=\"collect\">\n            <go to=\"collect\" on=\"success(Pid, Data, true)\">\n                writeln(Data),\n                toplevel_next(Pid)\n            </go>\n            <go to=\"final\" on=\"success(_, Data, false)\">\n                writeln(Data)\n            </go>\n        </state>\n    </state>\n    <final id=\"final\" />\n</statechart>"
+  },
+  {
+    "path": "web/statechart-behaviour-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-toplevel-spawn",
+    "line": 901,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/14%20spawn-toplevel.xml')\n   ])."
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 397,
+    "text": "list_price(widget, 100).\nlist_price(gadget, 250).\nlist_price(gizmo,  400).\n\nprice(Item, Price) :- list_price(Item, Price)."
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "shared-price-default",
+    "line": 405,
+    "text": "?- price(widget, Price)."
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "private-price-policy",
+    "line": 416,
+    "text": "price(Item, Price) :-\n    list_price(Item, ListPrice),\n    Price is ListPrice * 0.9."
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "private-price-query",
+    "line": 426,
+    "text": "?- price(widget, Price)."
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "shared-price-child",
+    "line": 444,
+    "text": "?- self(Self),\n   spawn((price(widget, Price), Self ! child_price(Price)), _),\n   receive({child_price(Price) -> true})."
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "private-list-price",
+    "line": 459,
+    "text": "list_price(widget, 80)."
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "private-list-price-widget",
+    "line": 467,
+    "text": "?- list_price(widget, Price)."
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "private-list-price-gadget",
+    "line": 478,
+    "text": "?- list_price(gadget, Price)."
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "movie-by-year",
+    "line": 511,
+    "text": "?- rpc('https://n1.elfenbenstornet.se', movie(Film, 2000))."
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "movie-actor-director",
+    "line": 519,
+    "text": "?- rpc('https://n1.elfenbenstornet.se', acting_director(Who), [\n       src_text(\"\n           acting_director(Person) :-\n               actor(Movie, Person, _), \n               director(Movie, Person).\n           \")\n   ])."
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "dcg2",
+    "line": 542,
+    "text": "?- Sentence = [john,saw,a,man,with,a,telescope],\n   rpc('https://n1.elfenbenstornet.se', phrase(s(Tree),Sentence)).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "dcg3",
+    "line": 554,
+    "text": "?- rpc('https://n1.elfenbenstornet.se', phrase(s(_),Sentence), [\n       limit(10)\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "dcg4",
+    "line": 576,
+    "text": "?- rpc('https://n1.elfenbenstornet.se', phrase(s(_),Sentence), [\n       limit(10)\n   ]), writeln(Sentence), fail.\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 618,
+    "text": "human(plato).\nhuman(aristotle).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 626,
+    "text": "mortal(Who) :- human(Who).\n\nhuman(socrates).\nhuman(Who) :-\n    rpc('https://n1.elfenbenstornet.se', human(Who)).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "rpc1",
+    "line": 637,
+    "text": "?- rpc('https://n2.elfenbenstornet.se', mortal(Who)).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "promise1",
+    "line": 660,
+    "text": "?- promise('https://n2.elfenbenstornet.se', mortal(Who), Ref).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "promise2",
+    "line": 668,
+    "text": "?- yield($Ref, Answer).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "rpc2",
+    "line": 705,
+    "text": "?- rpc('https://n1.elfenbenstornet.se', mortal(Who), [\n       src_text(\"mortal(Who) :- human(Who).\")\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "dpt-prove-source",
+    "line": 751,
+    "text": "prove(true, true) :- !.\nprove(rpc(URI, A), Proof) :- !,\n    prove(rpc(URI, A, []), Proof).\nprove(rpc(URI, A, Options), Query@URI/Proof) :- !,\n    rpc(URI, prove(A, Query/Proof), [\n        src_predicates([prove/2])\n      | Options\n    ]).\nprove((A, B), (ProofA, ProofB)) :- !,\n    prove(A, ProofA),\n    prove(B, ProofB).\nprove(A, A/Proof) :-\n    clause(A, B),\n    prove(B, Proof).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 775,
+    "text": ":- dynamic mortal/1, human/1.\n\nmortal(X) :- human(X).\n\nhuman(socrates).\nhuman(X) :- rpc('https://n1.elfenbenstornet.se', human(X)).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 787,
+    "text": ":- dynamic human/1.\n\nhuman(plato).\nhuman(aristotle).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "dpt-prove-run",
+    "line": 797,
+    "text": "?- rpc('https://n2.elfenbenstornet.se', prove(mortal(X), Proof), [\n       src_predicates([prove/2])\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 811,
+    "text": "Proof = mortal(socrates)/(human(socrates)/true),\nX = socrates ;\nProof = mortal(plato)/(human(plato)/(human(plato)@'https://n4.elfenbenstornet.se'/true)),\nX = plato ;\nProof = mortal(aristotle)/(human(aristotle)/(human(aristotle)@'https://n4.elfenbenstornet.se'/true)),\nX = aristotle.\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "epa-count-source",
+    "line": 864,
+    "text": "count_actor(Count0) :-\n    receive({\n        count(From) ->\n            Count is Count0 + 1,\n            From ! count(Count),\n            count_actor(Count) ;\n        stop ->\n            true\n    }).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-spawn",
+    "line": 875,
+    "text": "?- spawn(count_actor(0), Pid, [\n       monitor(true),\n       src_uri('https://n3.elfenbenstornet.se')\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-self",
+    "line": 886,
+    "text": "?- self(Self).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-send-once",
+    "line": 894,
+    "text": "?- $Pid ! count($Self).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-receive",
+    "line": 902,
+    "text": "?- receive({Count -> true}).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-send-stop",
+    "line": 910,
+    "text": "?- $Pid ! count($Self), $Pid ! stop.\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-flush",
+    "line": 918,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-spawn-demo",
+    "line": 954,
+    "text": "?- toplevel_spawn(Pid, [\n       session(true),\n       monitor(true),\n       src_list([p(a),p(b)])\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-default",
+    "line": 978,
+    "text": "?- toplevel_call($Pid, p(X)).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-default-flush",
+    "line": 986,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-template",
+    "line": 1006,
+    "text": "?- toplevel_call($Pid, p(X), [\n       template(X)\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-template-flush",
+    "line": 1016,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-limit-one",
+    "line": 1036,
+    "text": "?- toplevel_call($Pid, p(X), [\n       template(X),\n       limit(1)\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-limit-one-flush",
+    "line": 1047,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-next-basic",
+    "line": 1055,
+    "text": "?- toplevel_next($Pid).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-next-basic-flush",
+    "line": 1063,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-slice",
+    "line": 1083,
+    "text": "?- toplevel_call($Pid, between(1,infinite,I), [\n       template(I),\n       offset(100),\n       limit(3)\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-slice-flush",
+    "line": 1095,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-next-limit-five",
+    "line": 1103,
+    "text": "?- toplevel_next($Pid, [\n       limit(5)\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-next-limit-five-flush",
+    "line": 1113,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-stop",
+    "line": 1121,
+    "text": "?- toplevel_stop($Pid).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-output",
+    "line": 1141,
+    "text": "?- toplevel_call($Pid, output(hello)).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-output-flush",
+    "line": 1149,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-input",
+    "line": 1167,
+    "text": "?- toplevel_call($Pid, input('Input', X)),\n   receive({Answer -> true}).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-respond",
+    "line": 1180,
+    "text": "?- respond($Pid, hello),\n   receive({Answer -> true}).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-assert-loop",
+    "line": 1201,
+    "text": "?- toplevel_call($Pid, assert((p :- p))),\n   toplevel_call($Pid, p).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-abort",
+    "line": 1215,
+    "text": "?- toplevel_abort($Pid).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-halt",
+    "line": 1227,
+    "text": "?- toplevel_halt($Pid, Reply).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "cpw-remote-echo-spawn",
+    "line": 1257,
+    "text": "?- spawn(echo_actor, Pid, [\n       node('{{actor_peer_host}}'),\n       monitor(true),\n       src_text(\"echo_actor :-\n    receive({\n        echo(From, Msg) ->\n            From ! echo(Msg),\n            echo_actor\n    }).\")\n   ]),\n   register(remote_echo_actor, Pid).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-echo-talk",
+    "line": 1280,
+    "text": "?- self(Self),\n   remote_echo_actor ! echo(Self, hello).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-echo-flush",
+    "line": 1289,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-echo-exit",
+    "line": 1307,
+    "text": "?- whereis(remote_echo_actor, Pid),\n   exit(Pid, die).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-echo-down",
+    "line": 1316,
+    "text": "?- receive({A -> true}).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "cpw-remote-pingpong-source",
+    "line": 1336,
+    "text": "ping(0, Pong_Pid) :-\n    Pong_Pid ! finished,\n    format('Ping finished.~n', []).\nping(N, Pong_Pid) :-\n    self(Self),\n    Pong_Pid ! ping(Self),\n    receive({pong -> format('Ping received pong.~n', [])}),\n    N1 is N - 1,\n    ping(N1, Pong_Pid).\n\npong :-\n    receive({\n        finished -> format('Pong finished.~n', []) ;\n        ping(Ping_Pid) -> Ping_Pid ! pong, pong\n    }).\n\nping_pong_remote :-\n    spawn(pong, Pong_Pid, [\n        node('{{actor_peer_host}}')\n    ]),\n    spawn(ping(3, Pong_Pid)).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-pingpong-run",
+    "line": 1363,
+    "text": "?- ping_pong_remote.\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-toplevel-spawn",
+    "line": 1384,
+    "text": "?- toplevel_spawn(Pid, [\n       node('{{actor_peer_host}}'),\n       session(true)\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-toplevel-call",
+    "line": 1400,
+    "text": "?- toplevel_call($Pid, human(Who), [\n       template(Who),\n       limit(1)\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-toplevel-receive1",
+    "line": 1415,
+    "text": "?- receive({Msg -> true}).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-toplevel-next",
+    "line": 1423,
+    "text": "?- toplevel_next($Pid).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-toplevel-receive2",
+    "line": 1431,
+    "text": "?- receive({Msg -> true}).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 1465,
+    "text": "Pred(+Request, +OldState, -Response, -NewState)"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "srv-fridge-source",
+    "line": 1471,
+    "text": "fridge(store(Food), List, ok, [Food|List]).\nfridge(take(Food),  List, ok(Food), Rest) :-\n    select(Food, List, Rest), !.\nfridge(take(_Food), List, not_found, List).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-spawn",
+    "line": 1496,
+    "text": "?- supervisor_spawn([\n       child(fridge, [\n           start(server(fridge, [initial_state([])])),\n           restart(permanent)\n       ])\n   ], Sup, [\n       src_predicates([fridge/4])\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-store-1",
+    "line": 1523,
+    "text": "?- server_request(fridge, store(milk), Response).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-take-1",
+    "line": 1530,
+    "text": "?- server_request(fridge, take(milk), Response).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-promise",
+    "line": 1545,
+    "text": "?- server_promise(fridge, store(meat), Ref).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-yield",
+    "line": 1552,
+    "text": "?- server_yield($Ref, Response).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "srv-fridge2-source",
+    "line": 1568,
+    "text": "fridge2(store(Food), List, ok, [Food|List]).\nfridge2(take(Food),  List, ok(Food), Rest) :-\n    select(Food, List, Rest), !.\nfridge2(take(_Food), List, not_found, List).\nfridge2(_Other,      List, error(unknown_request), List).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "srv-upgrade",
+    "line": 1583,
+    "text": "?- server_upgrade(fridge, fridge2, [\n       src_text(\"\n           fridge2(store(Food), List, ok, [Food|List]).\n           fridge2(take(Food), List, ok(Food), Rest) :-\n               select(Food, List, Rest), !.\n           fridge2(take(_Food), List, not_found, List).\n           fridge2(_Other, List, error(unknown_request), List).\n       \")\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-bad-call-2",
+    "line": 1603,
+    "text": "?- server_request(fridge, sore(milk), Response).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-store-after-upgrade",
+    "line": 1616,
+    "text": "?- server_request(fridge, store(butter), Response).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-bad-call",
+    "line": 1630,
+    "text": "?- whereis(fridge, Pid), exit(Pid, kaboom).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-after-recovery",
+    "line": 1643,
+    "text": "?- server_request(fridge, store(eggs), Response).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-halt",
+    "line": 1665,
+    "text": "?- supervisor_halt($Sup).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-pr-spawn",
+    "line": 1811,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/01%20pause-and-resume.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 1859,
+    "text": "<statechart version=\"0.2\" initial=\"game\">\n    <state id=\"game\" initial=\"play\">\n        <state id=\"play\" initial=\"s1\">\n            <history id=\"h\">\n                <go to=\"s1\" />\n            </history>\n            <state id=\"s1\">\n                <go to=\"s2\" on=\"play\" />\n            </state>\n            <state id=\"s2\">\n                <go to=\"s1\" on=\"reset\" />\n            </state>\n            <go to=\"interrupted\" on=\"pause\" />\n        </state>\n        <state id=\"interrupted\">\n            <go to=\"h\" on=\"resume\" />\n        </state>\n        <go to=\"final\" on=\"stop\" />\n    </state>\n    <final id=\"final\" />\n</statechart>\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-spaghetti-spawn",
+    "line": 1917,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/02%20spaghetti.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-emotions-spawn",
+    "line": 2000,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/03%20emotions.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 2051,
+    "text": "<statechart version=\"0.2\" initial=\"init\">\n    <datamodel>\n        :- dynamic int/1.\n    </datamodel>\n    <state id=\"init\">\n        <go on=\"input(List)\" to=\"run\">\n            forall(member(X, List), asserta(int(X)))\n        </go>\n    </state>\n    <state id=\"run\">\n        <go if=\"int(X), int(Y), X > Y\">\n            Z is X-Y,\n            retract(int(X)),\n            assert(int(Z))\n        </go>\n        <go to=\"stop\" if=\"int(X)\">\n            writeln(X)\n        </go>\n    </state>\n    <final id=\"stop\" />\n</statechart>\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-gcd-spawn",
+    "line": 2078,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/09%20gcd.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-gcd-input",
+    "line": 2091,
+    "text": "?- $Pid ! integers([25, 10, 15, 30]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-dialog-spawn",
+    "line": 2115,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/11%20boxshop-1.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-spawn-toplevel-spawn",
+    "line": 2190,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/14%20spawn-toplevel.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/swi-wasm-tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 2207,
+    "text": "<statechart version=\"0.2\" initial=\"spawn-ask-collect\">\n    <state id=\"spawn-ask-collect\" initial=\"ask\">\n        <spawn type=\"toplevel\" options=\"[time_limit(30)]\">\n            q(X) :- p(X).\n            p(a). p(b). p(c). p(d).\n        </spawn>\n        <state id=\"ask\">\n            <go to=\"collect\" on=\"spawned(Pid)\">\n                toplevel_call(Pid, q(X), [\n                    limit(1)\n                ])\n            </go>\n        </state>\n        <state id=\"collect\">\n            <go to=\"collect\" on=\"success(Pid, Data, true)\">\n                writeln(Data),\n                toplevel_next(Pid)\n            </go>\n            <go to=\"final\" on=\"success(_, Data, false)\">\n                writeln(Data)\n            </go>\n        </state>\n    </state>\n    <final id=\"final\" />\n</statechart>\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "append1",
+    "line": 419,
+    "text": "?- append([a],[b,c],Xs).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "append2",
+    "line": 432,
+    "text": "?- append(Xs,Ys,[a,b,c]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "a",
+    "line": 451,
+    "text": "\nancestor_descendant(X, Y) :-\n    parent_child(X, Y).\nancestor_descendant(X, Z) :-\n    parent_child(X, Y),\n    ancestor_descendant(Y, Z).\n\nparent_child(X, Y) :-\n    mother_child(X, Y).\nparent_child(X, Y) :-\n    father_child(X, Y).\n\nmother_child(trude, sally).\n\nfather_child(tom, sally).\nfather_child(tom, erica).\nfather_child(mike, tom).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "ancestor1",
+    "line": 474,
+    "text": "?- ancestor_descendant(mike, Who).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "service-policy-source",
+    "line": 496,
+    "text": "%% Reasoning about service requests, before adding an agent.\n%\n% These are the policy rules from 18 service-request.xml. They run locally\n% on ISOBASE (including n1), ISOTOPE, ACTOR, and SWI-WASM.\n%\n% classify(+Fields, -Decision) expects validated, ground fields: at most\n% one service/1 and one cost/1. Services are laptop, vpn, restricted, or\n% training; costs are integers from 0 to 10000000. Either field may be\n% missing. The full statechart validates input before calling these rules.\n%\n% This example only classifies a request; it does not approve or send one.\n\n% Policy\n\ncomplete(Fields) :-\n    memberchk(service(_), Fields),\n    memberchk(cost(_), Fields).\n\npermit(Fields) :-\n    memberchk(service(Service), Fields),\n    memberchk(Service, [laptop, vpn]),\n    memberchk(cost(Cost), Fields),\n    Cost =< 1000.\n\nforbid(Fields) :-\n    memberchk(service(restricted), Fields).\nforbid(Fields) :-\n    memberchk(service(vpn), Fields).\n\n% Assessment: the order matters.\n% Check completeness first, then conflict, prohibition, permission, and gap.\n\nclassify(Fields, insufficient(missing_fields)) :-\n    \\+ complete(Fields), !.\nclassify(Fields, conflicting) :-\n    permit(Fields), forbid(Fields), !.\nclassify(Fields, forbidden) :-\n    forbid(Fields), !.\nclassify(Fields, permitted) :-\n    permit(Fields), !.\nclassify(_, insufficient(policy_gap))."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "service-policy-laptop",
+    "line": 540,
+    "text": "?- classify([service(laptop), cost(700)], Decision)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "service-policy-restricted",
+    "line": 543,
+    "text": "?- classify([service(restricted), cost(1)], Decision)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "service-policy-vpn",
+    "line": 546,
+    "text": "?- classify([service(vpn), cost(10)], Decision)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "service-policy-missing",
+    "line": 549,
+    "text": "?- classify([service(laptop)], Decision)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "service-policy-training",
+    "line": 552,
+    "text": "?- classify([service(training), cost(500)], Decision)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "service-policy-budget",
+    "line": 555,
+    "text": "?- classify([service(laptop), cost(1001)], Decision)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isobase-no-abort",
+    "line": 596,
+    "text": "?- repeat, fail."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isobase-no-io",
+    "line": 609,
+    "text": "?- writeln(hello)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "isobase-no-dynamic-db",
+    "line": 622,
+    "text": "?- assertz(p(1))."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "movie-by-year",
+    "line": 643,
+    "text": "?- movie(Film, 2000)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "movie-co-stars",
+    "line": 655,
+    "text": "?- actor(Film, First, _), actor(Film, Second, _), First @> Second."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "movie-actor-director",
+    "line": 663,
+    "text": "?- actor(_, Person, _), director(_, Person)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "dcg1",
+    "line": 680,
+    "text": "s(s(NP,VP)) --> np(NP, Num), vp(VP, Num).\n\nnp(NP, Num) --> pn(NP, Num).\nnp(np(Det,N), Num) --> det(Det, Num), n(N, Num).\nnp(np(Det,N,PP), Num) --> det(Det, Num), n(N, Num), pp(PP).\n\nvp(vp(V,NP), Num) --> v(V, Num), np(NP, _).\nvp(vp(V,NP,PP), Num) --> v(V, Num), np(NP, _), pp(PP).\n\npp(pp(P,NP)) --> p(P), np(NP, _).\n\ndet(det(a), sg) --> [a].\ndet(det(the), _) --> [the].\n\npn(pn(john), sg) --> [john].\n\nn(n(man), sg) --> [man].\nn(n(men), pl) --> [men].\nn(n(telescope), sg) --> [telescope].\n\nv(v(sees), sg) --> [sees].\nv(v(see), pl) --> [see].\nv(v(saw), _) --> [saw].\n\np(p(with)) --> [with].\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "dcg2",
+    "line": 715,
+    "text": "?- phrase(s(Tree), [john,saw,a,man,with,a,telescope]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "dcg3",
+    "line": 727,
+    "text": "?- forall((between(1,8,N), length(S,N), phrase(s(_),S)), writeln(S)).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 774,
+    "text": "human(plato).\nhuman(aristotle).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 782,
+    "text": "mortal(Who) :- human(Who).\n\nhuman(socrates).\nhuman(Who) :-\n    rpc('https://n1.elfenbenstornet.se', human(Who)).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "rpc1",
+    "line": 793,
+    "text": "?- rpc('https://n2.elfenbenstornet.se', mortal(Who)).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "promise1",
+    "line": 816,
+    "text": "?- promise('https://n2.elfenbenstornet.se', mortal(Who), Ref).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "promise2",
+    "line": 824,
+    "text": "?- yield($Ref, Answer).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "side-effects-io-source",
+    "line": 860,
+    "text": "hello_world :-\n    writeln('Hello World!'),\n    sleep(1),\n    hello_world.\n\nread_and_write :-\n    writeln('Type a term or \\'stop\\''),\n    read(Something),\n    (   Something == stop\n    ->  true\n    ;   writeln(Something),\n        read_and_write\n    ).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "side-effects-hello-world",
+    "line": 880,
+    "text": "?- hello_world.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "side-effects-read-and-write",
+    "line": 888,
+    "text": "?- read_and_write.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "side-effects-db-source",
+    "line": 898,
+    "text": ":- dynamic p/1.\n\nassert_and_retract :-\n    forall(between(1, 10, X), assert(p(X))),\n    forall(retract(p(X)), writeln(X)).\n\nassert_many(Count) :-\n    forall(between(1, Count, X), assert(p(X))),\n    retractall(p(_)).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "side-effects-assert-and-retract",
+    "line": 914,
+    "text": "?- assert_and_retract.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "side-effects-assert-many",
+    "line": 922,
+    "text": "?- time(assert_many(1_000_000)).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "rpc2",
+    "line": 943,
+    "text": "?- rpc('https://n1.elfenbenstornet.se', mortal(Who), [\n       src_text(\"mortal(Who) :- human(Who).\")\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "dpt-local-source",
+    "line": 972,
+    "text": "% Knowledge base\n\n:- dynamic mortal/1, human/1.\n\nmortal(X) :- human(X).\nhuman(socrates).\n\n% Interpreter\n\nprove(true, true) :- !.\nprove((A, B), (ProofA, ProofB)) :- !,\n    prove(A, ProofA), prove(B, ProofB).\nprove(A, A/Proof) :- clause(A, B), prove(B, Proof)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "dpt-local-answer",
+    "line": 986,
+    "text": "?- mortal(Who)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "dpt-local-proof",
+    "line": 989,
+    "text": "?- prove(mortal(Who), Proof)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 991,
+    "text": "Who = socrates,\nProof = mortal(socrates)/(human(socrates)/true)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "dpt-prove-source",
+    "line": 1005,
+    "text": "%% From answers to explanations, locally and across nodes.\n%\n% The first two queries need no remote service. The last uses n3 and n4.\n% This follows the proof-producing meta-interpreter in the AI chapter.\n%\n% A/Proof records a goal and its justification. true is a proved leaf;\n% (ProofA,ProofB) records a conjunction. A@URI/Proof marks a remote step.\n% These are ordinary Prolog terms, not a separate explanation language.\n\n% Knowledge base\n\n:- dynamic mortal/1, human/1.\n\nmortal(X) :- human(X).\nhuman(socrates).\n\n% Interpreter\n\nprove(true, true) :- !.\nprove(rpc(URI, A), Proof) :- !,\n    prove(rpc(URI, A, []), Proof).\nprove(rpc(URI, A, Options), Query@URI/Proof) :- !,\n    rpc(URI, prove(A, Query/Proof), [\n        src_predicates([prove/2])\n      | Options\n    ]).\nprove((A, B), (ProofA, ProofB)) :- !,\n    prove(A, ProofA), prove(B, ProofB).\nprove(A, A/Proof) :- clause(A, B), prove(B, Proof)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 1037,
+    "text": "mortal(X) :- human(X).\nhuman(socrates).\nhuman(X) :- rpc('https://n4.elfenbenstornet.se', human(X))."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 1041,
+    "text": "human(plato).\nhuman(aristotle)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "dpt-prove-run",
+    "line": 1043,
+    "text": "?- prove(rpc('https://n3.elfenbenstornet.se', mortal(Who)), Proof)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 1047,
+    "text": "Who = socrates,\nProof = (mortal(socrates)@'https://n3.elfenbenstornet.se')/\n          (human(socrates)/true)."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 1051,
+    "text": "Who = plato,\nProof = (mortal(plato)@'https://n3.elfenbenstornet.se')/\n          (human(plato)/\n            ((human(plato)@'https://n4.elfenbenstornet.se')/true))."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "sw-source",
+    "line": 1094,
+    "text": ":- dynamic rdf/3.\n\nrdf('http://example.org/bob#me',\n    'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',\n    'http://xmlns.com/foaf/0.1/Person').\n\nrdf('http://example.org/bob#me',\n    'http://xmlns.com/foaf/0.1/knows',\n    'http://example.org/alice#me').\n\nrdf('http://example.org/bob#me',\n    'http://xmlns.com/foaf/0.1/knows',\n    'http://example.org/charlie#me').\n\nrdf('http://example.org/alice#me',\n    'http://schema.org/birthDate',\n    literal(type('http://www.w3.org/2001/XMLSchema#date', '1990-07-04'))).\n\nrdf('http://example.org/charlie#me',\n    'http://schema.org/birthDate',\n    literal(type('http://www.w3.org/2001/XMLSchema#date', '1985-12-23'))).\n\nknown_with_birthdate(Me, He, Date) :-\n    rdf(Me, 'http://xmlns.com/foaf/0.1/knows', He),\n    rdf(He, 'http://schema.org/birthDate', Date).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sw-rdf-query",
+    "line": 1138,
+    "text": "?- rdf('http://example.org/bob#me',\n       'http://xmlns.com/foaf/0.1/knows',\n       Who).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sw-rule-query",
+    "line": 1152,
+    "text": "?- known_with_birthdate(Me, He, Date).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-self",
+    "line": 1214,
+    "text": "?- self(Self).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-send-self",
+    "line": 1234,
+    "text": "?- $Self ! hello.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-receive-self",
+    "line": 1246,
+    "text": "?- receive({Message -> true}).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-send-goodbye",
+    "line": 1266,
+    "text": "?- $Self ! hello, $Self ! goodbye.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-flush",
+    "line": 1274,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "mpc-echo-source",
+    "line": 1299,
+    "text": "echo_actor :-\n    receive({\n        echo(From, Msg) ->\n            From ! echo(Msg),\n            echo_actor\n    }).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-spawn-echo",
+    "line": 1312,
+    "text": "?- spawn(echo_actor, Pid).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-talk-echo",
+    "line": 1325,
+    "text": "?- self(Self), $Pid ! echo(Self, hi).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-echo-flush",
+    "line": 1333,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-link-default-actors",
+    "line": 1349,
+    "text": "?- actors(Alive).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-link-default",
+    "line": 1369,
+    "text": "?- spawn(spawn(receive({}))).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-link-default-actors-after",
+    "line": 1381,
+    "text": "?- actors(Alive).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-link-one-way",
+    "line": 1399,
+    "text": "?- spawn((spawn(exit(kill)), receive({})), Pid).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-link-one-way-check",
+    "line": 1407,
+    "text": "?- actors(Alive).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-link-one-way-cleanup",
+    "line": 1420,
+    "text": "?- exit($Pid, cleanup).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-monitor",
+    "line": 1435,
+    "text": "?- spawn(2 > 1, Pid, [monitor(true)]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-monitor-flush",
+    "line": 1448,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-monitor-twice",
+    "line": 1469,
+    "text": "?- spawn(sleep(1), Pid),\n   monitor(Pid, Ref1),\n   monitor(Pid, Ref2),\n   sleep(1.2),\n   flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-demonitor",
+    "line": 1486,
+    "text": "?- spawn(sleep(1), Pid),\n   monitor(Pid, Ref),\n   demonitor(Ref),\n   receive({\n       down(Pid, _, _) ->\n           writeln('Unexpected down message.')\n   }, [\n       timeout(1.2),\n       on_timeout(writeln('No down message arrived.'))\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-register-shell",
+    "line": 1519,
+    "text": "?- self(Self), register(shell, Self).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-send-name",
+    "line": 1527,
+    "text": "?- shell ! hello.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-spawn-shell-goodbye",
+    "line": 1535,
+    "text": "?- spawn(shell ! goodbye).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-name-flush",
+    "line": 1543,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-spawn-monitored-echo",
+    "line": 1558,
+    "text": "?- spawn(echo_actor, Pid, [monitor(true)]),\n   register(echo_actor, Pid).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-exit-echo",
+    "line": 1567,
+    "text": "?- whereis(echo_actor, Pid),\n   exit(Pid, 'We changed our minds!').\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-exit-flush",
+    "line": 1581,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-exit-self",
+    "line": 1596,
+    "text": "?- spawn(exit(my_reason), Pid, [monitor(true)]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-exit-self-flush",
+    "line": 1604,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "mpc-selective-source",
+    "line": 1628,
+    "text": "wait_hello :-\n    receive({\n        hello ->\n            writeln('Got hello.'),\n            wait_goodbye\n    }).\n\nwait_goodbye :-\n    receive({\n        goodbye ->\n            writeln('Got goodbye.')\n    }).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-selective-run",
+    "line": 1646,
+    "text": "?- self(Self),\n   Self ! goodbye,\n   Self ! hello,\n   wait_hello.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "mpc-receive-clauses",
+    "line": 1671,
+    "text": "?- self(Self),\n   Self ! goodbye(bob),\n   receive({\n       hello(Name) ->\n           format(\"Hello, ~w!~n\", [Name]) ;\n       goodbye(Name) ->\n           format(\"Goodbye, ~w!~n\", [Name])\n   }).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "mpc-guard",
+    "line": 1693,
+    "text": "?- self(Self),\n   Self ! number(-2),\n   receive({\n       number(N) if N > 0 ->\n           format(\"Positive number: ~p~n\", [N]) ;\n       number(N) if N =< 0 ->\n           format(\"Non-positive number: ~p~n\", [N])\n   }).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "mpc-timeout",
+    "line": 1713,
+    "text": "?- receive({\n       person(Name) ->\n           format(\"Hello, ~w!~n\", [Name])\n   }, [\n       timeout(1),\n       on_timeout(writeln('No person arrived.'))\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "mpc-priority-source",
+    "line": 1736,
+    "text": "important(Messages) :-\n    receive({\n        Priority-Message if Priority > 10 ->\n            Messages = [Message|MoreMessages],\n            important(MoreMessages)\n    }, [\n        timeout(0),\n        on_timeout(normal(Messages))\n    ]).\n\nnormal(Messages) :-\n    receive({\n        _-Message ->\n            Messages = [Message|MoreMessages],\n            normal(MoreMessages)\n    }, [\n        timeout(0),\n        on_timeout(Messages = [])\n    ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-priority-send",
+    "line": 1765,
+    "text": "?- self(S),\n   S ! 15-high,\n   S ! 7-low,\n   S ! 1-low,\n   S ! 17-high.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "mpc-priority-run",
+    "line": 1781,
+    "text": "?- important(Messages).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "epa-count-source",
+    "line": 1805,
+    "text": "count_actor(Count0) :-\n    receive({\n        count(From) ->\n            Count is Count0 + 1,\n            From ! count(Count),\n            count_actor(Count) ;\n        stop ->\n            true\n    }).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-spawn",
+    "line": 1816,
+    "text": "?- spawn(count_actor(0), Pid, [\n       monitor(true)\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-self",
+    "line": 1826,
+    "text": "?- self(Self).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-send-once",
+    "line": 1834,
+    "text": "?- $Pid ! count($Self).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-receive",
+    "line": 1842,
+    "text": "?- receive({Count -> true}).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-send-stop",
+    "line": 1850,
+    "text": "?- $Pid ! count($Self), $Pid ! stop.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-count-flush",
+    "line": 1858,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "epa-fridge-source",
+    "line": 1880,
+    "text": "fridge(FoodList0) :-\n    receive({\n        store(From, Food) ->\n            self(Self),\n            From ! Self-ok,\n            fridge([Food|FoodList0]);\n        take(From, Food) ->\n            self(Self),\n            (   select(Food, FoodList0, FoodList)\n            ->  From ! Self-ok(Food),\n                fridge(FoodList)\n            ;   From ! Self-not_found,\n                fridge(FoodList0)\n            );\n        terminate ->\n            true\n    }).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-spawn",
+    "line": 1899,
+    "text": "?- spawn(fridge([]), Pid, [\n       monitor(true)\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-store",
+    "line": 1909,
+    "text": "?- self(Me), $Pid ! store(Me, meat), $Pid ! store(Me, cheese).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-store-flush",
+    "line": 1917,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-take",
+    "line": 1925,
+    "text": "?- self(Me), $Pid ! take(Me, cheese).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-take-flush",
+    "line": 1933,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-terminate",
+    "line": 1941,
+    "text": "?- $Pid ! terminate.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-terminate-flush",
+    "line": 1949,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "epa-fridge-api-source",
+    "line": 1964,
+    "text": "store(Pid, Food, Response) :-\n    self(Self),\n    Pid ! store(Self, Food),\n    receive({\n        Pid-Response -> true\n    }).\n\ntake(Pid, Food, Response) :-\n    self(Self),\n    Pid ! take(Self, Food),\n    receive({\n        Pid-Response -> true\n    }).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-api-spawn",
+    "line": 1983,
+    "text": "?- spawn(fridge([]), Pid, [\n       monitor(true)\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-api-store",
+    "line": 1993,
+    "text": "?- store($Pid, cheese, Response).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-api-take",
+    "line": 2001,
+    "text": "?- take($Pid, cheese, Response).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-api-stop",
+    "line": 2009,
+    "text": "?- $Pid ! terminate.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-fridge-api-stop-flush",
+    "line": 2017,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "epa-pingpong-source",
+    "line": 2040,
+    "text": "ping(0, Pong_Pid) :-\n    Pong_Pid ! finished,\n    format('Ping finished.~n',[]).\nping(N, Pong_Pid) :-\n    self(Self),\n    Pong_Pid ! ping(Self),\n    receive({\n        pong ->\n            format('Ping received pong.~n',[])\n    }),\n    N1 is N - 1,\n    ping(N1, Pong_Pid).\n\npong :-\n    receive({\n        finished ->\n            format('Pong finished.~n',[]) ;\n        ping(Ping_Pid) ->\n            format('Pong received ping.~n',[]),\n            Ping_Pid ! pong,\n            pong\n    }).\n\nping_pong :-\n    spawn(pong, Pong_Pid),\n    spawn(ping(3, Pong_Pid)).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "epa-pingpong-run",
+    "line": 2068,
+    "text": "?- ping_pong.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-spawn-demo",
+    "line": 2105,
+    "text": "?- toplevel_spawn(Pid, [\n       session(true),\n       monitor(true),\n       src_list([p(a),p(b)])\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-default",
+    "line": 2129,
+    "text": "?- toplevel_call($Pid, p(X)).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-default-flush",
+    "line": 2137,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-template",
+    "line": 2157,
+    "text": "?- toplevel_call($Pid, p(X), [\n       template(X)\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-template-flush",
+    "line": 2167,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-limit-one",
+    "line": 2187,
+    "text": "?- toplevel_call($Pid, p(X), [\n       template(X),\n       limit(1)\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-limit-one-flush",
+    "line": 2198,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-next-basic",
+    "line": 2206,
+    "text": "?- toplevel_next($Pid).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-next-basic-flush",
+    "line": 2214,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-slice",
+    "line": 2234,
+    "text": "?- toplevel_call($Pid, between(1,infinite,I), [\n       template(I),\n       offset(100),\n       limit(3)\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-slice-flush",
+    "line": 2246,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-next-limit-five",
+    "line": 2254,
+    "text": "?- toplevel_next($Pid, [\n       limit(5)\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-next-limit-five-flush",
+    "line": 2264,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-stop",
+    "line": 2272,
+    "text": "?- toplevel_stop($Pid).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-output",
+    "line": 2292,
+    "text": "?- toplevel_call($Pid, output(hello)).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-output-flush",
+    "line": 2300,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-call-input",
+    "line": 2318,
+    "text": "?- toplevel_call($Pid, input('Input', X)),\n   receive({Answer -> true}).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-respond",
+    "line": 2331,
+    "text": "?- respond($Pid, hello),\n   receive({Answer -> true}).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 2349,
+    "text": "prove(A) :- askable(A, Q), input(Q, T), T == yes."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "expert-agent-source",
+    "line": 2368,
+    "text": "%% An expert-system agent and a simulation, following chapter 8.\n%\n% The expert asks with input/2; the shell plays the user and answers\n% randomly. Proof search decides which question comes next.\n%\n% The book assumes a node-resident knowledge base. Here we ship the rules\n% too, so the example runs without installing a separate service.\n\n:- dynamic good_pet/1, bird/1, has_feathers/1, tweets/1,\n           small/1, cuddly/1, yellow/1.\n\n% Inference engine\n\nprove(true) :- !.\nprove((A, B)) :- !, prove(A), prove(B).\nprove(A) :- clause(A, B), prove(B).\nprove(A) :- askable(A, Q), input(Q, T), T == yes.\n\n% Knowledge base\n\ngood_pet(X) :- bird(X), small(X).\ngood_pet(X) :- cuddly(X), yellow(X).\n\nbird(X) :- has_feathers(X), tweets(X).\n\naskable(tweets(_), 'Does it tweet?').\naskable(small(_), 'Is it small?').\naskable(cuddly(_), 'Is it cuddly?').\naskable(has_feathers(_), 'Does it have feathers?').\naskable(yellow(_), 'Is it yellow?').\n\n% Expert system\n\nexpert_ask(Query, Pid, Options) :-\n    append([session(false),\n            src_predicates([prove/1, good_pet/1, bird/1, askable/2,\n                            has_feathers/1, tweets/1, small/1,\n                            cuddly/1, yellow/1])], Options, SpawnOptions),\n    toplevel_spawn(Pid, SpawnOptions),\n    toplevel_call(Pid, prove(Query), [\n        limit(1),\n        once(true)\n    ]).\n\n% Simulation\n\nsimulation(Options) :-\n    random_member(Name, [tweety,pingu]),\n    format('A1: Is ~w a good pet?~n', [Name]),\n    expert_ask(good_pet(Name), Pid, Options),\n    interact(Pid, Name).\n\ninteract(Pid, Name) :-\n    receive({\n        failure(Pid) ->\n            format('A2: No, ~w is not a good pet.~n', [Name]) ;\n        success(Pid, _, false) ->\n            format('A2: Yes, ~w is a good pet.~n', [Name]) ;\n        error(Pid, Error) ->\n            throw(Error) ;\n        prompt(Pid, Question) ->\n            format('A2: ~w~n', [Question]),\n            random_member(Answer, [yes,no]),\n            respond(Pid, Answer),\n            format('A1: ~w~n', [Answer]),\n            interact(Pid, Name)\n    })."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "expert-agent-run",
+    "line": 2440,
+    "text": "?- simulation([])."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "expert-agent-known",
+    "line": 2451,
+    "text": "?- simulation([src_list([yellow(tweety)])])."
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-assert-loop",
+    "line": 2473,
+    "text": "?- toplevel_call($Pid, assert((p :- p))),\n   toplevel_call($Pid, p).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-abort",
+    "line": 2487,
+    "text": "?- toplevel_abort($Pid).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "toplevel-halt",
+    "line": 2499,
+    "text": "?- toplevel_halt($Pid, Reply).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [
+      "double_quotes_review"
+    ],
+    "id": "cpw-remote-echo-spawn",
+    "line": 2534,
+    "text": "?- spawn(echo_actor, Pid, [\n       node('{{actor_peer_host}}'),\n       monitor(true),\n       src_text(\"echo_actor :-\n    receive({\n        echo(From, Msg) ->\n            From ! echo(Msg),\n            echo_actor\n    }).\")\n   ]),\n   register(remote_echo_actor, Pid).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-echo-talk",
+    "line": 2557,
+    "text": "?- self(Self),\n   remote_echo_actor ! echo(Self, hello).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-echo-flush",
+    "line": 2566,
+    "text": "?- flush.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-echo-exit",
+    "line": 2584,
+    "text": "?- whereis(remote_echo_actor, Pid),\n   exit(Pid, die).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-echo-down",
+    "line": 2593,
+    "text": "?- receive({A -> true}).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "cpw-remote-pingpong-source",
+    "line": 2613,
+    "text": "ping(0, Pong_Pid) :-\n    Pong_Pid ! finished,\n    format('Ping finished.~n', []).\nping(N, Pong_Pid) :-\n    self(Self),\n    Pong_Pid ! ping(Self),\n    receive({pong -> format('Ping received pong.~n', [])}),\n    N1 is N - 1,\n    ping(N1, Pong_Pid).\n\npong :-\n    receive({\n        finished -> format('Pong finished.~n', []) ;\n        ping(Ping_Pid) -> Ping_Pid ! pong, pong\n    }).\n\nping_pong_remote :-\n    spawn(pong, Pong_Pid, [\n        node('{{actor_peer_host}}')\n    ]),\n    spawn(ping(3, Pong_Pid)).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-pingpong-run",
+    "line": 2640,
+    "text": "?- ping_pong_remote.\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-toplevel-spawn",
+    "line": 2662,
+    "text": "?- toplevel_spawn(Pid, [\n       node('{{actor_peer_host}}'),\n       session(true)\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-toplevel-call",
+    "line": 2678,
+    "text": "?- toplevel_call($Pid, human(Who), [\n       template(Who),\n       limit(1)\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-toplevel-receive1",
+    "line": 2693,
+    "text": "?- receive({Msg -> true}).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-toplevel-next",
+    "line": 2701,
+    "text": "?- toplevel_next($Pid).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "cpw-remote-toplevel-receive2",
+    "line": 2709,
+    "text": "?- receive({Msg -> true}).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 2743,
+    "text": "Pred(+Request, +OldState, -Response, -NewState)"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "srv-fridge-source",
+    "line": 2749,
+    "text": "fridge(store(Food), List, ok, [Food|List]).\nfridge(take(Food),  List, ok(Food), Rest) :-\n    select(Food, List, Rest), !.\nfridge(take(_Food), List, not_found, List).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-spawn",
+    "line": 2774,
+    "text": "?- supervisor_spawn([\n       child(fridge, [\n           start(server(fridge, [initial_state([])])),\n           restart(permanent)\n       ])\n   ], Sup, [\n       src_predicates([fridge/4])\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-store-1",
+    "line": 2801,
+    "text": "?- server_request(fridge, store(milk), Response).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-take-1",
+    "line": 2808,
+    "text": "?- server_request(fridge, take(milk), Response).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-promise",
+    "line": 2823,
+    "text": "?- server_promise(fridge, store(meat), Ref).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-yield",
+    "line": 2830,
+    "text": "?- server_yield($Ref, Response).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": "srv-fridge2-source",
+    "line": 2846,
+    "text": "fridge2(store(Food), List, ok, [Food|List]).\nfridge2(take(Food),  List, ok(Food), Rest) :-\n    select(Food, List, Rest), !.\nfridge2(take(_Food), List, not_found, List).\nfridge2(_Other,      List, error(unknown_request), List).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-upgrade",
+    "line": 2863,
+    "text": "?- server_upgrade(fridge, fridge2, [\n       src_predicates([fridge2/4])\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-bad-call-2",
+    "line": 2877,
+    "text": "?- server_request(fridge, sore(milk), Response).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-store-after-upgrade",
+    "line": 2890,
+    "text": "?- server_request(fridge, store(butter), Response).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-bad-call",
+    "line": 2904,
+    "text": "?- whereis(fridge, Pid), exit(Pid, kaboom).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-after-recovery",
+    "line": 2917,
+    "text": "?- server_request(fridge, store(eggs), Response).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "srv-halt",
+    "line": 2939,
+    "text": "?- supervisor_halt($Sup).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-pr-spawn",
+    "line": 3085,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/01%20pause-and-resume.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 3133,
+    "text": "<statechart version=\"0.2\" initial=\"game\">\n    <state id=\"game\" initial=\"play\">\n        <state id=\"play\" initial=\"s1\">\n            <history id=\"h\">\n                <go to=\"s1\" />\n            </history>\n            <state id=\"s1\">\n                <go to=\"s2\" on=\"play\" />\n            </state>\n            <state id=\"s2\">\n                <go to=\"s1\" on=\"reset\" />\n            </state>\n            <go to=\"interrupted\" on=\"pause\" />\n        </state>\n        <state id=\"interrupted\">\n            <go to=\"h\" on=\"resume\" />\n        </state>\n        <go to=\"final\" on=\"stop\" />\n    </state>\n    <final id=\"final\" />\n</statechart>\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-spaghetti-spawn",
+    "line": 3191,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/02%20spaghetti.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-emotions-spawn",
+    "line": 3274,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/03%20emotions.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 3325,
+    "text": "<statechart version=\"0.2\" initial=\"init\">\n    <datamodel>\n        :- dynamic int/1.\n    </datamodel>\n    <state id=\"init\">\n        <go on=\"input(List)\" to=\"run\">\n            forall(member(X, List), asserta(int(X)))\n        </go>\n    </state>\n    <state id=\"run\">\n        <go if=\"int(X), int(Y), X > Y\">\n            Z is X-Y,\n            retract(int(X)),\n            assert(int(Z))\n        </go>\n        <go to=\"stop\" if=\"int(X)\">\n            writeln(X)\n        </go>\n    </state>\n    <final id=\"stop\" />\n</statechart>\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-gcd-spawn",
+    "line": 3352,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/09%20gcd.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-gcd-input",
+    "line": 3365,
+    "text": "?- $Pid ! integers([25, 10, 15, 30]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-dialog-spawn",
+    "line": 3389,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/11%20boxshop-1.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "prolog",
+    "flags": [],
+    "id": "sc-spawn-toplevel-spawn",
+    "line": 3464,
+    "text": "?- statechart_spawn(Pid, [\n       src_uri('/examples/statecharts/14%20spawn-toplevel.xml')\n   ]).\n"
+  },
+  {
+    "path": "web/tutorial.html",
+    "kind": "protocol/XML/other",
+    "flags": [],
+    "id": null,
+    "line": 3481,
+    "text": "<statechart version=\"0.2\" initial=\"spawn-ask-collect\">\n    <state id=\"spawn-ask-collect\" initial=\"ask\">\n        <spawn type=\"toplevel\" options=\"[time_limit(30)]\">\n            q(X) :- p(X).\n            p(a). p(b). p(c). p(d).\n        </spawn>\n        <state id=\"ask\">\n            <go to=\"collect\" on=\"spawned(Pid)\">\n                toplevel_call(Pid, q(X), [\n                    limit(1)\n                ])\n            </go>\n        </state>\n        <state id=\"collect\">\n            <go to=\"collect\" on=\"success(Pid, Data, true)\">\n                writeln(Data),\n                toplevel_next(Pid)\n            </go>\n            <go to=\"final\" on=\"success(_, Data, false)\">\n                writeln(Data)\n            </go>\n        </state>\n    </state>\n    <final id=\"final\" />\n</statechart>\n"
+  }
+]

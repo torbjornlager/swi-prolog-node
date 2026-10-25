@@ -1,0 +1,26 @@
+[
+  {
+    "mode": "default",
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-q",
+      "-s",
+      "tests/tiers/t4_node.pl",
+      "-g",
+      "run_tests([node:double_quotes_fixed_as_string_on_the_wire,node:double_quotes_fixed_as_chars_on_the_wire,node:rpc_term_text_is_canonical,node:rpc_term_text_is_canonical_chars,public_goal_guard:dcg_composed_native_literal_stays_codes,public_goal_guard:dcg_composed_portable_literal_stays_chars,cross_node_lifecycle:remote_toplevel_answers_keep_exact_terms,cross_node_lifecycle:remote_toplevel_answers_keep_portable_chars]),halt"
+    ],
+    "exit_code": 0
+  },
+  {
+    "mode": "chars",
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "-q",
+      "-s",
+      "tests/tiers/t4_node.pl",
+      "-g",
+      "run_tests([node:double_quotes_fixed_as_string_on_the_wire,node:double_quotes_fixed_as_chars_on_the_wire,node:rpc_term_text_is_canonical,node:rpc_term_text_is_canonical_chars,public_goal_guard:dcg_composed_native_literal_stays_codes,public_goal_guard:dcg_composed_portable_literal_stays_chars,cross_node_lifecycle:remote_toplevel_answers_keep_exact_terms,cross_node_lifecycle:remote_toplevel_answers_keep_portable_chars]),halt"
+    ],
+    "exit_code": 0
+  }
+]

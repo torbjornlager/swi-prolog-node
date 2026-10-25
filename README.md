@@ -191,3 +191,9 @@ native-string/code-list migration assertions and separate T3 diagnostics; this
 is not approval to deploy the configuration or a claim that all native extension
 semantics already match. Installed engines, n3/n5 and the demonstrator pin are
 unchanged.
+
+The [migration-test follow-up](docs/verification/portable-text-migration-2026-10-25/REPORT.md)
+retains exact default assertions and adds explicit character-list counterparts.
+Full T4 and library-boundary checks pass in each mode. Its read-only example
+audit identifies model/Jev native-string guards as remaining application work;
+no examples, runtime modules or deployed nodes were changed.

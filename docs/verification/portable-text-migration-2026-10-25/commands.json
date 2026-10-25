@@ -1,0 +1,68 @@
+[
+  {
+    "mode": "default",
+    "env": {
+      "SWIPL": "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "WP_EXPERIMENTAL_TEXT": "(unset)"
+    },
+    "commands": [
+      [
+        "./tools/test.sh",
+        "T4_NATIVE"
+      ],
+      [
+        "./tools/test.sh",
+        "TEXT"
+      ],
+      [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-q",
+        "-s",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl",
+        "-g",
+        "run_tests(portable_text_example_checks),halt"
+      ]
+    ],
+    "example_env": {
+      "WP_AUDIT_DEMONSTRATOR_ROOT": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator"
+    },
+    "logs": [
+      "t4-default.log",
+      "boundaries-default.log",
+      "examples-default.log"
+    ]
+  },
+  {
+    "mode": "chars",
+    "env": {
+      "SWIPL": "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+      "WP_EXPERIMENTAL_TEXT": "portable-text-0.2"
+    },
+    "commands": [
+      [
+        "./tools/test.sh",
+        "T4_NATIVE"
+      ],
+      [
+        "./tools/test.sh",
+        "TEXT"
+      ],
+      [
+        "/Users/torbjorn.lager/.local/share/trinity-runtime-tests/swi-default-startup-2026-10-24/runtime/bin/swipl",
+        "-q",
+        "-s",
+        "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl",
+        "-g",
+        "run_tests(portable_text_example_checks),halt"
+      ]
+    ],
+    "example_env": {
+      "WP_AUDIT_DEMONSTRATOR_ROOT": "/Users/torbjorn.lager/Documents/GitHub/trinity-demonstrator"
+    },
+    "logs": [
+      "t4-chars.log",
+      "boundaries-chars.log",
+      "examples-chars.log"
+    ]
+  }
+]
