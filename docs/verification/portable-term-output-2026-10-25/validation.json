@@ -1,0 +1,31 @@
+{
+  "checks": {
+    "native_prolog": true,
+    "trealla_sources": true,
+    "engines": true,
+    "library": true,
+    "live": true,
+    "protected": true,
+    "pin": true,
+    "all_public_checks_pass": true,
+    "all_temporary_nodes_stopped": true,
+    "checks.json": true,
+    "text-final-checks.json": true,
+    "t4-checks.json": true,
+    "protected_processes_after_full_checks": true
+  },
+  "counts": {
+    "default": {
+      "TEXT": 56,
+      "T4_NATIVE": 1529
+    },
+    "chars": {
+      "TEXT": 56,
+      "T4_NATIVE": 1529
+    }
+  },
+  "public_passed": 32,
+  "regular_n3_text_mode_changed": false,
+  "model_jev_boundaries_repaired": false,
+  "remaining_application_boundary_evidence": "../portable-text-current-checkpoint-2026-10-25/service-boundaries.json"
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "mode": "default",
+    "command": [
+      "tools/test.sh",
+      "T4_NATIVE"
+    ],
+    "exit_code": 1
+  },
+  {
+    "mode": "chars",
+    "command": [
+      "tools/test.sh",
+      "T4_NATIVE"
+    ],
+    "exit_code": 1
+  }
+]

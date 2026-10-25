@@ -793,6 +793,7 @@ private_listing_hidden(write_canonical/1).
 private_listing_hidden(write_term/2).
 private_listing_hidden(writeq/1).
 private_listing_hidden(writeln/1).
+private_listing_hidden(actor_term_output/1).
 private_listing_hidden(actor_time_output/1).
 private_listing_hidden(actor_time_string/2).
 private_listing_hidden(format_to_atom_safe/2).

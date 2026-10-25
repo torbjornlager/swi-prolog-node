@@ -1,0 +1,62 @@
+[
+  {
+    "mode": "default",
+    "label": "TEXT",
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtimes/swi-current/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/tests/tiers/node/portable_text_tests.pl",
+      "-g",
+      "run_tests,halt"
+    ],
+    "exit_code": 0
+  },
+  {
+    "mode": "default",
+    "label": "examples",
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtimes/swi-current/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl",
+      "-g",
+      "run_tests(portable_text_example_checks),halt"
+    ],
+    "exit_code": 0
+  },
+  {
+    "mode": "chars",
+    "label": "TEXT",
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtimes/swi-current/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/tests/tiers/node/portable_text_tests.pl",
+      "-g",
+      "run_tests,halt"
+    ],
+    "exit_code": 0
+  },
+  {
+    "mode": "chars",
+    "label": "examples",
+    "command": [
+      "/Users/torbjorn.lager/.local/share/trinity-runtimes/swi-current/bin/swipl",
+      "-f",
+      "none",
+      "-q",
+      "-s",
+      "/Users/torbjorn.lager/Documents/GitHub/swi-prolog-node/docs/verification/portable-text-migration-2026-10-25/example_checks.pl",
+      "-g",
+      "run_tests(portable_text_example_checks),halt"
+    ],
+    "exit_code": 0
+  }
+]

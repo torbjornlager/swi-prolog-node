@@ -1,0 +1,22 @@
+[
+  {
+    "mode": "default",
+    "command": [
+      "tools/test.sh",
+      "TEXT",
+      "T1_NATIVE",
+      "T2"
+    ],
+    "exit_code": 0
+  },
+  {
+    "mode": "chars",
+    "command": [
+      "tools/test.sh",
+      "TEXT",
+      "T1_NATIVE",
+      "T2"
+    ],
+    "exit_code": 0
+  }
+]

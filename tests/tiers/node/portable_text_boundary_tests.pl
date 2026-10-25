@@ -6,9 +6,49 @@
 :- use_module('../../../prolog/web_prolog/source_utils.pl', []).
 :- use_module(library(http/json)).
 :- use_module(library(plunit)).
+:- use_module(library(modules)).
+:- use_module('../../../prolog/web_prolog/actor_io_support.pl', []).
+:- use_module('../../../prolog/web_prolog/actor_io_template.pl', []).
+:- meta_predicate capture_term_output(0,-), with_term_writer(+,1).
 
 selected_text(Native, Term) :-
     (text_double_quotes(chars) -> string_chars(Native,Term);Term=Native).
+
+capture_term_output(Goal, Data) :-
+    setup_call_cleanup(message_queue_create(Queue),
+      (actors:with_io_target(Queue,Goal),
+       thread_get_message(Queue,terminal_io_output(_,Data),[timeout(1)])),
+      message_queue_destroy(Queue)).
+
+with_term_writer(precompiled, Goal) :- call(Goal, actor_io_template).
+with_term_writer(generated, Goal) :-
+    actor_io_support:actor_io_prelude_text(Source),
+    in_temporary_module(M,text_config:configure_text_module(M),
+      (isolation:load_source_text(Source,M,term_writer),call(Goal,M))).
+
+character_list_written(Writer, Term, Module) :-
+    system:format(string(Expected),'~q',[Term]),
+    Goal=..[Writer,Term],
+    capture_term_output(Module:Goal,Data),
+    assertion(string(Data)),assertion(Data==Expected),
+    node_response:terminal_output_to_json_string(Data,Displayed),
+    assertion(Displayed==Expected).
+
+other_payloads_preserved(Writer, Module) :-
+    AtomGoal=..[Writer,hello],capture_term_output(Module:AtomGoal,Atom),
+    assertion(Atom==hello),
+    NativeGoal=..[Writer,"native text"],capture_term_output(Module:NativeGoal,Native),
+    assertion(Native=="native text"),
+    CodesGoal=..[Writer,[97,98]],capture_term_output(Module:CodesGoal,Codes),
+    assertion(Codes==[97,98]),
+    LongAtomGoal=..[Writer,[ab]],capture_term_output(Module:LongAtomGoal,LongAtom),
+    assertion(LongAtom==[ab]),
+    SharedGoal=..[Writer,pair(X,X)],capture_term_output(Module:SharedGoal,Pair),
+    Pair=pair(A,B),assertion(var(A)),assertion(A==B),assertion(var(X)),
+    PartialGoal=..[Writer,[a|Tail]],capture_term_output(Module:PartialGoal,Partial),
+    Partial=[a|Rest],assertion(var(Rest)),assertion(var(Tail)),
+    VariableListGoal=..[Writer,[V,V]],capture_term_output(Module:VariableListGoal,VariableList),
+    VariableList=[L,R],assertion(var(L)),assertion(L==R),assertion(var(V)).
 
 :- begin_tests(portable_text_boundaries).
 test(json_envelope_keeps_native_strings) :-
@@ -62,4 +102,13 @@ test(host_error_context_on_actor_transport) :-
     node_ws:answer_term_text(error(42,error(test,context(native,"diagnostic"))),Wire),
     wire_text_to_term(Wire,error(test,context(native,Text))),
     test_portable_text_boundaries:selected_text("diagnostic",Expected),assertion(Text==Expected).
+test(term_writer_preserves_character_list_syntax,
+     [forall((member(Style,[precompiled,generated]),member(Writer,[write,writeln]),
+              member(Term,[[a,b,c],[],[' ','~','😀']])))]) :-
+    test_portable_text_boundaries:with_term_writer(Style,
+      test_portable_text_boundaries:character_list_written(Writer,Term)).
+test(term_writer_preserves_other_payloads,
+     [forall((member(Style,[precompiled,generated]),member(Writer,[write,writeln])))]) :-
+    test_portable_text_boundaries:with_term_writer(Style,
+      test_portable_text_boundaries:other_payloads_preserved(Writer)).
 :- end_tests(portable_text_boundaries).

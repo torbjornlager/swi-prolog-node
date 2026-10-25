@@ -1,0 +1,820 @@
+[
+  {
+    "case": "goal_reader",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": "success([string],false).\n"
+  },
+  {
+    "case": "unicode_reader",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": "success([string],false).\n"
+  },
+  {
+    "case": "shared_database",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": "success([string],false).\n"
+  },
+  {
+    "case": "http_private_source",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": "success([string],false).\n"
+  },
+  {
+    "case": "websocket_private_source",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [],
+      "answer": {
+        "data": [
+          "string"
+        ],
+        "more": false,
+        "pid": 2685524549,
+        "type": "success"
+      },
+      "events": [
+        {
+          "data": [
+            "string"
+          ],
+          "more": false,
+          "pid": 2685524549,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "constructed_source",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [],
+      "answer": {
+        "data": [
+          "string"
+        ],
+        "more": false,
+        "pid": 9730440221,
+        "type": "success"
+      },
+      "events": [
+        {
+          "pid": 3202879265,
+          "reason": "true",
+          "ref": "3202879265@'http://localhost:57010'",
+          "type": "down"
+        },
+        {
+          "data": [
+            "string"
+          ],
+          "more": false,
+          "pid": 9730440221,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "write_atom",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [
+        "abc"
+      ],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 7407361687,
+        "type": "success"
+      },
+      "events": [
+        {
+          "event": {
+            "data": "abc",
+            "pid": 7407361687,
+            "type": "output"
+          },
+          "request_id": "ab530e9ad704546f19b580bc678a963a43f18a3aa33cf26c2c898bc000fb50af",
+          "type": "io_request"
+        },
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 7407361687,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "write_literal",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [
+        "abc"
+      ],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 7799798202,
+        "type": "success"
+      },
+      "events": [
+        {
+          "event": {
+            "data": "abc",
+            "pid": 7799798202,
+            "type": "output"
+          },
+          "request_id": "f742aa98d43b414c4fd33e75d8ad3ce2c04dab3989048556c62585e96f80c496",
+          "type": "io_request"
+        },
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 7799798202,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "write_explicit_chars",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [
+        "[a,b,c]"
+      ],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 9769068101,
+        "type": "success"
+      },
+      "events": [
+        {
+          "event": {
+            "data": "[a,b,c]",
+            "pid": 9769068101,
+            "type": "output"
+          },
+          "request_id": "ee066813ddfcaae78fe08c70e4b8a6fb8a8466d7574603cbc015be47b0721495",
+          "type": "io_request"
+        },
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 9769068101,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "writeln_explicit_chars",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [
+        "[a,b,c]"
+      ],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 2572137244,
+        "type": "success"
+      },
+      "events": [
+        {
+          "event": {
+            "data": "[a,b,c]",
+            "pid": 2572137244,
+            "type": "output"
+          },
+          "request_id": "794ba741126b063a96336c2a2c04b624c5872faa3e761e8fb865183600bea5ed",
+          "type": "io_request"
+        },
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 2572137244,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "format_chars",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [
+        "abc"
+      ],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 5404964351,
+        "type": "success"
+      },
+      "events": [
+        {
+          "event": {
+            "data": "abc",
+            "pid": 5404964351,
+            "type": "output"
+          },
+          "request_id": "ecc18ccf0452ec3c2b2a5dad3e400649124f131173083e2801b613abef0e0dac",
+          "type": "io_request"
+        },
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 5404964351,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "cyclic_answer_rejection",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [],
+      "answer": {
+        "data": "toplevel_actors:answer/5: Cannot represent due to cyclic_term' (cyclic answer)",
+        "details": "error(representation_error(cyclic_term),_)",
+        "pid": 5157583255,
+        "type": "error"
+      },
+      "events": [
+        {
+          "data": "toplevel_actors:answer/5: Cannot represent due to cyclic_term' (cyclic answer)",
+          "details": "error(representation_error(cyclic_term),_)",
+          "pid": 5157583255,
+          "type": "error"
+        }
+      ]
+    }
+  },
+  {
+    "case": "temporary_to_trealla_rpc",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 7259191631,
+        "type": "success"
+      },
+      "events": [
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 7259191631,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "temporary_to_trealla_promise",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 4011820851,
+        "type": "success"
+      },
+      "events": [
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 4011820851,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "trealla_to_temporary_rpc",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [],
+      "answer": {
+        "type": "success",
+        "pid": 1331107568,
+        "data": [
+          "ok"
+        ],
+        "more": false
+      },
+      "events": [
+        {
+          "type": "success",
+          "pid": 1331107568,
+          "data": [
+            "ok"
+          ],
+          "more": false
+        }
+      ]
+    }
+  },
+  {
+    "case": "trealla_to_temporary_promise",
+    "mode": "default",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [],
+      "answer": {
+        "type": "success",
+        "pid": 1813677885,
+        "data": [
+          "ok"
+        ],
+        "more": false
+      },
+      "events": [
+        {
+          "type": "success",
+          "pid": 1813677885,
+          "data": [
+            "ok"
+          ],
+          "more": false
+        }
+      ]
+    }
+  },
+  {
+    "case": "goal_reader",
+    "mode": "chars",
+    "kind": "required",
+    "passed": true,
+    "result": "success([chars],false).\n"
+  },
+  {
+    "case": "unicode_reader",
+    "mode": "chars",
+    "kind": "required",
+    "passed": true,
+    "result": "success([chars],false).\n"
+  },
+  {
+    "case": "shared_database",
+    "mode": "chars",
+    "kind": "required",
+    "passed": true,
+    "result": "success([chars],false).\n"
+  },
+  {
+    "case": "http_private_source",
+    "mode": "chars",
+    "kind": "required",
+    "passed": true,
+    "result": "success([chars],false).\n"
+  },
+  {
+    "case": "websocket_private_source",
+    "mode": "chars",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [],
+      "answer": {
+        "data": [
+          "chars"
+        ],
+        "more": false,
+        "pid": 9419812439,
+        "type": "success"
+      },
+      "events": [
+        {
+          "data": [
+            "chars"
+          ],
+          "more": false,
+          "pid": 9419812439,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "constructed_source",
+    "mode": "chars",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [],
+      "answer": {
+        "data": [
+          "chars"
+        ],
+        "more": false,
+        "pid": 3873273642,
+        "type": "success"
+      },
+      "events": [
+        {
+          "pid": 6104128540,
+          "reason": "true",
+          "ref": "6104128540@'http://localhost:57073'",
+          "type": "down"
+        },
+        {
+          "data": [
+            "chars"
+          ],
+          "more": false,
+          "pid": 3873273642,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "write_atom",
+    "mode": "chars",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [
+        "abc"
+      ],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 4693794720,
+        "type": "success"
+      },
+      "events": [
+        {
+          "event": {
+            "data": "abc",
+            "pid": 4693794720,
+            "type": "output"
+          },
+          "request_id": "cedab22557063de610dcab2d94c4d6afed93248e5e6afdaf2e5bd87155c51a9c",
+          "type": "io_request"
+        },
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 4693794720,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "write_literal",
+    "mode": "chars",
+    "kind": "output_alignment",
+    "passed": true,
+    "result": {
+      "outputs": [
+        "[a,b,c]"
+      ],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 6781632881,
+        "type": "success"
+      },
+      "events": [
+        {
+          "event": {
+            "data": "[a,b,c]",
+            "pid": 6781632881,
+            "type": "output"
+          },
+          "request_id": "b2a3a50018ccd044d4bece0b753122baa1309d2745c769659ecd3c0a502d709d",
+          "type": "io_request"
+        },
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 6781632881,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "write_explicit_chars",
+    "mode": "chars",
+    "kind": "output_alignment",
+    "passed": true,
+    "result": {
+      "outputs": [
+        "[a,b,c]"
+      ],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 2621220762,
+        "type": "success"
+      },
+      "events": [
+        {
+          "event": {
+            "data": "[a,b,c]",
+            "pid": 2621220762,
+            "type": "output"
+          },
+          "request_id": "9e06087ad19fc2b321235ede91ba3262e54c5b9cbeea2a4bb43598245183f4f0",
+          "type": "io_request"
+        },
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 2621220762,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "writeln_explicit_chars",
+    "mode": "chars",
+    "kind": "output_alignment",
+    "passed": true,
+    "result": {
+      "outputs": [
+        "[a,b,c]"
+      ],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 6071491473,
+        "type": "success"
+      },
+      "events": [
+        {
+          "event": {
+            "data": "[a,b,c]",
+            "pid": 6071491473,
+            "type": "output"
+          },
+          "request_id": "95d0b4597687253ae91e1fd3ef6b6c05443a826ba3bbdb2a4eb388595044507b",
+          "type": "io_request"
+        },
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 6071491473,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "format_chars",
+    "mode": "chars",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [
+        "abc"
+      ],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 5125498337,
+        "type": "success"
+      },
+      "events": [
+        {
+          "event": {
+            "data": "abc",
+            "pid": 5125498337,
+            "type": "output"
+          },
+          "request_id": "5725aed8ee11c7fceb54d8503dc27bb84fd6414adaf9b3da287b7e5c63ee377e",
+          "type": "io_request"
+        },
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 5125498337,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "cyclic_answer_rejection",
+    "mode": "chars",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [],
+      "answer": {
+        "data": "toplevel_actors:answer/5: Cannot represent due to cyclic_term' (cyclic answer)",
+        "details": "error(representation_error(cyclic_term),_)",
+        "pid": 7810034815,
+        "type": "error"
+      },
+      "events": [
+        {
+          "data": "toplevel_actors:answer/5: Cannot represent due to cyclic_term' (cyclic answer)",
+          "details": "error(representation_error(cyclic_term),_)",
+          "pid": 7810034815,
+          "type": "error"
+        }
+      ]
+    }
+  },
+  {
+    "case": "temporary_to_trealla_rpc",
+    "mode": "chars",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 8549438677,
+        "type": "success"
+      },
+      "events": [
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 8549438677,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "temporary_to_trealla_promise",
+    "mode": "chars",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [],
+      "answer": {
+        "data": [
+          "ok"
+        ],
+        "more": false,
+        "pid": 5742637841,
+        "type": "success"
+      },
+      "events": [
+        {
+          "data": [
+            "ok"
+          ],
+          "more": false,
+          "pid": 5742637841,
+          "type": "success"
+        }
+      ]
+    }
+  },
+  {
+    "case": "trealla_to_temporary_rpc",
+    "mode": "chars",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [],
+      "answer": {
+        "type": "success",
+        "pid": 1091624047,
+        "data": [
+          "ok"
+        ],
+        "more": false
+      },
+      "events": [
+        {
+          "type": "success",
+          "pid": 1091624047,
+          "data": [
+            "ok"
+          ],
+          "more": false
+        }
+      ]
+    }
+  },
+  {
+    "case": "trealla_to_temporary_promise",
+    "mode": "chars",
+    "kind": "required",
+    "passed": true,
+    "result": {
+      "outputs": [],
+      "answer": {
+        "type": "success",
+        "pid": 2949120494,
+        "data": [
+          "ok"
+        ],
+        "more": false
+      },
+      "events": [
+        {
+          "type": "success",
+          "pid": 2949120494,
+          "data": [
+            "ok"
+          ],
+          "more": false
+        }
+      ]
+    }
+  }
+]
