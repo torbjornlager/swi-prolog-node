@@ -30,7 +30,7 @@ run_tier () {
     selected "$name" || return 0
     if [ -f "$file" ]; then
         echo "=== Tier $name ($file) ==="
-        if ! "$SWIPL" -q -s "$file" -g "$goal" -t halt; then
+        if ! "$SWIPL" --on-error=status -q -s "$file" -g "$goal" -t halt; then
             echo "!!! Tier $name FAILED"
             FAILED=1
         fi
@@ -74,7 +74,7 @@ run_wasm () {
         echo "!!! Tier WASM equivalence guard FAILED"
         FAILED=1
     fi
-    if ! "$SWIPL" -q -s tests/test_statechart_wasm.pl -g test_statechart_wasm -t halt; then
+    if ! "$SWIPL" --on-error=status -q -s tests/test_statechart_wasm.pl -g test_statechart_wasm -t halt; then
         echo "!!! Tier WASM statechart tests FAILED"
         FAILED=1
     fi

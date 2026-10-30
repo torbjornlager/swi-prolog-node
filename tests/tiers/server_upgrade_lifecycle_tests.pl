@@ -68,7 +68,7 @@ test(success_preserves_state_and_removes_only_private_monitor,
             server_halt(Pid, true),
             receive({down(Pid, Existing, true) -> true},
                     [timeout(2), on_timeout(throw(missing_existing_down))]),
-            receive({down(Pid, _, _) -> fail}, [timeout(0)])).
+            receive({down(Pid, _, _) -> fail}, [timeout(0)]))).
 
 test(callback_error_preserves_state_and_removes_only_private_monitor,
      [forall(member(Form,[short,options]))]) :-
@@ -83,7 +83,7 @@ test(callback_error_preserves_state_and_removes_only_private_monitor,
             server_halt(Pid, true),
             receive({down(Pid, Existing, true) -> true},
                     [timeout(2), on_timeout(throw(missing_existing_down))]),
-            receive({down(Pid, _, _) -> fail}, [timeout(0)])).
+            receive({down(Pid, _, _) -> fail}, [timeout(0)]))).
 
 test(send_error_preserved_and_private_monitor_removed,
      [forall(member(Form,[short,options]))]) :-
@@ -91,7 +91,7 @@ test(send_error_preserved_and_private_monitor_removed,
         (   monitor(Pid, Existing),
             Expected = error(upgrade_send_failed, context(test_transport, original)),
             setup_call_cleanup(
-                asserta(upgrade_send_error(Pid, Expected), Row),
+                asserta(test_server_upgrade_lifecycle:upgrade_send_error(Pid, Expected), Row),
                 catch(upgrade(Form, Pid, upgrade_counter), Error, true),
                 erase(Row)),
             assertion(Error == Expected),
@@ -99,7 +99,7 @@ test(send_error_preserved_and_private_monitor_removed,
             server_halt(Pid, true),
             receive({down(Pid, Existing, true) -> true},
                     [timeout(2), on_timeout(throw(missing_existing_down))]),
-            receive({down(Pid, _, _) -> fail}, [timeout(0)])).
+            receive({down(Pid, _, _) -> fail}, [timeout(0)]))).
 
 test(missing_name_flushes_private_down_and_preserves_other_messages,
      [forall(member(Form,[short,options]))]) :-
