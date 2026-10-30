@@ -16,7 +16,7 @@ promise/3-4, actor messages and options sent to other nodes, and answers in
 
 The text is
 
-  - quoted, so atoms and strings read back as themselves;
+  - quoted, so atom and portable term syntax is unambiguous;
   - operator-independent (`ignore_ops(true)`), so it does not depend on the
     operator tables of either node;
   - written without portray hooks, so it does not depend on the sender's
@@ -25,8 +25,9 @@ The text is
   - written with explicit variable names, so terms written together share
     their variables when they are read back together.
 
-It is read with the selected language text configuration (native strings by
-default, character lists in the isolated experimental process). A conformance suite
+It is read with the portable character-list language convention. Native SWI
+string identity is not a portable wire guarantee; library boundaries convert
+text explicitly. A conformance suite
 compares the decoded terms, not this text; the text is how this node meets
 the contract.
 */

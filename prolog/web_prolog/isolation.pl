@@ -379,8 +379,8 @@ configure_actor_operators(Module) :-
     configure_actor_syntax(Module).
 
 %   The profiles fix the meaning of a double-quoted literal rather than
-%   inheriting the host's default. The default uses native strings; the
-%   isolated portable-text experiment selects character lists consistently.
+%   inheriting the host's native-string default. Web Prolog language modules
+%   use portable character lists consistently.
 configure_actor_syntax(Module) :-
     text_config:configure_text_module(Module).
 

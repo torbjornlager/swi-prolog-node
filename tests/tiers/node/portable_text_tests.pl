@@ -14,6 +14,12 @@ expected(Text, Value) :-
 read_expected(Text, Term) :- expected(Text, Expected), assertion(Term == Expected).
 
 :- begin_tests(portable_text_configuration).
+test(standard_language_uses_character_lists) :-
+    assertion(text_double_quotes(chars)),
+    wire_text_to_term('"abc"',Chars),assertion(Chars==[a,b,c]),
+    wire_text_to_term('""',Empty),assertion(Empty==[]),
+    wire_text_to_term('"hé😀"',Unicode),assertion(Unicode==[h,é,'😀']),
+    assertion(\+ string(Chars)).
 test(host_modules_keep_native_strings) :- assertion(string("abc")).
 test(wire,[forall(member(Text,["abc","","😀","é","👩‍💻","a\\b\"c"]))]) :-
     with_output_to(atom(Wire),write_term(Text,[quoted(true)])), wire_text_to_term(Wire, Term),

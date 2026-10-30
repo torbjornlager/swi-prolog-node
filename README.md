@@ -151,59 +151,48 @@ their sandbox checks; the helper module is not broadly exempted.
 Terminals, named/private and runtime-selected grammars retain list remainders,
 sharing, alternatives and ordinary exceptions. Reserved controls still bypass
 application recovery while cleanup runs. Copied-source restoration removes the
-guards before the destination actor applies its own context. Native string/DCG
-character-code behaviour is unchanged: `"ab"` terminals consume `[97,98]`, not
-the experimental portable-text draft's `[a,b]`.
+guards before the destination actor applies its own context. Double-quoted
+terminals in Web Prolog source now use character lists: `"ab"` consumes `[a,b]`.
+Explicit native SWI string values at host-library boundaries retain their
+native character-code DCG behaviour.
 
 Combined-path regressions are included in `tests/tiers/node/public_goal_guard_tests.pl`
-and the native T4 tier. Verification and separate experimental findings are in
+and the native T4 tier. Historical verification and separate experimental findings are in
 [`docs/verification/dcg-guard-composition-2026-10-25/REPAIR.md`](docs/verification/dcg-guard-composition-2026-10-25/REPAIR.md).
 Blacklist mode remains a prototype policy rather than a complete security boundary.
-The dependency pin, installed runtimes and n3/n5 are not updated or restarted
-by this repair.
+The linked repair report records the earlier deployment scope.
 
-DCG portability remains an open follow-up: assess the host facilities against
-ISO/IEC TS 13211-3:2025 and the experimental portable-text contract, especially
-double-quoted terminals. A separate portable DCG library may be needed if the
-host facilities cannot supply the required semantics. This is not a confirmed
-standards violation in SWI-Prolog. Any replacement must preserve sandbox checks,
-source isolation and reserved-control handling; the composition repair does
-not decide that migration.
+The language character-list convention is independent of broader DCG standards
+assessment. Sandbox checks, source isolation and reserved-control handling
+continue to apply; selecting character-list literals is not a general ISO
+conformance claim.
 
 Assessment starting points are the [ISO Prolog working documents and DCG reference implementation](https://www.complang.tuwien.ac.at/ulrich/iso-prolog/)
 and the [phrase/2-3 comparison cases](https://www.complang.tuwien.ac.at/ulrich/iso-prolog/phrase).
 The comparison identifies tested implementation versions; its SWI 9.3.17 column
 is not evidence about the current engine without rerunning the relevant cases.
 
-### Experimental portable-text configuration
+### Portable character-list text
 
-A disposable SWI process can opt into the experimental character-list draft
-with `WP_EXPERIMENTAL_TEXT=portable-text-0.2`. Public goal/option/input readers,
-private/copied/generated source, statechart expressions and **shared-database
-source (including reloads)** use the same literal semantics. Host implementation
-and library modules retain native strings; the ordinary default is unchanged.
-The TEXT tier runs focused regressions in either configuration.
+Double-quoted Web Prolog literals use character lists by default: `"abc"` is
+`[a,b,c]`, `""` is `[]`, and supplementary Unicode characters remain single
+character atoms. Public goal/option/input readers, private/copied/generated
+source, statechart expressions and shared-database source (including reloads)
+use the same convention. No environment switch is required.
 
-The [configuration and conversion audit](docs/verification/portable-text-configuration-2026-10-25/REPORT.md)
-records 26/26 text cases in each direction with the separate Trealla Unicode
-candidate and 90/90 shared ACTOR/interoperability selections. It also records
-native-string/code-list migration assertions and separate T3 diagnostics; this
-is not approval to deploy the configuration or a claim that all native extension
-semantics already match. Installed engines, n3/n5 and the demonstrator pin are
-unchanged.
+Host implementation modules, JSON envelopes and native SWI libraries retain
+native strings where their APIs require them; conversions at language
+boundaries are explicit. Numeric code lists remain numeric lists. This changes
+Web Prolog language defaults without changing the installed SWI engine globally.
+The former `WP_EXPERIMENTAL_TEXT=portable-text-0.2` setting remains accepted for
+existing launchers. The TEXT tier enforces the character-list contract.
 
-The [migration-test follow-up](docs/verification/portable-text-migration-2026-10-25/REPORT.md)
-retains exact default assertions and adds explicit character-list counterparts.
-Full T4 and library-boundary checks pass in each mode. Its read-only example
-audit identifies model/Jev native-string guards as remaining application work;
-no examples, runtime modules or deployed nodes were changed.
-
-The separate [four-way ISO/text assessment](docs/verification/iso-four-way-2026-10-25/REPORT.md)
-compares ordinary/character-list readers with and without SWI's `iso` flag.
-ISO leaves text selection independent and currently breaks static source
-copying/listing, whitelist rule admission and clean early startup. Its outcome
-matrix is diagnostic evidence, not a new runtime configuration or ISO conformance
-claim. Runtime code, installed engines and n3/n5 remain unchanged.
+The 25 October [configuration audit](docs/verification/portable-text-configuration-2026-10-25/REPORT.md),
+[migration tests](docs/verification/portable-text-migration-2026-10-25/REPORT.md)
+and [ISO assessment](docs/verification/iso-four-way-2026-10-25/REPORT.md) record
+the earlier opt-in work and its historical scope. Character-list default
+selection does not enable SWI's independent `iso` flag or claim general ISO
+conformance.
 
 ### Computed cyclic answers and exceptions
 
@@ -217,9 +206,10 @@ inside a computation that returns a finite answer.
 includes T2/T4 results and the separate Trealla exception-copying diagnostic.
 The demonstrator dependency pin and deployed nodes were not updated.
 
-### Current character-list adoption checkpoint
+### Earlier character-list adoption checkpoints
 
-The [current repaired-code checkpoint](docs/verification/portable-text-current-checkpoint-2026-10-25/REPORT.md)
+These historical 25 October checkpoints predate the package default above.
+The [repaired-code checkpoint](docs/verification/portable-text-current-checkpoint-2026-10-25/REPORT.md)
 confirms goal/source/shared-DB readers and RPC/promise controls on a temporary
 character-list node. Three term-output mismatches and the model/Jev native-string
 input guards remain explicit blockers. The regular n3 text mode is unchanged;
