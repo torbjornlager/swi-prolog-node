@@ -42,7 +42,8 @@ Message protocol (internal):
 :- use_module(actors).
 :- use_module(isolation, [
     actor_module/2,
-    load_options_text/3
+    load_options_text/3,
+    reject_retired_source_options/2
 ]).
 :- use_module(control_guard, []).
 
@@ -243,6 +244,7 @@ server_yield(Ref, MonRef, Response, Options) :-
 %
 %   Replace the callback predicate of a running server without
 %   stopping it or disturbing its state. Pred must be arity 4.
+%   Throws server_down(Reason) if the target terminates before acknowledging.
 
 server_upgrade(To, Pred0) :-
     server_upgrade_source(To, Pred0, "").
@@ -254,6 +256,7 @@ server_upgrade(To, Pred0) :-
 %   module, then replace its callback without disturbing its state.
 
 server_upgrade(To, Pred0, Options) :-
+    reject_retired_source_options(Options, server_actor:server_upgrade/3),
     normalize_server_callback(Pred0, Pred),
     strip_module(Pred, CallbackModule, PlainPred),
     server_callback_source_module(CallbackModule, PlainPred, SourceModule),
@@ -265,13 +268,19 @@ server_upgrade_source(To, Pred0, Source) :-
     strip_module(Pred0, _SourceModule, PlainPred),
     self(Self),
     make_ref(Ref),
-    To ! '$upgrade'(Self, Ref, PlainPred, Source),
-    receive({
-        Ref-ok ->
-            true ;
-        Ref-error(Error) ->
-            throw(Error)
-    }).
+    setup_call_cleanup(
+        monitor(To, MonRef),
+        (   To ! '$upgrade'(Self, Ref, PlainPred, Source),
+            receive({
+                Ref-ok ->
+                    true ;
+                Ref-error(Error) ->
+                    throw(Error) ;
+                down(_Pid, MonRef, Reason) ->
+                    throw(server_down(Reason))
+            })
+        ),
+        demonitor(MonRef, [flush])).
 
 
 prepare_server_upgrade(_Ref, PlainPred, Source, Pred) :-

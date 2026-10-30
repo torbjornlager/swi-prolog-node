@@ -33,6 +33,7 @@ actors:hook_start_body(Pid, Goal, Options, OnReady, OnPrepError, Runner,
 :- use_module('supervisor_child_spec_tests.pl', []).
 :- use_module('named_creation_tests.pl', []).
 :- use_module('server_promise_cleanup_tests.pl', []).
+:- use_module('server_upgrade_lifecycle_tests.pl', []).
 :- use_module('supervisor_request_cleanup_tests.pl', []).
 :- use_module('supervisor_startup_tests.pl', []).
 :- use_module('supervisor_restart_tests.pl', []).
@@ -44,7 +45,7 @@ actors:hook_start_body(Pid, Goal, Options, OnReady, OnPrepError, Runner,
 tier_test_units([ server_actor,
                 wrapper_options,
                 supervisor_child_specs,
-                server_promise_cleanup, supervisor_request_cleanup, supervisor_startup, supervisor_restart, supervisor_intensity, worker_scope,
+                server_promise_cleanup, server_upgrade_lifecycle, supervisor_request_cleanup, supervisor_startup, supervisor_restart, supervisor_intensity, worker_scope,
                 named_creation,
                 supervisor,
                 parallel,

@@ -20,6 +20,19 @@ wrapper_pi(server,server_actor:server_spawn/4).
 wrapper_pi(supervisor,supervisor_actor:supervisor_spawn/3).
 wrapper_pi(statechart,statechart_actor:statechart_spawn/2).
 
+existing_operation(upgrade, Pid, Options) :- server_upgrade(Pid, callback, Options).
+existing_operation(call, Pid, Options) :- toplevel_call(Pid, true, Options).
+existing_operation(next, Pid, Options) :- toplevel_next(Pid, Options).
+
+existing_operation_pi(upgrade, server_actor:server_upgrade/3).
+existing_operation_pi(call, toplevel_actors:toplevel_call/3).
+existing_operation_pi(next, toplevel_actors:toplevel_next/2).
+
+retired_source_option(load_text("marker.")).
+retired_source_option(load_list([marker])).
+retired_source_option(load_uri('/no-such-retired-source')).
+retired_source_option(load_predicates([callback/4])).
+
 :- meta_predicate with_wrapper(+,+,-,0).
 with_wrapper(Kind,Options,Pid,Goal) :-
     (   Kind == statechart
@@ -31,6 +44,23 @@ with_wrapper(Kind,Options,Pid,Goal) :-
                                [timeout(2),on_timeout(throw(missing_wrapper_down))]))).
 
 :- begin_tests(wrapper_options).
+
+test(retired_source_options_before_fetch_or_dispatch,
+     [forall((member(Operation, [upgrade,call,next]), retired_source_option(Option)))]) :-
+    existing_operation_pi(Operation, PI),
+    catch(existing_operation(Operation, Pid,
+                             [src_uri('/no-such-wrapper-source'),Option]), Error, true),
+    assertion(nonvar(Error)),
+    assertion(Error = error(domain_error(source_option,Option),context(PI,_))),
+    assertion(var(Pid)).
+
+test(retired_source_options_do_not_bind_pending_entries,
+     [forall((member(Operation, [upgrade,call,next]), retired_source_option(Option)))]) :-
+    catch(existing_operation(Operation, Pid, [Pending,Option]), Error, true),
+    assertion(nonvar(Error)),
+    assertion(Error = error(domain_error(source_option,Option),_)),
+    assertion(var(Pending)),
+    assertion(var(Pid)).
 
 test(unknown_options_before_source_or_dispatch,
      [forall(member(Kind,[toplevel,server,supervisor,statechart]))]) :-

@@ -11,6 +11,7 @@
      listing_private/1,         % +What
      listing_actor_private/1,   % +Pid (internal)
 
+     reject_retired_source_options/2, % +Options, +Context
      source_options/3,          % +Options, +GoalModule, -SourceOptions
      rewrite_source_options/3,  % +Options, +GoalModule, -Options
      canonical_source_option/2, % +Option, -CanonicalOption
@@ -427,6 +428,25 @@ prepare_runtime_source_options(SourceModule, Options0, Options) :-
                 /*******************************
                 *        SOURCE LOADING        *
                 *******************************/
+
+%!  reject_retired_source_options(+Options, +Context) is det.
+%
+%   Reject obsolete Prolog source options before fetching or dispatching.
+%   Pending option entries are inspected without binding them. The transport
+%   field named load_text is separate from these Prolog option-list entries.
+reject_retired_source_options(Options, Context) :-
+    must_be(list, Options),
+    (   member(Option, Options),
+        nonvar(Option),
+        compound(Option),
+        compound_name_arity(Option, Name, 1),
+        memberchk(Name, [load_text, load_list, load_uri, load_predicates])
+    ->  throw(error(domain_error(source_option, Option),
+                    context(Context,
+                            'load_* source options are retired; use src_* options')))
+    ;   true
+    ).
+
 
 %!  source_options(+Options, +GoalModule, -SourceOptions) is det.
 %

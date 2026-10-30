@@ -81,7 +81,8 @@ rewrite_goal_if_needed/3.
 ]).
 :- use_module(isolation, [
     actor_module/2,
-    prepared_goal/3
+    prepared_goal/3,
+    reject_retired_source_options/2
 ]).
 
 :- multifile
@@ -625,6 +626,7 @@ toplevel_call(Pid, Goal) :-
     toplevel_call(Pid, Goal, []).
 
 toplevel_call(Pid, Goal, Options) :-
+    reject_retired_source_options(Options, toplevel_actors:toplevel_call/3),
     validate_once_options(Options),
     validate_solution_limit(Options),
     %  No explicit copy_term/2 here: send/2 to a local pid resolves
@@ -642,6 +644,7 @@ toplevel_next(Pid) :-
     toplevel_next(Pid, []).
 
 toplevel_next(Pid, Options) :-
+    reject_retired_source_options(Options, toplevel_actors:toplevel_next/2),
     validate_solution_limit(Options),
     send(Pid, '$next'(Options)).
 
