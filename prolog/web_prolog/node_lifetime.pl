@@ -46,9 +46,10 @@ on authenticated node transports; browser-supplied lineage is rejected.
 
 scope(Scope) :- (current_node_port(P) -> Scope = node_port(P); Scope = global).
 
-current_owner_context(Context) :- owner_context(Context), !.
+current_owner_context(Context) :- owner_context(Current), !, Context = Current.
 current_owner_context(Context) :-
-    actors:self(Self), actor_key(Self, Key), actor_owner(Key, Context), !.
+    actors:self(Self), actor_key(Self, Key), actor_owner(Key, Current), !,
+    Context = Current.
 current_owner_context(ctx(Scope, public(NS), NS, false, none)) :-
     current_public_execution_profile(_), scope(Scope),
     (current_public_execution_namespace(NS) -> true; NS = anonymous).

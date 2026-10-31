@@ -39,7 +39,9 @@ test(non_owner_cannot_detach,
 test(exit_cannot_cross_principal_tree) :-
     setup_call_cleanup(owned_spawn("alice", a, sleep(5), Pid),
         ( principal("bob", Bob),
-          catch(with_owner_context(Bob, b, local, actors:exit(Pid, kill)), E, true),
+          catch((with_owner_context(Bob, b, local, actors:exit(Pid, kill)),
+                 Outcome = returned), E, Outcome = thrown),
+          assertion(Outcome == thrown), assertion(nonvar(E)),
           assertion(E = error(permission_error(exit, actor, Pid), _)),
           assertion(actors:resolve_actor_thread(Pid, _)) ),
         kill_wait(Pid)).
@@ -48,6 +50,24 @@ test(unknown_remote_pid_does_not_grant_exit_authority,
      [throws(error(permission_error(exit, actor, _), _))]) :-
     principal("alice", P),
     with_owner_context(P, a, local, actors:exit(1234567890@'https://other.example', kill)).
+
+test(bound_context_does_not_select_outer_or_public_fallback) :-
+    principal("outer", Outer),
+    Admin = principal{id:"inner-owner",capabilities:[execute,admin],unknown:false},
+    with_public_execution_profile(actor,
+        with_owner_context(Outer, outer, local,
+            with_owner_context(Admin, inner, local,
+                ( assertion(current_owner_context(ctx(_,_,_,true,_))),
+                  assertion(\+ current_owner_context(ctx(_,_,_,false,_))) )))).
+
+test(bound_actor_context_does_not_select_public_fallback) :-
+    self(Self), node_lifetime:actor_key(Self,Key),
+    setup_call_cleanup(
+        assertz(node_lifetime:actor_owner(Key,ctx(test_scope,test_id,test_lineage,true,none)),Ref),
+        with_public_execution_profile(actor,
+            (assertion(current_owner_context(ctx(_,_,_,true,_))),
+             assertion(\+ current_owner_context(ctx(_,_,_,false,_))))),
+        erase(Ref)).
 
 test(send_and_monitor_remain_open) :-
     self(Self),

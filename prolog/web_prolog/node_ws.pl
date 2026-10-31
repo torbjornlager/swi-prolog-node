@@ -1335,7 +1335,8 @@ ws_owned_actor(Queue, Pid) :-
 
 ws_kill_actor(Pid) :-
     (node_lifetime:current_owner_context(_) -> node_lifetime:check_exit(Pid); true),
-    retractall(actors:monitor(_, Pid, _)),
+    % Other client connections may monitor this actor. Let actor retirement
+    % deliver those notifications; connection teardown must not erase them.
     ignore(catch(finish_activity(ws_actor, Pid, connection_closed), _, true)),
     forget_ws_actor_metadata(Pid),
     forget_ws_actor_owner(Pid),
