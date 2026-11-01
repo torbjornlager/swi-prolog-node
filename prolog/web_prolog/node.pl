@@ -1328,9 +1328,11 @@ server_url(Address, URL) :-
 
 make_url(Scheme, Host, Port, URL) :-
     (   default_port(Scheme, Port)
-    ->  format(atom(URL), '~w://~w', [Scheme, Host])
-    ;   format(atom(URL), '~w://~w:~w', [Scheme, Host, Port])
-    ).
+    ->  true
+    ;   AuthorityPort = Port
+    ),
+    uri_authority_components(Authority, uri_authority(_, _, Host, AuthorityPort)),
+    uri_components(URL, uri_components(Scheme, Authority, '', _, _)).
 
 default_port(http, 80).
 default_port(https, 443).
