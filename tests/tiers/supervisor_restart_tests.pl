@@ -91,7 +91,9 @@ check_automatic(Sup,Strategy,Mode,Trigger,Failed) :-
        ;Expected=restart_failed(Failed,replacement_error(Failed))),
        receive({down(Sup,Sup,Reason) -> true},[timeout(4),on_timeout(fail)]),
        assertion(Reason==Expected),
-       receive({down(Sup,ExtraSup,ExtraReason) -> true},[timeout(0),on_timeout(fail)]),
+       % Monitor notifications are sent separately. Observing the spawn-time
+       % monitor does not guarantee the additional notification is queued yet.
+       receive({down(Sup,ExtraSup,ExtraReason) -> true},[timeout(1),on_timeout(fail)]),
        assertion(ExtraReason==Expected),
        (Mode==policies -> AReason=shutdown,CReason=kill
        ;Mode==cleanup_error -> AReason=true,CReason=shutdown
