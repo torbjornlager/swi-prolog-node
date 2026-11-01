@@ -30,6 +30,19 @@ representation(authority,URI,Host:Port) :-
 no_requests(Q) :- assertion(\+thread_get_message(Q,_,[timeout(0)])).
 :- use_module(library(uri)).
 :- begin_tests(uri_options).
+test(advertised_origin,
+     [forall(member(origin(Scheme,Host,Port,Expected),
+                    [origin(http,localhost,80,'http://localhost'),
+                     origin(https,'example.test',443,'https://example.test'),
+                     origin(http,'127.0.0.1',3060,'http://127.0.0.1:3060'),
+                     origin(https,'::1',443,'https://[::1]'),
+                     origin(https,'::1',8443,'https://[::1]:8443'),
+                     origin(http,'2001:db8::1',3060,'http://[2001:db8::1]:3060')]))]) :-
+    node:make_url(Scheme,Host,Port,URL),
+    assertion(URL==Expected),
+    uri_components(URL,Parts),uri_data(authority,Parts,Authority),
+    uri_authority_components(Authority,Parsed),uri_authority_data(host,Parsed,ParsedHost),
+    assertion(ParsedHost==Host).
 test(canonical_text,[forall(member(Input-Expected,['http://example/x?y=%2F'-'http://example/x?y=%2F',"https://example/é"-'https://example/é']))]) :-
     source_utils:uri_atom(Input,Source),assertion(Source==Expected),
     pid_utils:node_url_atom(Input,Node),assertion(Node==Expected),
