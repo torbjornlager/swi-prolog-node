@@ -84,7 +84,7 @@
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(modules)).
-:- use_module(library(readutil), [read_file_to_string/3]).
+:- use_module(library(readutil), [read_file_to_string/3, read_file_to_terms/3]).
 :- use_module(library(settings)).
 :- use_module(library(socket)).
 :- use_module(library(url)).
@@ -7346,11 +7346,13 @@ test(rpc_3_uses_shared_db_loaded_from_uri, set(X == [a, b])) :-
     ).
 
 test(node_resident_services_are_discoverable_via_rpc,
-     true(ServicesSorted == [
-         counter-meta(actor, protocol(count_v1)),
-         pubsub_service-meta(actor, protocol(pubsub_v1))
-     ])) :-
+     true(ServicesSorted == ExpectedSorted)) :-
     service_directory_file(File),
+    % The owner-curated catalogue may add services. Compare the complete RPC
+    % result with its source facts rather than freezing the example's names.
+    read_file_to_terms(File, Terms, []),
+    findall(Name-Meta, member(service(Name, Meta), Terms), Expected),
+    sort(Expected, ExpectedSorted),
     with_node_server_options(
         [load_shared_db_file(File)],
         URI,
