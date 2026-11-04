@@ -187,6 +187,7 @@ Design notes:
 :- use_module(dollar_expansion, [capture_answer_bindings/1]).
 :- use_module(pid_utils, [parse_pid_or_throw/4, self_node_url/1]).
 
+:- use_module(library(uri)).
 :- use_module(library(settings)).
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_dispatch)).
@@ -249,7 +250,7 @@ HTTP endpoint layout:
 :- http_handler(root(toplevel_trace), node_controller_isotope_trace, [method(post)]).
 :- http_handler(root(statechart_trace), node_controller_isotope_trace, [method(post)]).
 :- http_handler(root(toplevel_respond), node_controller_isotope_respond, [method(post)]).
-:- http_handler(root(portal), node_portal_page, []).
+:- http_handler(root(portal), node_legacy_portal_redirect, []).
 :- http_handler(root(demonstrator), node_portal_page, []).
 :- http_handler(root('discovery-hub'), node_discovery_hub_page, []).
 :- http_handler(root(tutorial), node_tutorial_page, []).
@@ -1358,6 +1359,12 @@ default_port(https, 443).
 %!  node_portal_page(+Request) is det.
 %
 %   Serve the browser demonstrator frontend.
+node_legacy_portal_redirect(Request) :-
+    (memberchk(search(Search),Request),Search\==[]
+    ->uri_query_components(Query,Search),atom_concat('/demonstrator?',Query,Target)
+    ;Target='/demonstrator'),
+    http_redirect(moved,Target,Request).
+
 node_portal_page(Request) :-
     ignore(catch(
         log_interaction_request(Request, _{event:"portal_load", route:"portal"}),
