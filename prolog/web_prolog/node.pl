@@ -173,6 +173,7 @@ Design notes:
     isotope_respond_event/3,
     parse_isotope_wait_request/5
 ]).
+:- use_module(node_http_identity, [with_http_identity/2, with_query_owner/2]).
 :- use_module(node_engine, [
     compute_answer/5,
     compute_answer/6,
@@ -197,6 +198,7 @@ Design notes:
 :- meta_predicate
     execute_and_respond(+, 1, 2),
     execute_and_respond_logged(+, +, +, +, 1, 2),
+    with_http_ip_budget(+,0),
     with_request_node_context(+, 0).
 
                  /*******************************
@@ -303,7 +305,7 @@ node_controller_root_1 :-
 
 
 with_request_node_context(Request, Goal) :-
-    with_node_request_context(Request, Goal).
+    with_node_request_context(Request, with_http_identity(Request, Goal)).
 
 %!  shared_db(-Source:string) is det.
 %
@@ -498,8 +500,24 @@ isobase_request_event(Request, Principal, Format, Answer) :-
     http_parse_call_request(Request, [],
                             GoalAtom, TemplateAtom0, Offset, Limit, _ParsedFormat,
                             LoadText, Once0, RequestedTimeout0),
-    isobase_event(Principal, GoalAtom, TemplateAtom0, Offset, Limit, Format,
-                  LoadText, Once0, RequestedTimeout0, Answer).
+    principal_id(Principal,PrincipalId), node_auth:client_ip(Request,IP),
+    with_query_owner(http_owner(PrincipalId,IP),
+        isobase_event(Principal, GoalAtom, TemplateAtom0, Offset, Limit, Format,
+                      LoadText, Once0, RequestedTimeout0, Answer)).
+
+% Visitor capabilities are cheap to rotate. Admission is also charged to the
+% actual socket client (or the trusted proxy's overwritten client address).
+with_http_ip_budget(Request, Goal) :-
+    ( setting(node_http_identity:anonymous_visitors,true),
+      memberchk(path(Path),Request),
+      memberchk(Path,['/call','/toplevel_call','/toplevel_next','/toplevel_spawn'])
+    -> node_auth:client_ip(Request,IP),
+       string_concat("http-ip:",IP,Id),
+       Budget=principal{id:Id,capabilities:[execute,public_read],unknown:false},
+       (Path=='/toplevel_spawn'
+       -> enforce_session_spawn_rate_limit(Budget), call(Goal)
+       ; enforce_call_request_rate_limit(Budget),with_inflight_call_limit(Budget,Goal))
+    ; call(Goal)).
 
 
 %!  node_controller_isotope_spawn(+Request) is det.
@@ -778,7 +796,7 @@ execute_and_respond_logged(Request, Principal, Format, LogContext0,
     get_time(StartedAt),
     note_request_admitted,
     catch(
-        call(BuildResult, Result),
+        with_http_ip_budget(Request,call(BuildResult, Result)),
         Error,
         (   note_request_error(Error),
             note_ip_offense(Request, Error),

@@ -278,3 +278,18 @@ instantiate an unknown destination, and checks component types before formatting
 Browser RPC/promise boundaries normalise supported text and explicit Host:Port
 shorthand to atoms before dispatch; URI loading and node routing preserve their
 existing policies. The shared manual records accepted representations.
+
+## HTTP visitor ownership and controller boundary (2026-11-04)
+
+Opt-in anonymous visitor identities bind HTTP continuations and ISOTOPE sessions
+to a visitor; admission also charges the client IP. Cache eviction cannot displace
+another owner. Native RPC adds an opaque per-conversation owner header. These are
+security fixes to the demonstrator's formerly shared anonymous cache, not changes
+to Prolog solution semantics. A client that drops its identity recomputes offset
+pages rather than acquiring a different client's continuation.
+
+Public RPC rejects proxy identity/address headers, and explicit `node:` calls
+cannot enter private controller/cache predicates, including through meta-calls.
+Ordinary unqualified Prolog calls and public Web Prolog builtins remain supported.
+See [HTTP visitor ownership](docs/HTTP_VISITOR_OWNERSHIP.md) for configuration,
+limits, wire compatibility and residual containment assumptions.

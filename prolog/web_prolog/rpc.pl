@@ -15,7 +15,7 @@
    ]).
 
 :- dynamic promise_state/7. % Key, WakeQueue, Worker, ExpiryThread, Collector, Result, Owner
-:- multifile prepare_timeout_callback/3, hook_promise_owner/1,
+:- multifile hook_validate_transport_options/1, prepare_timeout_callback/3, hook_promise_owner/1,
              hook_check_promise_owner/1.
 
 /** <module> Web Prolog RPC Client (layer 3, HTTP-only)
@@ -98,7 +98,8 @@ rpc(URI, Goal0, Options0) :-
     normalize_requested_timeout(RemoteTimeout0, RemoteTimeout),
     load_options_text(GoalModule, Options0, LoadTextString),
     atom_string(LoadText, LoadTextString),
-    rpc_http_options(Options0, HTTPOptions),
+    rpc_http_options(Options0, TransportOptions),
+    query_owner_options(TransportOptions,HTTPOptions),
     rpc(Template, 0, Limit, GoalAtom, TemplateAtom, Parts,
         HTTPOptions, LoadText, RemoteTimeout, Once).
 
@@ -226,7 +227,8 @@ rpc_search_params(GoalAtom, TemplateAtom, Offset, Limit,
 validate_client_options(Kind, Options) :-
     client_option_context(Kind, PI),
     catch((must_be(list, Options),
-           maplist(validate_client_option(Kind), Options)),
+           maplist(validate_client_option(Kind), Options),
+           forall(hook_validate_transport_options(Options),true)),
           error(Formal, _),
           throw(error(Formal, context(PI, 'invalid client option')))).
 
@@ -480,7 +482,8 @@ promise(URI, Goal0, Reference, Options) :-
     normalize_requested_timeout(RemoteTimeout0, RemoteTimeout),
     load_options_text(GoalModule, Options, LoadTextString),
     atom_string(LoadText, LoadTextString),
-    rpc_http_options(Options, HTTPOptions),
+    rpc_http_options(Options, TransportOptions),
+    query_owner_options(TransportOptions,HTTPOptions),
     make_reference(Reference),
     promise_queue_key(Reference, Key),
     start_promise(Reference,
@@ -649,3 +652,11 @@ make_reference(Reference) :-
 
 :- dynamic issued_reference/1.
 reference_byte(Byte, Acc, Next) :- Next is Acc * 256 + Byte.
+
+% A fresh bearer capability per RPC/promise conversation; all page requests
+% retain it. Never forward an inbound visitor capability to another node.
+query_owner_options(Options,HTTPOptions) :-
+    (member(request_header(Name=_),Options),downcase_atom(Name,'x-web-prolog-query-owner')
+    -> HTTPOptions=Options
+    ; crypto_n_random_bytes(32,Bytes),hex_bytes(Token,Bytes),
+      HTTPOptions=[request_header('X-Web-Prolog-Query-Owner'=Token)|Options]).

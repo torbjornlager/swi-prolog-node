@@ -42,6 +42,7 @@ and ownership.
 ]).
 :- use_module(node_runtime_state, [current_node_value/2]).
 :- use_module(node_principal_policy, [principal_policy/2]).
+:- use_module(node_http_identity, [current_http_visitor/1]).
 :- use_module(node_tokens, [request_bearer_principal/2]).
 
 :- setting(auth, atom, open, 'Authorization mode: open, private, or dev').
@@ -125,6 +126,11 @@ request_principal(Request, Principal) :-
 %   audit bucket for the whole internet — the /call analogue of
 %   `anon_per_ws_connection`. The IP is resolved spoof-resistantly (see
 %   client_ip/2), so a client cannot evade or steal another's bucket.
+anonymous_principal(_Request, Principal) :-
+    current_http_visitor(Visitor), !,
+    auth_mode(Mode), anonymous_capabilities(Mode,Capabilities),
+    string_concat("anon:visitor:",Visitor,Id),
+    Principal=principal{id:Id,capabilities:Capabilities,unknown:false}.
 anonymous_principal(Request, Principal) :-
     (   anon_per_ip_enabled,
         client_ip(Request, IP),
@@ -173,8 +179,8 @@ ws_principal(Request, Principal) :-
     ).
 
 ws_should_individualize_anon(anonymous) :-
-    catch(current_node_value(anon_per_ws_connection, true), _, fail),
-    !.
+    (catch(current_node_value(anon_per_ws_connection, true), _, fail)
+    ;setting(node_http_identity:anonymous_visitors,true)), !.
 
 individualize_anon_principal(principal{
                                 id:Id,
