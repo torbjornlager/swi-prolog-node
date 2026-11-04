@@ -95,6 +95,13 @@ run_wasm () {
 
 run_wasm
 
+if selected T4_NATIVE || selected VISITORS; then
+    echo "=== HTTP visitor ownership ==="
+    if ! SWIPL="$SWIPL" python3 tests/http_visitor_ownership.py; then
+        FAILED=1
+    fi
+fi
+
 run_tier MODEL tests/model_service_tests.pl run_tests
 run_tier MODEL_SXML tests/model_statechart_tests.pl 'run_tests(model_statechart)'
 run_tier JEV tests/jev_tests.pl 'run_tests(jev)'
