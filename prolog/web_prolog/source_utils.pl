@@ -2,6 +2,8 @@
    [ terms_to_source/2,         % +Terms, -Source
      predicates_to_source/3,    % +Module, +PIs, -Source
      text_to_string/2,          % +TextLike, -String
+     resolve_source_uri/2,
+     source_document_uri/2,
      uri_atom/2,                % +URI0, -URI
      normalize_load_uri_allowed_origins/2, % +Origins0, -Origins
      open_source_uri/2,         % +URI, -Stream
@@ -42,6 +44,7 @@ hooks:
 :- multifile
     load_uri_allowed_origins/1,
     self_base_url/1,
+    document_base_uri/1,
     restore_serialized_term/3.
 
 %!  terms_to_source(+Terms:list, -Source:string) is det.
@@ -127,15 +130,10 @@ text_to_string(Text0, Text) :-
 
 %!  uri_atom(+URI0, -URI:atom) is det.
 %
-%   Normalize URI/path input to atom form.
-uri_atom(URI, URI) :-
-    atom(URI),
-    !.
-uri_atom(URIString, URI) :-
-    string(URIString), !,
-    atom_string(URI, URIString).
-uri_atom(Value, _) :-
-    must_be(nonvar, Value), type_error(atom_or_string, Value).
+%   URI/path values are atoms at every language API boundary.
+uri_atom(Input, URI) :-
+    must_be(atom, Input),
+    URI = Input.
 
 %!  normalize_load_uri_allowed_origins(+Origins0, -Origins) is det.
 %
@@ -202,12 +200,21 @@ source_uri_file(URI, URI) :-
 %   current node base URL only when no local file of that name exists.
 resolve_source_uri(URI0, URI) :-
     uri_atom(URI0, URI1),
-    (   source_uri_file(URI1, _)
+    (   document_base_uri(Base), \+ uri_is_global(URI1)
+    ->  uri_resolve(URI1, Base, URI)
+    ;   source_uri_file(URI1, _)
     ->  URI = URI1
     ;   sub_atom(URI1, _, 3, _, '://')
     ->  URI = URI1
     ;   resolve_node_relative_uri(URI1, URI)
     ).
+
+% Preserve an absolute document location independently of the destination.
+source_document_uri(Source, Base) :-
+    resolve_source_uri(Source, Resolved),
+    ( source_uri_file(Resolved, File)
+    -> absolute_file_name(File, Absolute), uri_file_name(Base, Absolute)
+    ; Base = Resolved ).
 
 resolve_node_relative_uri(Rel0, URI) :-
     self_base_url(Base0),

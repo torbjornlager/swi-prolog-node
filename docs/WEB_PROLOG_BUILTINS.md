@@ -210,11 +210,10 @@ Options must be unary terms in a proper list. Unknown names, wrong arities,
 and misplaced wrapper options (including plain `spawn/3`'s unsupported
 `name/1`) raise `error(domain_error(spawn_option,Option),_)`. Invalid values
 raise type, domain, or instantiation errors with `actors:spawn/3` in the
-context. `link/1` and `monitor/1` require booleans; `node/1` takes an atom or
-string. Isolation declares `src_text/1`, `src_list/1`, `src_uri/1`, and
+context. `link/1` and `monitor/1` require booleans; `node/1` requires an atom. Isolation declares `src_text/1`, `src_list/1`, `src_uri/1`, and
 `src_predicates/1` through a lower-layer validation hook: text retains the
 native atom/string/codes/chars convention, source lists must be proper
-lists, source URIs atoms/strings, and predicate indicators atom names with
+lists, source URIs atoms, and predicate indicators atom names with
 nonnegative integer arities. Shape validation does not replace source-access,
 sandbox, or ownership policies. The stand-alone actor core does not accept
 source options unless an isolation provider has declared them.
@@ -225,7 +224,7 @@ The proper-list/unary-term rule applies to every occurrence, including later
 duplicates. Errors have `spawn/3` in the context; unknown or misplaced options
 raise `domain_error(spawn_option,Option)`. The browser vocabulary is:
 
-- `node/1`: an atom or string; `link/1` and `monitor/1`: booleans.
+- `node/1`: an atom; `link/1` and `monitor/1`: booleans.
 - `name/1`: an atom, retaining the browser's existing local naming convenience
   (plain native `spawn/3` does not accept this option).
 - `target/1` and `io_target/1`: nonvariable compatibility routing terms. Plain
@@ -233,7 +232,7 @@ raise `domain_error(spawn_option,Option)`. The browser vocabulary is:
   accepting these terms does not implement per-spawn output redirection.
 - `src_text/1`: an atom or string; `src_list/1`: a proper list;
   `src_predicates/1`: a proper list of atom/nonnegative-integer indicators.
-- `src_uri/1`: an atom or string in both browser runtimes. The creating
+- `src_uri/1`: an atom in both browser runtimes. The creating
   engine asks the page coordinator to fetch Prolog source before child creation;
   remote spawning forwards the fetched text, rather than asking the remote node
   to fetch the URI. Server, supervisor and toplevel wrappers use the same path.
@@ -379,7 +378,7 @@ spawn options:
   `period/1` is a positive number of seconds (fractional values remain valid).
   Nested supervisors use the same checks for supervisor settings.
 - `statechart_spawn/2`: atom `name/1` and boolean `trace/1`, preserving its
-  duplicate-trace rejection and exactly-one-XML-source rule. Supplemental
+  first-trace-setting precedence and exactly-one-XML-source rule. Supplemental
   Prolog sources remain accepted.
 
 All forwarded options are checked with the existing spawn schema. Unsupported
@@ -415,12 +414,11 @@ checks; browser child-specification validation is described under Supervisors.
 Statechart wrappers accept atom/string `src_uri/1` in both runtimes, including
 the worker. Prolog source loading for ordinary spawn and server/supervisor/toplevel
 wrappers is supported in both runtimes as described above. Browser statecharts
-retain first-text selection (even if a URI precedes it), otherwise first-URI
-selection, and first-occurrence trace behavior. Unlike native statecharts, the
-browser wrappers do not reject multiple well-typed XML sources or traces.
-Supplemental Prolog source remains accepted; missing XML source still raises
-the existing `statechart_source_option` error. Wrapper validation does not
-change lifecycle or source-selection semantics.
+require exactly one XML source, `src_text(Text)` or `src_uri(URI)`, and retain
+first-occurrence trace behavior after validating every occurrence. Missing XML
+raises `existence_error(option,src_uri_or_src_text)`; multiple XML sources raise
+`domain_error(single_statechart_source_option,Sources)` before fetching or
+creation. Supplemental Prolog source remains accepted.
 
 The compatibility main engine's statechart routing now uses the intended
 nonidentity test: `localhost` starts a chart in the main interpreter if none
@@ -429,9 +427,10 @@ active. An explicit remote node always uses remote dispatch, whether or not
 a local chart is running. Nested and remote creation preserve the active local
 chart. Text/URI selection, first trace setting, supplemental source, names,
 link handling and caller-side spawn monitoring retain their existing behavior
-on each path. For URI XML, the main interpreter fetches its own local chart's
-source, a nested worker receives the URI for its loading path, and the remote
-node fetches its remote chart's XML. Regression tests execute the generated
+on each path. The caller fetches initial URI XML before local creation or remote
+dispatch and carries its absolute document URI with the text. Relative document
+and Prolog-source references use that document base in the chart's execution
+environment, under that environment's source-access policy. Regression tests execute the generated
 Prolog with the real WASM parser/interpreter and mocked external transports;
 they check both source kinds on all three paths.
 
@@ -812,8 +811,8 @@ migrate experimental character-list representations or change source conversion.
 Every duplicate is validated before any work begins; first-occurrence
 precedence and repeated source loading remain unchanged. Numeric execution
 and HTTP timeouts retain their existing clamping of negative values to zero.
-The worker's explicit `none` sentinel remains accepted for those two timeouts;
-the main-engine compatibility runtime still requires explicit numbers.
+Both browser engines require explicit numeric values; omission leaves the
+corresponding default in effect.
 Negative yield timeouts retain their existing wait behavior. Invalid yield
 options neither start a wait nor consume a pending/ready promise or execute
 a timeout callback. An explicitly module-qualified callback retains its
@@ -837,11 +836,19 @@ rejected rather than forwarded. Query/source options never reach `http_open/3`;
 `http_timeout/1` is translated to the host transport's `timeout/1`.
 Repeated source options retain their order. Query settings use the first
 occurrence; templates retain variable sharing with the goal and offsets must
-be nonnegative integers. Existing timeout conventions remain: negative
-execution/HTTP timeouts become zero; an execution timeout of `none` or an
-unbound value is unspecified. Native source text continues to accept
+be nonnegative integers. Execution and HTTP timeouts require numbers and normalize negative values to
+zero; omission leaves the corresponding default in effect. Native source text continues to accept
 atom/string/codes/chars representations; this does not settle the portable
 text contract.
+
+Execution `timeout/1` and transport `http_timeout/1` are independent. Execution
+limits go to the destination and remain bounded by the owner's configured
+limit. The HTTP limit covers a complete request, including headers and body;
+each later slice receives a fresh deadline. It does not configure source
+fetching. HTTP expiry raises `error(rpc_error(http_timeout),_)` for RPC; promises
+return `error(error(rpc_error(http_timeout),_))` through yield. Ordinary abort and
+owner execution controls retain their own exceptions. Request cleanup disarms
+its private timer before closing the stream, so expiry cannot affect later work.
 
 Native `yield/3` accepts only `timeout(Number)` and `on_timeout(Callable)`;
 the first occurrence of each takes effect. A negative wait timeout returns
@@ -1041,15 +1048,22 @@ or change the lifecycle of an abandoned successful `server_promise/4`.
 `supervisor_which_children/2`, `supervisor_count_children/2`,
 `supervisor_halt/1`.
 
+Supervisor creation waits for initial child preparation and admission before
+publishing its name or reporting success. It does not wait for application goals
+to finish. Failure rolls back initial children and raises
+`error(supervisor_start_failed(Pid,Reason),supervisor_spawn/3)`, where Reason is
+`init_failed` for ordinary failure or the original exception. Halt acknowledges
+after child shutdown and before the supervisor itself terminates. Its ten-second
+wait prefers an available matching acknowledgement over a down notification;
+a normal down does not reset the deadline.
+
 Native supervisors validate the complete initial child list before creating
 the supervisor or starting children. `supervisor_spawn_child/3` reuses the
 single-child validator before contacting the supervisor. Nested supervisors
 use the same list validator.
 
 - Child and option lists must be proper, and each specification an acyclic
-  `child(Id,Options)` term. Ids must be ground; ordinary children retain
-  support for compound ids. Server-child ids must be atoms because they
-  also become registered names.
+  `child(Id,Options)` term. Ids must be atoms, consistently across creation and child-management APIs.
 - Duplicate initial ids raise
   `error(permission_error(duplicate,supervisor_child_id,Id),_)`, within each
   supervisor's own list. A valid dynamic addition whose id is already present
@@ -1146,14 +1160,14 @@ are preserved. `infinity` can delay the supervisor's exit; forced Worker and
 remote-observation qualifications still apply. This does not add cleanup for
 arbitrary supervisor exits or recursive cooperative shutdown.
 
-Browser reply formats are unchanged: successful dynamic start, termination,
-deletion and respawn return `ok` (browser respawn does not return `ok(NewPid)`).
-`supervisor_which_children/2` returns ordered `child(Id,Pid,OriginalSpec)` terms,
-including inactive records. `supervisor_count_children/2` returns
-`counts(Total,Active)`, counting stored specifications and records whose pid is
-not `undefined`, respectively. These reflect the supervisor's processed state,
-not an independent instantaneous liveness check. The native inspection formats
-remain `info(Id,Pid,Type,Restart)` and the keyed counts list.
+All runtimes return `ok` for successful dynamic start, termination and deletion,
+and `ok(NewPid)` for successful respawn. `supervisor_which_children/2` returns
+ordered `info(Id,Pid,Type,Restart)` terms, including inactive records.
+`supervisor_count_children/2` returns
+`[specs-Specs,active-Active,supervisors-Supervisors,workers-Workers]`.
+Specs counts retained specifications; the other counts include only records
+whose pid is not `undefined`. These inspect processed state rather than
+independently checking instantaneous liveness.
 
 Both SWI-WASM runtimes use one child-shutdown helper for explicit termination,
 normal supervisor halt and the stopping phases of `one_for_all`/`rest_for_one`.
@@ -1212,7 +1226,7 @@ shutdown default without adding other type-specific lifecycle behaviour.
 Browser explicit respawn also uses a startup journal: a failed replacement is
 rolled back, its inactive specification stays in place, and the supervisor
 returns `error(start_failed)` for failure or `error(Error)` for an exception.
-Success retains the browser `ok` reply. The caller can retry the inactive child.
+Success returns `ok(NewPid)`. The caller can retry the inactive child.
 
 Automatic replacement starts for one restart event share a startup journal.
 If a replacement fails, newly created actors and monitors are rolled back,

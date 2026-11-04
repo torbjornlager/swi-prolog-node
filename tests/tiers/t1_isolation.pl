@@ -512,6 +512,17 @@ run(Parent) :-
    receive({ recovered -> true }, [timeout(1), on_timeout(fail)]),
    receive({ down(Pid, _, true) -> true }, [timeout(1), on_timeout(fail)]).
 
+test(mixed_sources_preserve_all_clauses_in_list_order) :-
+    self(Parent),
+    spawn((findall(X, manual_source_order(X), Items), Parent ! manual_source_order(Items)),
+          Pid, [src_text('manual_source_order(first).'),
+                src_list([manual_source_order(second)]),
+                src_text('manual_source_order(third).'), monitor(true)]),
+    receive({manual_source_order(Items) -> assertion(Items == [first,second,third])},
+            [timeout(2),on_timeout(throw(missing_source_order_result))]),
+    receive({down(Pid,Pid,true) -> true},
+            [timeout(2),on_timeout(throw(missing_source_order_down))]).
+
 :- end_tests(t1_isolation).
 
 

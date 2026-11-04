@@ -127,16 +127,21 @@ boundary; this is not permission to pass a string to a language option. Trace
 and administration wire-field compatibility is unchanged. The repair is tested
 using separate engines and does not update installed runtimes or restart n3/n5.
 
-### Canonical URI inputs
+### URI atoms and source preparation
 
-URI values used internally for routing and fetching are atoms. Public URI inputs
-retain supported text forms and are checked before source loading or dispatch;
-unknown variables are not instantiated by matching the `Host:Port` shorthand.
-RPC/promise accept that shorthand with a text host and integer port. This is
-representation normalization, not a change to URI syntax, relative resolution,
-source origin policy, redirects, TLS or permitted schemes. See the shared manual
-for the runtime-specific text forms. The bounded regression report is in
-`docs/verification/uri-options-2026-10-24/REPORT.md`.
+URI and node-address arguments require atoms at every public API boundary,
+including RPC/promise destinations, `node/1`, and `src_uri/1`. A pending value
+raises `instantiation_error`; a non-atom raises `type_error(atom, Value)` before
+fetching, dispatch or actor creation. The `Host:Port` shorthand is no longer
+accepted. URI syntax, relative resolution, origin policies, redirects, TLS and
+permitted schemes retain their own checks. Earlier URI verification reports
+record the superseded representation-conversion rules.
+
+Initial actor source is materialised by the caller after option validation and
+source-policy checks, before allocating the child. Source fragments are loaded
+as one program in option-list order so later fragments extend predicates rather
+than replace earlier clauses. Initial statechart XML fetching is a separate
+remaining conformance task.
 
 ### Composed DCG execution guards
 
@@ -239,3 +244,13 @@ selects native revision `abbc56f3d5104bd6d40d2ed5f99fe6199d75c4a8` for the
 demonstrator pin and strict commit-pinned local n3 startup. Both reader-mode
 checks and native/integration tiers pass; local n3 explicitly selects chars.
 Package defaults, installed engine and unresolved diagnostics remain separate.
+
+### Common RPC HTTP fields
+
+HTTP fields use `request_header(Name=Value)`, `authorization(basic(User,Password))`,
+`authorization(bearer(Token))`, and `user_agent(Agent)`. Names are ASCII HTTP tokens;
+values and credential arguments accept atoms, strings and character-list strings.
+Every occurrence is validated before source work; the first field with a given
+case-insensitive name wins across all option forms. Field values use UTF-8 bytes. Basic credentials use UTF-8
+then Base64. RPC fields apply to every page and never to source downloads.
+Reserved proxy identity fields are rejected. Caller access policy still applies.

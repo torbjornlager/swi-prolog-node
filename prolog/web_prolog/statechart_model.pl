@@ -32,7 +32,9 @@ The generated model facts are asserted into `statechart_actor`.
 
 :- use_module(source_utils, [
     uri_atom/2,
-    open_source_uri/2
+    open_source_uri/2,
+    source_document_uri/2,
+    uri_to_source/2
 ]).
 
 
@@ -99,7 +101,9 @@ is_statechart_source_option(src_text(_)).
 
 is_statechart_control_option(trace(_)).
 
-source_option_goal(src_uri(URI), statechart_actor:interpret(URI)).
+source_option_goal(src_uri(URI), statechart_actor:interpret_document(Text, Base)) :-
+    source_document_uri(URI, Base),
+    uri_to_source(URI, Text).
 source_option_goal(src_text(Text), statechart_actor:interpret_text(Text)).
 
 

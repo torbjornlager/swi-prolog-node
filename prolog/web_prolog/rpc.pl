@@ -41,6 +41,7 @@ client namespaces or stateless HTTP identities; standalone use remains shared.
 
 :- use_module(library(apply)).
 :- use_module(library(option)).
+:- use_module(library(time),[alarm/4,remove_alarm/1]).
 :- use_module(library(error)).
 :- use_module(library(random)).
 :- use_module(library(crypto)).
@@ -104,11 +105,6 @@ rpc(URI, Goal0, Options0) :-
         HTTPOptions, LoadText, RemoteTimeout, Once).
 
 %!  resolve_rpc_uri(+URI0, -URI) is det.
-resolve_rpc_uri(Input, URI) :-
-    nonvar(Input), Input = Host0:Port,
-    !,
-    uri_atom(Host0, Host), must_be(integer, Port),
-    format(atom(URI), 'http://~w:~w', [Host, Port]).
 resolve_rpc_uri(URI0, URI) :-
     uri_atom(URI0, URIAtom),
     (   uri_has_scheme(URIAtom)
@@ -150,14 +146,17 @@ rpc(Template, Offset, Limit, GoalAtom, TemplateAtom, Parts,
     Options, LoadText, RemoteTimeout, Once) :-
     rpc_search_params(GoalAtom, TemplateAtom, Offset, Limit,
                       LoadText, RemoteTimeout, Once, Search),
-    parse_url(ExpandedURI, [
-        path('/call'),
-        search(Search)
-      | Parts
-    ]),
+    rpc_call_uri(Parts,Search,ExpandedURI),
     http_read_answer(ExpandedURI, Options, Answer),
     rpc(Answer, Template, Offset, Limit, GoalAtom, TemplateAtom, Parts,
         Options, LoadText, RemoteTimeout, Once).
+
+% The URI identifies the node base, including a deployment path prefix.
+rpc_call_uri(Parts,Search,URI) :-
+    select_option(path(Base),Parts,Rest,''),
+    (atom_concat(Prefix,'/',Base)->true;Prefix=Base),
+    atom_concat(Prefix,'/call',Path),
+    parse_url(URI,[path(Path),search(Search)|Rest]).
 
 %!  goal_template_texts(+Goal, +Template, -GoalAtom, -TemplateAtom) is det.
 %
@@ -178,15 +177,37 @@ goal_template_texts(Goal, Template, GoalAtom, TemplateAtom) :-
 %   cleanup only if it was actually opened.
 
 http_read_answer(URI, Options, Answer) :-
+    ( option(timeout(Seconds), Options)
+    -> ( Seconds =< 0 -> throw(error(rpc_error(http_timeout),rpc/3))
+       ; flag(rpc_transport_timer, Token, Token+1),
+         catch(setup_call_cleanup(
+           (asserta(rpc_transport_active(Token)),
+            alarm(Seconds,rpc:expire_rpc_transport(Token),Alarm,[remove(true)])),
+           http_read_answer_unbounded(URI,Options,Answer,Token),
+           (retractall(rpc_transport_active(Token)),remove_alarm(Alarm))),
+           '$rpc_transport_timeout'(Token),throw(error(rpc_error(http_timeout),rpc/3))) )
+    ; http_read_answer_unbounded(URI,Options,Answer,none) ).
+
+:- thread_local rpc_transport_active/1.
+expire_rpc_transport(Token) :-
+    (retract(rpc_transport_active(Token)) -> throw('$rpc_transport_timeout'(Token));true).
+
+http_read_answer_unbounded(URI, Options, Answer,Token) :-
+    catch(http_read_answer_stream(URI,Options,Answer,Token),error(timeout_error(_,_),_),
+          throw(error(rpc_error(http_timeout),rpc/3))).
+
+http_read_answer_stream(URI, Options, Answer,Token) :-
+    exclude(rpc_socket_timeout_option,Options,StreamOptions),
     Holder = stream(none),
     call_cleanup(
-        (   http_open(URI, Stream, Options),
+        (   http_open(URI, Stream, StreamOptions),
             nb_setarg(1, Holder, Stream),
             wire_read_options(ReadOptions),
             read_term(Stream, Answer, ReadOptions)
         ),
-        close_held_stream(Holder)).
+        (retractall(rpc_transport_active(Token)),close_held_stream(Holder))).
 
+rpc_socket_timeout_option(timeout(_)).
 close_held_stream(stream(Stream)) :-
     (   Stream == none
     ->  true
@@ -255,20 +276,18 @@ client_option_type(yield, on_timeout, callable).
 
 query_option_type(limit, positive_integer).
 query_option_type(once, boolean).
-query_option_type(timeout, remote_timeout).
+query_option_type(timeout, number).
 query_option_type(http_timeout, number).
 query_option_type(src_text, source_text).
 query_option_type(src_list, list).
-query_option_type(src_uri, atom_or_string).
+query_option_type(src_uri, atom).
 query_option_type(src_predicates, predicate_indicators).
 query_option_type(request_header, request_header).
 query_option_type(authorization, authorization).
-query_option_type(user_agent, atom_or_string).
+query_option_type(user_agent, http_field).
 
+validate_client_value(http_field,Value) :- !,rpc_http_validate(user_agent(Value)).
 validate_client_value(template, _) :- !.
-validate_client_value(remote_timeout, Value) :- !,
-    % Preserve the existing unspecified-timeout and negative-timeout rules.
-    normalize_requested_timeout(Value, _).
 validate_client_value(boolean, Value) :- !,
     must_be(nonvar, Value), normalize_once(Value, _).
 validate_client_value(source_text, Value) :- !,
@@ -279,23 +298,8 @@ validate_client_value(atom_or_string, Value) :- !,
     (atom(Value) -> true ; string(Value) -> true ; type_error(atom_or_string, Value)).
 validate_client_value(predicate_indicators, Value) :- !,
     must_be(list, Value), maplist(validate_client_pi, Value).
-validate_client_value(request_header, Value) :- !,
-    must_be(nonvar, Value),
-    (   compound(Value), compound_name_arity(Value, '=', 2)
-    ->  arg(1, Value, Name), arg(2, Value, Text),
-        must_be(atom, Name), validate_client_value(atom_or_string, Text)
-    ;   type_error(http_request_header, Value)
-    ).
-validate_client_value(authorization, Value) :- !,
-    must_be(nonvar, Value),
-    (   compound(Value), compound_name_arity(Value, basic, 2)
-    ->  arg(1, Value, User), arg(2, Value, Password),
-        validate_client_value(atom_or_string, User),
-        validate_client_value(atom_or_string, Password)
-    ;   compound(Value), compound_name_arity(Value, bearer, 1)
-    ->  arg(1, Value, Token), validate_client_value(atom_or_string, Token)
-    ;   domain_error(http_authorization, Value)
-    ).
+validate_client_value(request_header,Value) :- !, rpc_http_validate(request_header(Value)).
+validate_client_value(authorization,Value) :- !, rpc_http_validate(authorization(Value)).
 validate_client_value(Type, Value) :- must_be(Type, Value).
 
 validate_client_pi(PI) :-
@@ -307,19 +311,11 @@ validate_client_pi(PI) :-
     ).
 
 %!  rpc_http_options(+Options0, -HTTPOptions) is det.
-rpc_http_options(Options0, HTTPOptions) :-
-    (   select_option(http_timeout(HTTPTimeout0), Options0, Options1)
-    ->  normalize_timeout(HTTPTimeout0, HTTPTimeout),
-        HTTPPrefix = [timeout(HTTPTimeout)]
-    ;   Options1 = Options0,
-        HTTPPrefix = []
-    ),
-    include(rpc_transport_option, Options1, HTTPFiltered),
-    append(HTTPPrefix, HTTPFiltered, HTTPOptions).
+rpc_http_options(Options, HTTPOptions) :-
+    rpc_http_fields(Options,Fields),rpc_http_native_options(Fields,Transport),
+    (memberchk(http_timeout(T),Options) -> Timeout is max(0,T),HTTPOptions=[timeout(Timeout)|Transport]
+    ;HTTPOptions=Transport).
 
-rpc_transport_option(request_header(_)).
-rpc_transport_option(authorization(_)).
-rpc_transport_option(user_agent(_)).
 
 %!  append_optional_param(+Search0, +Key, +Value, -Search) is det.
 append_optional_param(Search, _, '', Search) :- !.
@@ -511,11 +507,7 @@ promise_answer(URI, Goal, Template, Offset, Limit,
     parse_url(URI, Parts),
     rpc_search_params(GoalAtom, TemplateAtom, Offset, Limit,
                       LoadText, RemoteTimeout, Once, Search),
-    parse_url(ExpandedURI, [
-        path('/call'),
-        search(Search)
-      | Parts
-    ]),
+    rpc_call_uri(Parts,Search,ExpandedURI),
     http_read_answer(ExpandedURI, HTTPOptions, Answer),
     (   valid_promise_answer(Answer)
     ->  true
@@ -623,12 +615,9 @@ normalize_timeout(Timeout0, Timeout) :-
     Timeout is max(0, Timeout0).
 
 %!  normalize_once(+Value, -Once:boolean) is det.
-normalize_once(true, true) :- !.
-normalize_once(false, false) :- !.
-normalize_once(Value, _) :-
-    throw(error(domain_error(boolean, Value),
-                context(node:normalize_once/2,
-                        'once must be true or false'))).
+normalize_once(Value, Once) :-
+    actors:validate_boolean(Value),
+    Once = Value.
 
 
 %!  make_reference(-Reference) is det.
@@ -660,3 +649,12 @@ query_owner_options(Options,HTTPOptions) :-
     -> HTTPOptions=Options
     ; crypto_n_random_bytes(32,Bytes),hex_bytes(Token,Bytes),
       HTTPOptions=[request_header('X-Web-Prolog-Query-Owner'=Token)|Options]).
+
+:- include(rpc_http_fields).
+rpc_http_string_chars(Value,Chars) :- string(Value),string_chars(Value,Chars).
+
+rpc_http_host_utf8(Chars,Bytes) :- rpc_http_utf8(Chars,Bytes).
+
+rpc_http_native_value(Value,Wire) :- atom_chars(Value,Chars),rpc_http_utf8(Chars,Bytes),atom_codes(Wire,Bytes).
+
+rpc_http_one_char(C,[C]) :- atom(C),atom_length(C,1).

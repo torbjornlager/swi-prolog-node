@@ -66,8 +66,8 @@ first_solution_(Solution, QualifiedGoals, Options) :-
     maplist(valid_first_solution_option, Options),
     option(on_fail(OnFail), Options, continue),
     option(on_error(OnError), Options, stop),
-    must_be(oneof([stop, continue]), OnFail),
-    must_be(oneof([stop, continue]), OnError),
+    valid_first_solution_policy(OnFail),
+    valid_first_solution_policy(OnError),
     strip_module(QualifiedGoals, Module, Goals0),
     must_be(list, Goals0),
     maplist(qualify_goal(Module), Goals0, Goals),
@@ -76,12 +76,17 @@ first_solution_(Solution, QualifiedGoals, Options) :-
          wait_first(Scope, Pids, Solution, OnFail, OnError))).
 
 
-valid_first_solution_option(on_fail(_)) :- !.
-valid_first_solution_option(on_error(_)) :- !.
 valid_first_solution_option(Option) :-
-    throw(error(domain_error(first_solution_option, Option),
-                context(first_solution:first_solution/3,
-                        'expected on_fail/1 or on_error/1'))).
+    must_be(nonvar, Option),
+    ( compound(Option), compound_name_arity(Option, Name, 1),
+      memberchk(Name, [on_fail,on_error])
+    -> arg(1, Option, Value), valid_first_solution_policy(Value)
+    ; domain_error(first_solution_option, Option) ).
+
+valid_first_solution_policy(Value) :-
+    must_be(atom, Value),
+    ( memberchk(Value, [stop,continue]) -> true
+    ; domain_error(first_solution_policy, Value) ).
 
 
 qualify_goal(Module, Goal0, Module:Goal) :-

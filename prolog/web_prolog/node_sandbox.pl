@@ -303,6 +303,7 @@ statechart_runtime_support_goal_pi(interpret/1).
 statechart_runtime_support_goal_pi(interpret_text/1).
 statechart_runtime_support_goal_pi(interpret_trace/2).
 statechart_runtime_support_goal_pi(interpret_text_trace/2).
+statechart_runtime_support_goal_pi(interpret_document_trace/3).
 
 
 %!  sandbox_check_goal_with_source(+Profile, +GoalModule, +Goal, +SourceText) is det.

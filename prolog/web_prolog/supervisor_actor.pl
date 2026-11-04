@@ -98,7 +98,7 @@ normalise_child_spec(Caller, ChildSpec,
     ->  arg(1, ChildSpec, Id), arg(2, ChildSpec, Opts)
     ;   type_error(supervisor_child_spec, ChildSpec)
     ),
-    must_be(ground, Id),
+    must_be(atom, Id),
     must_be(list, Opts),
     maplist(validate_child_option(Caller,Id), Opts),
     (   option(start(Start0), Opts)
@@ -280,12 +280,15 @@ supervisor_spawn_child(Sup, ChildSpec0, Reply) :-
     sup_call(Sup, start_child(NormSpec), Reply).
 
 supervisor_terminate_child(Sup, Id, Reply) :-
+    must_be(atom, Id),
     sup_call(Sup, terminate_child(Id), Reply).
 
 supervisor_delete_child(Sup, Id, Reply) :-
+    must_be(atom, Id),
     sup_call(Sup, delete_child(Id), Reply).
 
 supervisor_respawn_child(Sup, Id, Reply) :-
+    must_be(atom, Id),
     sup_call(Sup, restart_child(Id), Reply).
 
 supervisor_which_children(Sup, Children) :-
@@ -336,15 +339,20 @@ sup_halt_call(Supervisor) :-
         demonitor(MonitorRef, [flush])).
 
 sup_halt_wait(Supervisor, Ref, MonitorRef, Deadline, Outcome) :-
-    get_time(Now), Remaining is max(0, Deadline - Now),
-    receive({
-        Ref-_ -> true ;
-        down(_, MonitorRef, Reason) ->
-            ( Reason == true
-            -> sup_halt_wait(Supervisor, Ref, MonitorRef, Deadline, normal_down)
-            ; throw(supervisor_down(Reason)) )
-    }, [timeout(Remaining),
-        on_timeout(sup_halt_timeout(Supervisor, Outcome))]).
+    ( take_halt_reply(Ref) -> true
+    ; get_time(Now), Remaining is max(0, Deadline - Now),
+      receive({
+          Ref-_ -> true ;
+          down(_, MonitorRef, Reason) ->
+              ( take_halt_reply(Ref) -> true
+              ; Reason == true
+              -> sup_halt_wait(Supervisor, Ref, MonitorRef, Deadline, normal_down)
+              ; throw(supervisor_down(Reason)) )
+      }, [timeout(Remaining),
+          on_timeout(sup_halt_timeout(Supervisor, Outcome))]) ).
+
+take_halt_reply(Ref) :-
+    receive({Ref-_ -> true}, [timeout(0),on_timeout(fail)]).
 
 sup_halt_timeout(_, normal_down) :- !,
     throw(supervisor_down(true)).
@@ -358,6 +366,38 @@ sup_reply(From, Ref, Reply) :-
 %% -------------------------------------------------------------------
 %% Initialisation
 %% -------------------------------------------------------------------
+
+% Child starts belong to preparation: successful creation and name publication
+% happen only after their startup scope commits. Runtime continuations retain
+% the original state term and its variable sharing.
+:- multifile isolation:prepare_activation_goal/5.
+isolation:prepare_activation_goal(Pid, supervisor_actor, _Module, Goal0,
+                                  supervisor_actor:sup_loop(State)) :-
+    strip_module(Goal0, _, Goal),
+    nonvar(Goal),
+    supervisor_actor:initial_supervisor_goal(Goal, Specs, State0),
+    supervisor_actor:prepare_supervisor_state(Pid, Specs, State0, State).
+
+prepare_supervisor_state(Pid, Specs, State0, State) :-
+    catch((with_startup_scope(start_children(Specs, State0, State))
+           -> true ; throw(init_failed)),
+          Reason, supervisor_initial_error(Pid, Reason)).
+
+supervisor_initial_error(_, Error) :-
+    actors:guard_control_exception(Error), !, throw(Error).
+supervisor_initial_error(Pid, Reason) :-
+    throw(error(supervisor_start_failed(Pid, Reason), supervisor_spawn/3)).
+
+initial_supervisor_goal(sup_init(Specs, State0), Specs, State0).
+initial_supervisor_goal(start_sub_supervisor(ChildSpecs0, Options), Specs,
+                        sup(Strategy, MaxR, Period, [], [])) :-
+    validate_supervisor_options(Options),
+    strip_module(ChildSpecs0, Caller, ChildSpecs),
+    normalise_child_specs(Caller, ChildSpecs, Specs),
+    check_child_spec_guards(Caller, Specs),
+    option(strategy(Strategy), Options, one_for_one),
+    option(intensity(MaxR), Options, 1),
+    option(period(Period), Options, 5).
 
 sup_init(Specs, State0) :-
     (   with_startup_scope(start_children(Specs, State0, State))
@@ -537,6 +577,11 @@ sup_loop(State) :-
         ;
         down(_, _, _) ->
             sup_loop(State)
+        ;
+        '$sup'(From, Ref, stop) ->
+            State = sup(_, _, _, Children, _),
+            shutdown_children(Children),
+            sup_reply(From, Ref, ok)
         ;
         '$sup'(From, Ref, Request) ->
             handle_call(Request, From, Ref, State, State1),
@@ -842,7 +887,7 @@ handle_call(count_children, From, Ref, State, State) :-
     length(Children, NSpecs),
     include(ch_running, Children, Running),
     length(Running, NActive),
-    include(ch_is_sup, Children, Sups),
+    include(ch_is_sup, Running, Sups),
     length(Sups, NSups),
     NWorkers is NActive - NSups,
     sup_reply(From, Ref, [
@@ -850,10 +895,6 @@ handle_call(count_children, From, Ref, State, State) :-
         supervisors-NSups, workers-NWorkers
     ]).
 
-handle_call(stop, From, Ref, State, State) :-
-    sup_reply(From, Ref, ok),
-    self(Self),
-    Self ! '$sup_exit'.
 
 
 startup_error_reply(Error, _) :-

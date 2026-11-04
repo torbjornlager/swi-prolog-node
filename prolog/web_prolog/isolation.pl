@@ -46,6 +46,10 @@ actor-coupled.
     the source may have shadowed.  Source-free actors need no repair
     pass.  The behaviours layer adds its statechart API import here;
     the distribution layer adds the `@`/2 operator.
+  - prepare_activation_goal(+Pid, +GoalModule, +Module, +Goal, -Continuation):
+    trusted framework preparation before readiness and name publication.
+    Its continuation is module-qualified and runs through the actor runner;
+    ordinary application goals retain prepare_goal/3 and control guards.
   - prepare_goal(+Module, +Goal0, -Goal): rewrite the start goal just
     before execution (the node layer's public-profile guard).  First
     solution wins; default identity.  The result then passes through
@@ -101,6 +105,7 @@ actor-coupled.
 
 :- multifile
     prepare_module/3,
+    prepare_activation_goal/5,
     prepare_goal/3,
     prepare_source_options/3,
     extra_prelude_text/2,
@@ -118,14 +123,21 @@ actors:hook_spawn_option(src_list, public, error:must_be(list)).
 actors:hook_spawn_option(src_uri, public, isolation:spawn_source_uri).
 actors:hook_spawn_option(src_predicates, public, isolation:spawn_predicate_indicators).
 actors:hook_spawn_option(source_module, internal, error:must_be(atom)).
-actors:hook_spawn_option(inherit_goal_module, internal, error:must_be(boolean)).
+actors:hook_spawn_option(inherit_goal_module, internal, actors:validate_boolean).
 actors:hook_spawn_option(isolation_io, internal, isolation:spawn_io_mode).
+
+% Materialise before allocating the child pid; source belongs to the caller.
+:- multifile actors:hook_spawn_sources/3.
+actors:hook_spawn_sources(Goal, Options0, Options) :-
+    strip_module(Goal, GoalModule0, Plain),
+    normalize_goal_module(GoalModule0, Plain, GoalModule),
+    option(source_module(SourceModule), Options0, GoalModule),
+    prepare_runtime_source_options(SourceModule, Options0, PolicyOptions),
+    rewrite_source_options(PolicyOptions, SourceModule, Options).
 
 spawn_source_text(Text) :- text_to_string(Text, _).
 
-spawn_source_uri(URI) :-
-    must_be(nonvar, URI),
-    (uri_atom(URI, _) -> true ; type_error(atom_or_string, URI)).
+spawn_source_uri(URI) :- uri_atom(URI, _).
 
 spawn_predicate_indicators(PIs) :-
     must_be(list, PIs), maplist(spawn_predicate_indicator, PIs).
@@ -181,12 +193,15 @@ spawn_body(Pid, Goal, Options, OnReady, OnPrepError, Runner) :-
     pid_module(LocalPid, Module),
     in_temporary_module(
         Module,
-        prepare_and_signal(Module, GoalModule, Options, OnReady, OnPrepError),
-        execute_in_module(Module, Plain, Runner)).
+        prepare_and_signal(Pid, Module, GoalModule, Plain, Options, Prepared, OnReady, OnPrepError),
+        execute_prepared(Module, Prepared, Runner)).
 
-prepare_and_signal(Module, GoalModule, Options, OnReady, OnPrepError) :-
+prepare_and_signal(Pid, Module, GoalModule, Plain, Options, Prepared, OnReady, OnPrepError) :-
     catch(
-        prepare_actor_module(Module, GoalModule, Options),
+        ( prepare_actor_module(Module, GoalModule, Options),
+          ( prepare_activation_goal(Pid, GoalModule, Module, Plain, Continuation)
+          -> Prepared = framework(Continuation)
+          ;  Prepared = application(Plain) ) ),
         PrepError,
         (   call(OnPrepError, PrepError),
             call(OnReady),
@@ -194,6 +209,13 @@ prepare_and_signal(Module, GoalModule, Options, OnReady, OnPrepError) :-
         )
     ),
     call(OnReady).
+
+% Registered framework hooks own their continuation; application goals still
+% cross the ordinary preparation/guard boundary. Both keep the actor runner.
+execute_prepared(_, framework(Continuation), Runner) :- !,
+    call(Runner, Continuation).
+execute_prepared(Module, application(Plain), Runner) :-
+    execute_in_module(Module, Plain, Runner).
 
 execute_in_module(Module, Plain, Runner) :-
     prepared_goal(Module, Plain, Rewritten),
@@ -467,8 +489,10 @@ source_options([_|Options], GoalModule, SourceOptions) :-
 %   options and their order.
 rewrite_source_options([], _, []).
 rewrite_source_options([Option0|Options0], GoalModule, [Option|Options]) :-
-    (   normalize_source_option(Option0, GoalModule, Option)
-    ->  true
+    (   normalize_source_option(Option0, GoalModule, Normalized)
+    ->  ( Normalized = src_uri(URI)
+        -> uri_to_source(URI, Source), Option = src_text(Source)
+        ;  Option = Normalized )
     ;   Option = Option0
     ),
     rewrite_source_options(Options0, GoalModule, Options).
@@ -500,26 +524,18 @@ normalize_canonical_source_option(src_predicates(PIs), GoalModule, src_text(Sour
 
 
 %!  load_sources(+Module, +Sources) is det.
+load_sources(_, []) :- !.
 load_sources(Module, Sources) :-
-    load_sources(Module, Sources, 1).
-
-load_sources(_, [], _).
-load_sources(Module, [Source|Sources], Index0) :-
-    source_id(Module, Index0, SourceId),
-    load_source(Module, Source, SourceId),
-    Index is Index0 + 1,
-    load_sources(Module, Sources, Index).
+    % One initial program preserves clauses contributed by every fragment.
+    % Consulting separate files would redefine earlier static predicates.
+    load_options_text(Module, Sources, Text),
+    source_id(Module, 1, SourceId),
+    load_source_text(Text, Module, SourceId).
 
 
 %!  source_id(+Module, +Index, -SourceId) is det.
 source_id(Module, Index, SourceId) :-
     format(atom(SourceId), '~w_source_~d', [Module, Index]).
-
-
-load_source(Module, src_text(Source), SourceId) :-
-    load_source_text(Source, Module, SourceId).
-load_source(Module, src_uri(URI), SourceId) :-
-    load_source_uri(URI, Module, SourceId).
 
 
 %!  load_source_text(+Src, +Module, +SourceId) is det.

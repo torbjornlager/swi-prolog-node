@@ -83,12 +83,23 @@ test(example_helper_unset_root_preserves_colocated_path) :-
         restore_example_root(Before)).
 
 
-test(duplicate_trace_rejected_before_source_processing,
+test(duplicate_trace_allows_source_processing,
      [forall(member(Options, [[trace(true),trace(true)],
                               [trace(false),trace(false)],
                               [trace(true),trace(false)]])),
-      throws(error(permission_error(duplicate, statechart_option, trace), _))]) :-
+      throws(error(existence_error(option, src_uri_or_src_text), _))]) :-
     statechart_spawn(_, Options).
+
+test(uri_xml_is_fetched_before_actor_source_preparation) :-
+    tmp_file_stream(text, File, Out),
+    format(Out, '<statechart version="0.2" initial="s"><state id="s"><go on="probe(To)">send(To,document_loaded)</go></state></statechart>', []),
+    close(Out),
+    setup_call_cleanup(true,
+      (statechart_spawn(Pid,[src_uri(File),src_list([(:- delete_file(File))]),trace(false),link(false),monitor(true)]),
+       self(Self),send(Pid,probe(Self)),
+       receive({document_loaded->true},[timeout(3),on_timeout(throw(missing_caller_document))]),
+       statechart_halt(Pid,true),receive({down(Pid,Pid,_)->true},[timeout(3),on_timeout(fail)])),
+      (exists_file(File)->delete_file(File);true)).
 
 test(api_exposes_only_source_aware_spawn) :-
     predicate_property(statechart_actor:statechart_spawn(_, _), exported),

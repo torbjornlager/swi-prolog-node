@@ -9,7 +9,8 @@
 % Fail preparation after provisional child admission, without a URL fetch.
 % Relative-URL errors vary between platforms and available local services.
 isolation:prepare_module(_, _, Options) :-
-    memberchk(src_text('% supervisor startup failure probe'), Options),
+    memberchk(src_text(Text), Options),
+    source_utils:text_to_string(Text, "% supervisor startup failure probe"),
     throw(error(startup_source_probe, test_supervisor_startup)).
 
 :- multifile actors:hook_admit_spawn/3, actors:hook_check_monitor/1,
@@ -63,17 +64,49 @@ assert_no_private_messages(Pids) :-
     receive({down(Pid,_,_) if memberchk(Pid,Pids) -> fail}, [timeout(0)]).
 
 :- op(1000, xfy, if).
+% Pause an initial child's source loading, after the supervisor actor exists.
+% This distinguishes completed child setup from the supervisor's own readiness.
+preparation_gate(Observer) :-
+    thread_self(Thread),thread_send_message(Observer,preparing(Thread)),
+    thread_get_message(allow_preparation).
+
+create_gated_supervisor(Name, Observer) :-
+    supervisor_spawn(test_supervisor_startup:[
+        child(gated_child,[start(server(callback,[src_list([
+            (:- test_supervisor_startup:preparation_gate(Observer))])]))])],
+        Sup,[name(Name)]),
+    thread_send_message(Observer,created(Sup)),
+    receive({finish -> true}),
+    monitor(Sup,Ref),supervisor_halt(Sup),
+    receive({down(Sup,Ref,_) -> true},[timeout(3),on_timeout(throw(gated_halt_timeout))]),
+    demonitor(Ref,[flush]).
+
 :- begin_tests(supervisor_startup).
+
+test(creation_waits_for_children_before_name_publication) :-
+    with_events(Events,
+      setup_call_cleanup(
+        spawn(test_supervisor_startup:create_gated_supervisor(gated_supervisor,Events),Creator,[monitor(true)]),
+        (thread_get_message(Events,preparing(Preparing),[timeout(3)]),
+         whereis(gated_supervisor,undefined),
+         assertion(\+thread_get_message(Events,created(_),[timeout(0)])),
+         thread_send_message(Preparing,allow_preparation),
+         thread_get_message(Events,created(Sup),[timeout(3)]),
+         whereis(gated_supervisor,Published),assertion(Published==Sup),
+         Creator ! finish,
+         receive({down(Creator,Creator,true) -> true},[timeout(3),on_timeout(fail)])),
+        test_supervisor_startup:stop_actor(Creator))).
 
 test(initial_exception_reclaims_prior_children_in_reverse_order) :-
     with_events(Events,
       (bad_start(Bad),
-       supervisor_spawn(test_supervisor_startup:[
+       catch(supervisor_spawn(test_supervisor_startup:[
            child(startup_a,[start(server(callback,[]))]),
            child(startup_b,[start(server(callback,[]))]),
            child(startup_bad,[start(Bad)])], Sup,
-           [monitor(true),src_list([(:- test_supervisor_startup:enable(Events))])]),
-       receive({down(Sup,Sup,exception(Error)) -> true}, [timeout(4),on_timeout(fail)]),
+           [name(failed_initial_supervisor),monitor(true),src_list([(:- test_supervisor_startup:enable(Events))])]),CreationError,true),
+       CreationError=error(supervisor_start_failed(_,Error),_),
+       assertion(var(Sup)),whereis(failed_initial_supervisor,undefined),
        assertion(nonvar(Error)),
        assertion(Error=error(startup_source_probe,_)),
        reserved(Events,A), reserved(Events,B), reserved(Events,C),

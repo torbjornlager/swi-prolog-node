@@ -20,7 +20,9 @@ test(unknown_option_before_dispatch,
 test(boolean_options,
      [forall(member(Option,[link(ture),monitor(yes),link(1),monitor(0)]))]) :-
     catch(spawn(true,Pid,[Option]),Error,true),
-    assertion(Error=error(type_error(boolean,_),_)),assertion(var(Pid)).
+    arg(1,Option,Value),
+    (atom(Value) -> Formal=domain_error(boolean,Value);Formal=type_error(atom,Value)),
+    assertion(Error=error(Formal,_)),assertion(var(Pid)).
 test(variable_option_not_instantiated) :-
     catch(spawn(true,Pid,[Option]),Error,true),
     assertion(Error=error(instantiation_error,_)),assertion(var(Option)),assertion(var(Pid)).
@@ -32,9 +34,9 @@ test(non_list, [throws(error(type_error(list,bad),_))]) :- spawn(true,_,bad).
 test(partial_list) :-
     catch(spawn(true,Pid,[monitor(true)|Tail]),Error,true),
     assertion(Error=error(instantiation_error,_)),assertion(var(Tail)),assertion(var(Pid)).
-test(invalid_node, [throws(error(type_error(atom_or_string,17),_))]) :-
+test(invalid_node, [throws(error(type_error(atom,17),_))]) :-
     spawn(true,_,[node(17)]).
-test(all_duplicates_validated, [throws(error(type_error(boolean,bad),_))]) :-
+test(all_duplicates_validated, [throws(error(domain_error(boolean,bad),_))]) :-
     spawn(true,_,[monitor(false),monitor(bad)]).
 test(hook_extension) :-
     validate_spawn_options([spawn_validation_test(1)],public),

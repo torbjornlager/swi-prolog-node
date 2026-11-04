@@ -3,6 +3,7 @@
      spawn/2,                % :Goal, -Pid
      spawn/3,                % :Goal, -Pid, +Options
      spawn_with_name/4,      % :Goal, -Pid, +SpawnOptions, +WrapperOptions
+     validate_boolean/1,       % +Value (runtime composition API)
      validate_spawn_options/2, % +Options, +Scope (runtime composition API)
      validate_spawn_wrapper_options/4, % +Options, +Scope, +PI, +ExtraSpecs
      actors/1,               % -List of actors
@@ -113,6 +114,8 @@ Takeover-style (semidet; if a clause succeeds the core path is skipped):
     to be named, let alone imported.
   - hook_spawn_options(:Goal, +Options0, -Options): caller-side spawn
     option rewriting (node-layer policy).
+  - hook_spawn_sources(:Goal, +Options0, -Options): materialise source in
+    the caller after option validation and policy preparation.
   - hook_spawn_option(+Name, -Visibility, -Validator): declare an additional
     unary option, public or internal, with a module-qualified unary value
     validator. Validators succeed or throw on invalid values; they must not
@@ -178,6 +181,7 @@ Transactional triple (semidet prepare; commit/abort run via forall/2):
     hook_exit/2,
     hook_start_body/7,
     hook_spawn_options/3,
+    hook_spawn_sources/3,
     hook_spawn_option/3,
     hook_spawn_context/2,
     hook_monitor/3,
@@ -420,8 +424,8 @@ spawn_option_spec(Name, Visibility, Validator) :-
     ;   hook_spawn_option(Name, Visibility, Validator)
     ).
 
-core_spawn_option(link, public, error:must_be(boolean)).
-core_spawn_option(monitor, public, error:must_be(boolean)).
+core_spawn_option(link, public, actors:validate_boolean).
+core_spawn_option(monitor, public, actors:validate_boolean).
 core_spawn_option(target, public, error:must_be(nonvar)).
 core_spawn_option(io_target, public, error:must_be(nonvar)).
 core_spawn_option(node, public, actors:spawn_node_value).
@@ -429,9 +433,12 @@ core_spawn_option(monitor_target, internal, error:must_be(nonvar)).
 core_spawn_option(monitor_ref, internal, error:must_be(nonvar)).
 core_spawn_option(name_reservation, internal, error:must_be(nonvar)).
 
-spawn_node_value(Node) :-
-    must_be(nonvar, Node),
-    (atom(Node) -> true ; string(Node) -> true ; type_error(atom_or_string, Node)).
+validate_boolean(Value) :-
+    must_be(atom, Value),
+    ( Value == true -> true ; Value == false -> true
+    ; domain_error(boolean, Value) ).
+
+spawn_node_value(Node) :- must_be(atom, Node).
 
 spawn_local_activate(LocalPid, Pid, Goal, EffectiveOptions) :-
     self(Self),
@@ -571,9 +578,13 @@ spawn_prepare_context(Self, Options, Context) :-
     ).
 
 prepare_spawn_options(Goal, Options0, Options) :-
-    (   hook_spawn_options(Goal, Options0, Options1)
-    ->  Options = Options1
-    ;   Options = Options0
+    (   hook_spawn_options(Goal, Options0, PolicyOptions)
+    ->  true
+    ;   PolicyOptions = Options0
+    ),
+    (   hook_spawn_sources(Goal, PolicyOptions, Prepared)
+    ->  Options = Prepared
+    ;   Options = PolicyOptions
     ).
 
 

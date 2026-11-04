@@ -356,12 +356,12 @@ test(caller_module_goal_is_preserved, Solution == caller_module) :-
 
 
 test(invalid_on_fail,
-     throws(error(type_error(oneof([stop,continue]), maybe), _))) :-
+     throws(error(domain_error(first_solution_policy, maybe), _))) :-
     first_solution(_Solution, [true], [on_fail(maybe)]).
 
 
 test(invalid_on_error,
-     throws(error(type_error(oneof([stop,continue]), maybe), _))) :-
+     throws(error(domain_error(first_solution_policy, maybe), _))) :-
     first_solution(_Solution, [true], [on_error(maybe)]).
 
 

@@ -87,17 +87,39 @@ test(template_sharing_and_source_repetition) :-
 test(native_source_text_representations,
      [forall(member(Text,['p.',"p.",[112,46],[p,'.']]))]) :-
     rpc:validate_client_options(rpc,[src_text(Text)]).
-test(existing_timeout_conventions) :-
-    rpc:validate_client_options(rpc,[timeout(Unspecified),timeout(none),
-                                    timeout(-1),http_timeout(-1)]),
-    assertion(var(Unspecified)),
+test(numeric_timeout_conventions) :-
+    rpc:validate_client_options(rpc,[timeout(-1),http_timeout(-1)]),
+    catch(rpc:validate_client_options(rpc,[timeout(Unspecified)]),Error,true),
+    assertion(Error=error(instantiation_error,_)),assertion(var(Unspecified)),
+    catch(rpc:validate_client_options(rpc,[timeout(none)]),NoneError,true),
+    assertion(NoneError=error(type_error(number,none),_)),
     rpc:rpc_http_options([http_timeout(-1)],HTTP), assertion(HTTP==[timeout(0)]).
 test(transport_projection) :-
     rpc:rpc_http_options([limit(1),src_text('p.'),once(true),timeout(2),
         http_timeout(3),request_header(x='one'),request_header(y="two"),
         authorization(bearer(token)),user_agent('agent')], HTTP),
-    assertion(HTTP==[timeout(3),request_header(x='one'),request_header(y="two"),
-                     authorization(bearer(token)),user_agent('agent')]).
+    assertion(HTTP==[timeout(3),request_header(x='one'),request_header(y=two),
+                     request_header(authorization='Bearer token'),user_agent('agent')]).
+test(http_field_aliases_and_case_first_wins) :-
+    Options=[request_header('X-Test'=[f,i,r,s,t]),request_header('x-test'=later),
+             authorization(bearer(first)),request_header('AUTHORIZATION'=later),
+             request_header('User-Agent'=first),user_agent(later)],
+    rpc:validate_client_options(rpc,Options),rpc:rpc_http_options(Options,HTTP),
+    assertion(HTTP==[request_header('x-test'=first),
+        request_header(authorization='Bearer first'),user_agent(first)]).
+test(http_unicode_projection) :-
+    rpc:rpc_http_options([request_header(x='狐狸'),authorization(basic('räv','päss'))],HTTP),
+    atom_codes(Bytes,[231,139,144,231,139,184]),
+    assertion(HTTP==[request_header(x=Bytes),request_header(authorization='Basic csOkdjpww6Rzcw==')]).
+test(node_uri_path_prefix_is_preserved) :-
+    with_endpoint(Base,Requests,
+      (atom_concat(Base,'/prefix/',URI),
+       findall(X,rpc(URI,p(X),[http_timeout(1)]),[a,b]),
+       thread_get_message(Requests,Request),assertion(memberchk(path('/prefix/call'),Request)),
+       promise(URI,p(Y),Ref,[template(v(Y)),http_timeout(1)]),
+       yield(Ref,success([v(a),v(b)],false)),assertion(var(Y)),
+       thread_get_message(Requests,PromiseRequest),assertion(memberchk(path('/prefix/call'),PromiseRequest)))).
+
 test(rpc_http_headers_and_nondeterminism) :-
     with_endpoint(URI,Requests,
         (findall(X,rpc(URI,p(X),[limit(2),once(true),http_timeout(2),

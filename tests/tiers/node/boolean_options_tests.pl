@@ -3,6 +3,7 @@
 :- use_module('../../../prolog/web_prolog/node.pl', []).
 :- use_module('../../../prolog/web_prolog/actor_api.pl').
 :- use_module('../../../prolog/web_prolog/rpc.pl', []).
+:- use_module('../../../prolog/web_prolog/toplevel_actors.pl').
 :- use_module('../../../prolog/web_prolog/statechart_actor.pl').
 :- use_module(library(plunit)).
 
@@ -19,7 +20,7 @@ test(language_substitutes_rejected,
               member(Kind,[link,monitor,session,trace,rpc,promise])))]) :-
     test_boolean_options:boolean_goal(Kind,V,Goal),
     catch(call(Goal),E,true),assertion(nonvar(E)),
-    assertion((E=error(type_error(boolean,V),_);E=error(domain_error(boolean,V),_))).
+    assertion((E=error(type_error(atom,V),_);E=error(domain_error(boolean,V),_))).
 
 test(trace_transport_decodes_text_and_json,
      [forall(member(Input-Expected,[true-true,false-false,"true"-true,"false"-false,

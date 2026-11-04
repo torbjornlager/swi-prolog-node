@@ -115,10 +115,10 @@ test(all_remote_wrappers_publish_caller_alias,
 
 test(accepted_node_forms_retain_canonical_alias_semantics,
      [forall((member(Kind,[toplevel,server,supervisor,statechart]),
-              member(Form,[string,trailing_slash])))]) :-
+              member(Form,[atom,trailing_slash])))]) :-
     with_mock(ok,Name,Expected,_Events,
       (Expected=_@Node,
-       (Form==string -> atom_string(Node,Given);atom_concat(Node,'/',Given)),
+       (Form==atom -> Given=Node;atom_concat(Node,'/',Given)),
        invoke(Kind,Name,Given,Created),whereis(Name,Found),assertion(Found==Expected),
        distribution:deliver_remote_down_via_controller(Created,_{reason:"normal"}),
        whereis(Name,After),assertion(After==undefined),demonitor(Created,[flush]))).

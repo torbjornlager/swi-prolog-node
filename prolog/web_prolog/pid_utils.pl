@@ -50,15 +50,9 @@ localhost_node(Node) :-
 
 
 %!  node_url_atom(+Node0, -NodeURL) is det.
-node_url_atom(NodeURL, NodeURL) :-
-    atom(NodeURL),
-    !.
-node_url_atom(Node0, NodeURL) :-
-    string(Node0),
-    !,
-    atom_string(NodeURL, Node0).
-node_url_atom(Value, _) :-
-    must_be(nonvar, Value), type_error(atom_or_string, Value).
+node_url_atom(Input, NodeURL) :-
+    must_be(atom, Input),
+    NodeURL = Input.
 
 
 %!  normalize_node_url(+Node0, -Node) is det.
