@@ -260,7 +260,8 @@ test(real_remote_wrappers_publish_and_retire_aliases,
          (whereis(Name,Found),assertion(Found==Pid),
           assertion(\+actors:spawn_name_reservation(_,_,Name,_,_,_)),
           exit(Pid,named_test_done),
-          receive({down(Pid,Pid,named_test_done) -> true},[timeout(3),on_timeout(fail)]),
+          receive({down(Pid,Pid,Reason) -> assertion(Reason == named_test_done)},
+                  [timeout(3),on_timeout(throw(missing_named_down(Kind,Pid)))]),
           whereis(Name,After),assertion(After==undefined)),
          (unregister(Name),exit(Pid,kill))))).
 
