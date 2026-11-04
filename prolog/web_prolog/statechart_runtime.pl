@@ -57,6 +57,7 @@ statechart actor interpreter. The runtime state itself lives in
 :- use_module(supervisor_actor, [supervisor_spawn/3]).
 
 :- use_module(library(option)).
+:- use_module(library(sort), [predsort/3]).
 :- use_module(library(debug)).
 :- use_module(isolation, [execution_source_module/2]).
 :- use_module(control_guard, []).

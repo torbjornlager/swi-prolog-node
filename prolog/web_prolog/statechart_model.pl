@@ -22,6 +22,14 @@ The generated model facts are asserted into `statechart_actor`.
     sxml_validate_stream/2,
     sxml_validate_text/2
 ]).
+% A chart may be terminated immediately after spawn. Resolve SGML's lazy
+% option imports before actor execution: interruption during first-use
+% autoload can otherwise leave its module without select_option/3.
+:- sgml:use_module(library(option), [select_option/3, merge_options/3]).
+:- sgml:use_module(library(lists), [member/2, selectchk/3]).
+:- sgml:use_module(library(error), [instantiation_error/1]).
+:- sgml:use_module(library(iostream), [open_any/5, close_any/1]).
+
 :- use_module(source_utils, [
     uri_atom/2,
     open_source_uri/2
