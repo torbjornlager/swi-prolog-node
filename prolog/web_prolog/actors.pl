@@ -1538,13 +1538,19 @@ receive(Clauses, Options) :-
     ).
 
 receive(Mailbox, Clauses, Options) :-
-    (   selectchk(timeout(Seconds), Options, Rest),
-        Seconds > 0
-    ->  get_time(Now),
-        Deadline is Now + Seconds,
-        receive_scan(Mailbox, Clauses, [deadline(Deadline)|Rest], Options)
-    ;   receive_scan(Mailbox, Clauses, Options, Options)
-    ).
+    validate_receive_wait_options(Mailbox, Options),
+    (   selectchk(timeout(Seconds), Options, WithoutTimeout)
+    ->  exclude(receive_deadline_option, WithoutTimeout, Rest),
+        (   Seconds > 0
+        ->  get_time(Now), Deadline is Now + Seconds,
+            GetOptions = [deadline(Deadline)|Rest]
+        ;   GetOptions = [timeout(Seconds)|Rest]
+        )
+    ;   GetOptions = Options
+    ),
+    receive_scan(Mailbox, Clauses, GetOptions, Options).
+
+receive_deadline_option(deadline(_)).
 
 % Keep one deadline throughout the scan: unrelated arrivals do not restart
 % the wait. Preserve timeout(0), whose queue-inspection semantics differ
@@ -1594,9 +1600,7 @@ receive_message(Mailbox, Msg, Options, Ref) :-
 % options and their native validation rather than introducing a second scanner.
 % Resolve any relative native timeout once, before the first bounded wait.
 receive_wait_options(Mailbox, Options, Deadline, WaitOptions) :-
-    must_be(list, Options),
-    append(Options, [deadline(-1)], ValidationOptions),
-    (thread_get_message(Mailbox, _, ValidationOptions) -> true ; true),
+    validate_receive_wait_options(Mailbox, Options),
     get_time(Now),
     findall(T, member(timeout(T), Options), Timeouts),
     findall(D, member(deadline(D), Options), Deadlines),
@@ -1608,6 +1612,11 @@ receive_wait_options(Mailbox, Options, Deadline, WaitOptions) :-
     (Deadlines == [] -> Absolute=infinite ; last(Deadlines, Absolute)),
     receive_wait_deadline(Relative, Absolute, Now, Deadline),
     exclude(receive_time_option, Options, WaitOptions).
+
+validate_receive_wait_options(Mailbox, Options) :-
+    must_be(list, Options),
+    append(Options, [deadline(-1)], ValidationOptions),
+    (thread_get_message(Mailbox, _, ValidationOptions) -> true ; true).
 
 receive_time_option(timeout(_)).
 receive_time_option(deadline(_)).
