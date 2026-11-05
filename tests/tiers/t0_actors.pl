@@ -304,6 +304,21 @@ test(receive_zero_timeout_scans_queued_messages,
    receive({queued_match -> true}, [timeout(Zero), on_timeout(fail)]),
    receive({timeout_noise -> true}, [timeout(Zero), on_timeout(fail)]).
 
+test(receive_relative_timeout_overrides_expired_deadline,
+     [forall(member(Order,[relative_first,absolute_first]))]) :-
+   self(Self), get_time(Now), Past is Now-1,
+   send(Self, relative_wins, [delay(0.02)]),
+   (Order==relative_first -> Limits=[timeout(1),deadline(Past)]
+   ; Limits=[deadline(Past),timeout(1)]),
+   receive({relative_wins -> Result=message},
+           [on_timeout(Result=expired)|Limits]),
+   assertion(Result==message).
+
+test(receive_zero_timeout_overrides_expired_deadline) :-
+   self(Self), Self ! zero_wins, get_time(Now), Past is Now-1,
+   receive({zero_wins -> true},
+           [deadline(Past),timeout(0),on_timeout(fail)]).
+
 test(receive_without_timeout_preserves_unmatched_messages) :-
    self(Self),
    Self ! timeout_noise,
