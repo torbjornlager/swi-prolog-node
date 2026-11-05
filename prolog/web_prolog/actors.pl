@@ -883,11 +883,15 @@ self_local(Self) :-
 
 :- dynamic monitor/3.
 
-monitor(Name, Ref) :-
+monitor(Target, Ref) :-
+    must_be(nonvar, Target),
+    monitor_target(Target, Ref).
+
+monitor_target(Name, Ref) :-
     current_registered(Name, Pid),
     !,
-    monitor(Pid, Ref).
-monitor(Pid, Ref) :-
+    monitor_target(Pid, Ref).
+monitor_target(Pid, Ref) :-
     self(Self),
     canonical_pid(Pid, CanonPid),
     forall(hook_check_monitor(CanonPid), true),
@@ -930,6 +934,8 @@ demonitor(Ref) :-
 
 demonitor(Ref, Options) :-
     must_be(ground, Ref),
+    must_be(list, Options),
+    maplist(validate_demonitor_option, Options),
     self(Self),
     with_mutex(actors_monitor_lifecycle,
         (   (   retract(monitor(Self, _, Ref))
@@ -941,6 +947,10 @@ demonitor(Ref, Options) :-
     ->  flush_monitor_down(Ref)
     ;   true
     ).
+
+validate_demonitor_option(Option) :-
+    must_be(nonvar, Option),
+    (Option == flush -> true ; domain_error(demonitor_option, Option)).
 
 flush_monitor_down(Ref) :-
     receive({
