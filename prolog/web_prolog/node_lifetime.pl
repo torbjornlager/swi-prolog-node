@@ -5,7 +5,7 @@
     admit_actor/2, sample_actor_cpu/1, forget_actor/1, deliver_message/3, message_consumed/0,
     command_context/2, with_wire_context/4, connection_owns/2,
     node_log_output/1, current_owner_context/1, rehome_options/2,
-    with_websocket_lease/2
+    with_websocket_lease/2, close_namespace_routes/1
 ]).
 
 /** <module> Principal subtrees and delegated lineage
@@ -38,8 +38,10 @@ on authenticated node transports; browser-supplied lineage is rejected.
 :- setting(principal_cpu_window, number, 60, 'CPU accounting window in seconds').
 
 :- dynamic actor_owner/2, mailbox_count/2, principal_lineage/3,
-           delegated_route/3, cpu_sample/2, cpu_account/4, cpu_watcher/3.
+           delegated_route/3, delegation_context/3, namespace_account/3,
+           actor_client_namespace/2, cpu_sample/2, cpu_account/4, cpu_watcher/3.
 :- thread_local owner_context/1, connection_spawn/0.
+:- multifile hook_lineage_closed/2.
 :- dynamic lease_active/1.
 :- meta_predicate with_owner_context(+, +, +, 0), with_connection_spawn(0),
                   with_wire_context(+, +, +, 0), with_websocket_lease(+, 0).
@@ -61,7 +63,7 @@ with_owner_context(Principal, Carrier, Lineage0, Goal) :-
         (cpu_account(Scope, Id, _, _) -> true;
          get_time(Now), assertz(cpu_account(Scope, Id, Now, 0)))),
     (   Lineage0 == local
-    ->  with_mutex(node_lineage, lineage_for(Scope, tree(Id, Carrier), Lineage))
+    ->  client_lineage(Scope, Id, Carrier, Lineage)
     ;   Lineage = Lineage0
     ),
     (principal_has_capability(Principal, admin) -> Owner = true; Owner = false),
@@ -89,6 +91,13 @@ prune_accounts :-
               Now - Start >= W, \+ actor_owner(_, ctx(S, Id, _, _, _))),
              (retractall(cpu_account(S, Id, _, _)),
               with_mutex(node_lineage, retractall(principal_lineage(S, account(Id), _)))))).
+
+% Resource accounting stays principal-wide; a fresh HTTP interaction does not.
+client_lineage(_, _, http_call, Token) :- !, fresh_lineage(Token).
+client_lineage(Scope, Id, Carrier, Token) :-
+    with_mutex(node_lineage, lineage_for(Scope, tree(Id, Carrier), Token)).
+fresh_lineage(Token) :-
+    crypto_n_random_bytes(16, Bytes), phrase(hex_bytes(Bytes), Cs), atom_codes(Token, Cs).
 
 lineage_for(Scope, Id, Token) :- principal_lineage(Scope, Id, Token), !.
 lineage_for(Scope, Id, Token) :-
@@ -128,7 +137,8 @@ actor_key(Pid, Key) :- actors:canonical_pid(Pid, Key).
 check_exit(Pid) :-
     (   current_owner_context(ctx(Scope, Id, Lineage, false, Carrier))
     ->  actor_key(Pid, Key),
-        (   actor_owner(Key, ctx(Scope, Id, Lineage, false, Carrier))
+        (   (actor_owner(Key, ctx(Scope, Id, Lineage, false, Carrier))
+            ;current_public_execution_namespace(NS),actor_client_namespace(Key,NS))
         ->  true
         ;   local_to_scope(Scope, Key),
             \+ actors:resolve_actor_thread(Key, _), \+ actor_owner(Key, _)
@@ -156,6 +166,7 @@ admit_actor(LocalPid, Options) :-
     with_mutex(node_subtree,
         (   check_actor_capacity(Context),
             assertz(actor_owner(Key, Context)),
+            remember_actor_namespace(Key),
             assertz(mailbox_count(Key, 0))
         )),
     ensure_cpu_watcher(Context).
@@ -199,6 +210,7 @@ forget_actor(Pid) :-
         (   findall(Context, actor_owner(Key, Context), Contexts),
             charge_actor(Key),
             retractall(actor_owner(Key, _)),
+            retractall(actor_client_namespace(Key,_)),
             with_mutex(node_mailboxes, retractall(mailbox_count(Key, _))),
             retractall(cpu_sample(Key, _))
         )),
@@ -244,26 +256,63 @@ message_consumed :-
         )).
 
 command_context(Command0, Command) :-
-    current_owner_context(ctx(Scope, Id, Lineage, _, _)),
+    current_owner_context(Context), Context=ctx(Scope, Id, Lineage, _, _),
     atom(Lineage), Lineage \== node,
-    (   Id = delegated(_, Account)
-    ->  true
-    ;   with_mutex(node_lineage, lineage_for(Scope, account(Id), Account))
-    ),
-    put_dict(_{lineage:Lineage, account:Account}, Command0, Command).
+    (Id = delegated(_, Account) -> true
+    ;with_mutex(node_lineage,lineage_for(Scope,account(Id),Account))),
+    put_dict(_{lineage:Lineage, account:Account},Command0,WithAccount),
+    (   current_public_execution_namespace(NS)
+    ->  (node_execution_context:client_lineage(Scope,KnownOrigin,Lineage,NS)
+         -> Origin=KnownOrigin
+         ;pid_utils:self_node_url(Origin),
+          node_execution_context:bind_client_lineage(Scope,Origin,Lineage,NS)),
+        with_mutex(node_subtree,
+            (namespace_account(Scope,NS,_) -> true;assertz(namespace_account(Scope,NS,Id))))
+    ;   node_execution_context:client_lineage(Scope,KnownOrigin,Lineage,_)
+    ->  Origin=KnownOrigin
+    ;   true),
+    (nonvar(Origin) -> put_dict(context_origin,WithAccount,Origin,Command)
+    ;Command=WithAccount).
 
 with_wire_context(Dict, Queue, Principal, Goal) :-
-    (   get_dict(lineage, Dict, Token0)
-    ->  (principal_has_capability(Principal, internal_transport) -> true;
-         throw(error(permission_error(use, transport_lineage, Token0), _))),
-        wire_token(Token0, Token),
-        (get_dict(account, Dict, Account0) -> wire_token(Account0, Account); Account = Token),
-        principal_id(Principal, Peer),
-        scope(Scope),
-        with_public_execution_namespace(ws_lineage(Queue, Token),
-            with_context(ctx(Scope, delegated(Peer, Account), Token, false, Queue), Goal))
-    ;   with_owner_context(Principal, Queue, local, Goal)
-    ).
+    (   get_dict(lineage,Dict,Token0)
+    ->  require_context_transport(Principal,Token0),wire_token(Token0,Token),
+        (get_dict(account,Dict,Account0) -> wire_token(Account0,Account);Account=Token),
+        (get_dict(context_origin,Dict,Origin0)
+        -> wire_origin(Origin0,Origin),
+           with_wire_lineage(Dict,Queue,Principal,Origin,Token,Account,Goal)
+        ;scope(Scope),principal_id(Principal,Peer),
+         with_public_execution_namespace(ws_lineage(Queue,Token),
+             with_context(ctx(Scope,delegated(Peer,Account),Token,false,Queue),Goal)))
+    ;   node_execution_context:connection_context(Queue,_,Origin,Token-Account)
+    ->  require_context_transport(Principal,Token),
+        with_wire_lineage(Dict,Queue,Principal,Origin,Token,Account,Goal)
+    ;   with_owner_context(Principal,Queue,local,Goal)).
+
+require_context_transport(Principal,Value) :-
+    (principal_has_capability(Principal,internal_transport) -> true
+    ;throw(error(permission_error(use,transport_lineage,Value),_))).
+wire_origin(Value, Origin) :-
+    (atom(Value) -> Origin=Value;string(Value) -> atom_string(Origin,Value)),
+    (sub_atom(Origin,0,_,_,'http://');sub_atom(Origin,0,_,_,'https://')), !.
+wire_origin(Value, _) :- throw(error(domain_error(transport_context_origin,Value),_)).
+
+with_wire_lineage(Dict,Queue,_Principal,Origin,Token,Account,Goal) :-
+    scope(Scope),pid_utils:self_node_url(Local),
+    (get_dict(command,Dict,Command),memberchk(Command,[lineage_close,"lineage_close"])
+    -> Mode=close;Mode=open),
+    node_execution_context:resolve_client_lineage(Scope,Local,Origin,Token,Queue,Mode,NS),
+    (get_dict(context_default,Dict,true)
+    -> node_execution_context:bind_connection_context(Queue,Scope,Origin,Token-Account);true),
+    (Origin==Local,namespace_account(Scope,NS,OriginalId) -> Id=OriginalId
+    ;Id=delegated(Origin,Account),
+     with_mutex(node_subtree,
+         (namespace_account(Scope,NS,Stored)
+         -> (Stored==Id -> true;throw(error(permission_error(rebind,client_account,Token),_)))
+         ;assertz(namespace_account(Scope,NS,Id))))),
+    with_public_execution_namespace(NS,
+        with_context(ctx(Scope,Id,Token,false,Queue),Goal)).
+
 wire_token(Token0, Token) :-
     (   (atom(Token0); string(Token0)), atom_string(Token, Token0),
         atom_length(Token, 32), atom_codes(Token, Cs), maplist(hex_code, Cs)
@@ -391,8 +440,13 @@ lease_pings(Socket, Interval, Mutex) :-
 remember_remote(Pid) :-
     current_owner_context(Context), !,
     actor_key(Pid, Key),
-    with_mutex(node_subtree, assertz(actor_owner(Key, Context))).
+    with_mutex(node_subtree,
+        (assertz(actor_owner(Key, Context)),remember_actor_namespace(Key))).
 remember_remote(_).
+remember_actor_namespace(Key) :-
+    (current_public_execution_namespace(NS),
+     actor_owner(Key,ctx(_,_,Lineage,_,_)),Lineage \== node
+    -> assertz(actor_client_namespace(Key,NS));true).
 
 check_term(Term) :- policy_limit(max_term_depth, Depth), check_depth(Term, Depth).
 
@@ -400,12 +454,18 @@ check_term(Term) :- policy_limit(max_term_depth, Depth), check_depth(Term, Depth
 % disappears during that wait, lineage reclamation reaches the receiver even
 % though the source never learned the newly created pid.
 remember_route(Node) :-
-    current_owner_context(ctx(Scope, _, Lineage, false, _)), !,
+    current_owner_context(ctx(Scope, _, Lineage, _, _)),
+    atom(Lineage),Lineage \== node,!,
     with_mutex(node_lineage_routes,
-        (delegated_route(Scope, Lineage, Node) -> true;
-         assertz(delegated_route(Scope, Lineage, Node)))).
+        ((delegated_route(Scope, Lineage, Node) -> true;
+          assertz(delegated_route(Scope, Lineage, Node))),
+         (delegation_context(Scope,Lineage,_) -> true
+         ;current_owner_context(C),assertz(delegation_context(Scope,Lineage,C))))).
 remember_route(_).
 
+reclaim_unused_lineage(ctx(Scope,_,Lineage,false,_)) :-
+    node_execution_context:client_lineage(Scope,_,Lineage,NS),
+    node_execution_context:client_namespace_status(NS,open), !.
 reclaim_unused_lineage(Context) :-
     Context = ctx(Scope, _, Lineage, false, _),
     with_mutex(node_subtree,
@@ -417,6 +477,7 @@ reclaim_unused_lineage(Context) :-
         retractall(actor_owner(_, ctx(Scope, _, Lineage, false, _)))),
     with_mutex(node_lineage,
         retractall(principal_lineage(Scope, tree(_, _), Lineage))),
+    forall(hook_lineage_closed(Scope, Lineage), true),
     forall(member(Node, Nodes),
         catch(with_context(Context,
                   in_scope(Scope, distribution:remote_send_command(
@@ -431,9 +492,27 @@ in_scope(_, Goal) :- call(Goal).
 
 reclaim_lineage(Queue) :-
     current_owner_context(ctx(_, _, Lineage, false, Queue)),
-    (   current_public_execution_namespace(ws_lineage(Queue, Token))
-    ->  node_execution_context:close_client_namespace(ws_lineage(Queue, Token))
+    (   current_public_execution_namespace(NS),
+        (NS=ws_lineage(Queue,_);NS=delegated_context(_))
+    ->  node_execution_context:close_client_namespace(NS)
     ;   true
     ),
     findall(Pid, actor_owner(Pid, ctx(_, _, Lineage, false, Queue)), Pids),
     forall(member(Pid, Pids), actors:exit(Pid, kill)).
+
+% Context closure retires delegated work independently of the last local actor.
+% This runs after registry admission is closed and outside its mutex.
+close_namespace_routes(NS) :-
+    findall(S-O-T,node_execution_context:client_lineage(S,O,T,NS),Bindings),
+    forall(member(Scope-Origin-Token,Bindings),
+        (with_mutex(node_lineage_routes,
+             (findall(Node,retract(delegated_route(Scope,Token,Node)),Nodes),
+              (retract(delegation_context(Scope,Token,C)) -> Context=C
+              ;Context=ctx(Scope,node,Token,false,none)))),
+         forall(member(Node,Nodes),
+             catch(with_context(Context,in_scope(Scope,
+                 distribution:remote_send_command(Node,
+                     _{command:lineage_close,lineage:Token,context_origin:Origin}))),_,true)),
+         (in_scope(Scope,pid_utils:self_node_url(Origin))
+         -> node_execution_context:forget_client_lineage(Scope,Origin,Token);true))),
+    retractall(namespace_account(_,NS,_)).

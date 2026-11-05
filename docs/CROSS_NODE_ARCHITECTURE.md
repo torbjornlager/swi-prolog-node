@@ -1307,12 +1307,17 @@ implements the wire protocol of §4 byte-for-byte.
 
 ## Principal lineage and lifetime policy
 
-Updated node peers attach `lineage` and `account` (128-bit token strings) to
-commands. Ownership and registries use the receiving connection plus lineage;
+Updated node peers attach `lineage` and `account` (128-bit token strings), plus
+`context_origin` (the origin node URI), to commands. Ownership and registries use
+the origin and server-issued context token across transport attachments;
 quotas charge the delegated principal account across its lineages. The transport
 peer must be trusted to delegate that account. Browsers cannot set these fields.
-Older peers that omit them retain one ownership scope per connection and cannot
-claim lineage isolation.
+Returning descendants rejoin the original namespace. Missing origin-local tokens
+are rejected after closure. Older peers without `context_origin` retain
+connection-scoped lineage identity. Dedicated transports may bind
+`context_default:true` during their authenticated hello; later commands inherit
+the immutable origin, token, and account binding. Delegation grants no
+administrator authority.
 
 Language sends remain open, subject to node policy. Public actor termination
 requires ownership; monitor removal requires the installing actor. Host thread
@@ -1330,8 +1335,10 @@ Retries of effectful work need an application idempotency key or equivalent
 duplicate suppression.
 
 A delegated route is recorded before waiting for a spawn acknowledgement. When
-the last locally hosted actor in a lineage ends, `lineage_close` reclaims that
-lineage at the peer, including spawns whose pid has not yet been acknowledged.
+the retained client context closes, `lineage_close` reclaims its delegated work
+at the peer, including spawns whose pid has not yet been acknowledged. Ending
+one local actor does not close an open retained context. Returning transport
+attachments cannot close the original client namespace.
 Spawn commands carry a fresh decimal-string `request_id`, echoed on `spawned`
 and spawn-error responses, so a late reply to an abandoned request cannot
 satisfy a subsequent spawn. Older peers may omit this correlation field; they

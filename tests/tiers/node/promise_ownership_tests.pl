@@ -143,21 +143,14 @@ test(foreign_caller_does_not_learn_that_an_owner_is_already_collecting) :-
           (rpc:promise_transaction(rpc:dispose_promise_locked(Key)),thread_join(Thread,_))),
         message_queue_destroy(Events)))).
 
-test(authenticated_http_requests_share_principal_but_not_other_principals) :-
-    with_pending_for_http("alice",Ref,Key),
-    setup_call_cleanup(true,
-      (in_http(19101,"bob",(foreign_yield(Ref),promise_cleanup(Ref))),
-       in_http(19102,"alice",foreign_yield(Ref)),
-       in_http(19101,"alice",collect(Key,Ref))),
-      rpc:promise_transaction(rpc:dispose_promise_locked(Key))).
-
-test(anonymous_http_requests_have_distinct_owners,
-     [forall(member(Id,[anonymous,"anon:per-ip-or-connection-id"]))]) :-
-    with_pending_for_http(Id,Ref,Key),
-    setup_call_cleanup(true,
+test(fresh_http_requests_have_distinct_owners_and_cleanup_at_retirement,
+     [forall(member(Id,["alice",anonymous,"anon:per-ip-or-connection-id"]))]) :-
+    in_http(19101,Id,with_pending(Ref,Key,
       (in_http(19101,Id,(foreign_yield(Ref),promise_cleanup(Ref))),
-       assertion(rpc:promise_state(Key,_,_,_,_,_,_))),
-      rpc:promise_transaction(rpc:dispose_promise_locked(Key))).
+       assertion(rpc:promise_state(Key,_,_,_,_,_,_)),collect(Key,Ref)))),
+    with_pending_for_http(Id,Retired,RetiredKey),
+    in_http(19101,Id,foreign_yield(Retired)),
+    assertion(\+rpc:promise_state(RetiredKey,_,_,_,_,_,_)).
 
 test(namespace_teardown_disposes_promises_and_rejects_late_creation) :-
     NS=ws_client(ended_promise_namespace),
@@ -236,7 +229,7 @@ test(teardown_preserves_other_namespace_node_http_and_trusted_promises) :-
                  in_namespace(19101,NS,foreign_yield(Ref)),
                  in_namespace(19102,NS,collect(NodeKey,NodeRef)),
                  in_namespace(19101,ws_client(other_promise_owner),collect(OtherKey,OtherRef)),
-                 in_http(19101,"alice",collect(HttpKey,HttpRef)),
+                 collect(HttpKey,HttpRef),
                  assertion(rpc:promise_state(LocalKey,_,_,_,_,_,trusted_local)))
               )
             )
@@ -328,10 +321,8 @@ test(public_clients_cannot_collect_trusted_local_promises) :-
       (in_namespace(19101,ws_client(public),(foreign_yield(Ref),promise_cleanup(Ref))),collect(Key,Ref))).
 
 test(trusted_local_context_cannot_collect_or_dispose_client_promises) :-
-    with_pending_for_http("alice",Ref,Key),
-    setup_call_cleanup(true,
-      (foreign_yield(Ref),promise_cleanup(Ref),in_http(19101,"alice",collect(Key,Ref))),
-      rpc:promise_transaction(rpc:dispose_promise_locked(Key))).
+    in_http(19101,"alice",with_pending(Ref,Key,
+      ((thread_create((foreign_yield(Ref),promise_cleanup(Ref)),T,[]),thread_join(T,true)),collect(Key,Ref)))).
 
 test(missing_identity_cannot_borrow_an_outer_http_owner_frame) :-
     in_http(19101,"alice",with_pending(Ref,Key,

@@ -162,4 +162,40 @@ test(explicit_lineage_closure_blocks_reentry_only_for_that_lineage) :-
        node_lifetime:with_wire_context(_{lineage:B},Q,Peer,test_namespace_teardown:register_remote(other)),
        client_namespace_status(NS,Status),assertion(Status==open))).
 
+test(context_identity_survives_transport_changes) :-
+    with_connection(Q1,_,with_connection(Q2,_,
+      (resolve_client_lineage(test_scope,'http://local','http://origin',token,Q1,open,NS),
+       resolve_client_lineage(test_scope,'http://local','http://origin',token,Q2,open,Again),
+       assertion(NS==Again),
+       close_client_connection(Q1),assertion(client_namespace_status(NS,open)),
+       close_client_connection(Q2),assertion(client_namespace_status(NS,closed)),
+       assertion(\+client_lineage(test_scope,'http://origin',token,_))))).
+
+test(returning_attachment_rejoins_root_without_owning_its_lifetime) :-
+    with_namespace(Root,with_connection(Q,_,
+      (bind_client_lineage(test_scope,'http://origin',return_token,Root),
+       resolve_client_lineage(test_scope,'http://origin','http://origin',return_token,Q,open,Returned),
+       assertion(Returned==Root),close_client_connection(Q),
+       assertion(client_namespace_status(Root,open)),
+       forget_client_lineage(test_scope,'http://origin',return_token)))).
+
+test(closed_origin_cannot_be_recreated_by_returning_transport) :-
+    with_connection(Q,_,
+      (catch(resolve_client_lineage(test_scope,'http://origin','http://origin',unknown,Q,open,_),E,true),
+       assertion(E=error(permission_error(use,closed_client_context,unknown),_)))).
+
+test(closure_before_first_spawn_blocks_late_context_admission) :-
+    with_connection(Q,_,
+      (resolve_client_lineage(test_scope,'http://local','http://foreign',early,Q,close,NS),
+       close_client_namespace(NS),
+       catch(resolve_client_lineage(test_scope,'http://local','http://foreign',early,Q,open,_),E,true),
+       assertion(E=error(permission_error(use,closed_client_context,NS),_)))).
+
+test(default_transport_binding_cannot_be_rebound) :-
+    with_connection(Q,_,
+      (bind_connection_context(Q,test_scope,'http://origin',token-account),
+       bind_connection_context(Q,test_scope,'http://origin',token-account),
+       catch(bind_connection_context(Q,test_scope,'http://origin',other-account),E,true),
+       assertion(E=error(permission_error(rebind,client_context,Q),_)))).
+
 :- end_tests(namespace_teardown).

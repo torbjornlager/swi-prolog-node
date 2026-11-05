@@ -288,8 +288,8 @@ promise_client_owner(Owner) :-
     ->  (ground(Namespace)
         -> node_lifetime:scope(Scope), Owner = client_namespace(Scope,Namespace)
         ;  Owner = unavailable)
-    ;   Context = some(ctx(Scope,Id,_,_,http_call))
-    ->  (ground(Scope-Id) -> Owner = http_client(Scope,Id); Owner = unavailable)
+    ;   Context = some(ctx(Scope,_,Lineage,_,http_call))
+    ->  (ground(Scope-Lineage) -> Owner = http_client(Scope,Lineage); Owner = unavailable)
     ;   current_public_execution_profile(_)
     ->  Owner = unavailable
     ;   Context = some(ctx(_,_,_,false,_))
@@ -454,3 +454,11 @@ check_public_rpc_header(Name) :-
        'x-web-prolog-caps','x-web-prolog-internal-proxy','x-web-prolog-query-budget'])
     -> throw(error(permission_error(set,proxy_header,Name),context(rpc/3,'proxy identity headers are reserved')))
     ;true).
+
+:- multifile node_lifetime:hook_lineage_closed/2.
+node_lifetime:hook_lineage_closed(Scope, Lineage) :-
+    rpc:dispose_promises_for_owner(http_client(Scope,Lineage)).
+
+:- multifile node_execution_context:hook_namespace_closed_after/1.
+node_execution_context:hook_namespace_closed_after(NS) :-
+    node_lifetime:close_namespace_routes(NS).

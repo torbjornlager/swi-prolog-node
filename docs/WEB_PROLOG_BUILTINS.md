@@ -915,9 +915,13 @@ Composition uses `rpc:hook_promise_owner/1`; the independent RPC library default
 to trusted local sharing. Ownership is unchanged by timeout, interruption or
 retry. Definitive teardown of a WebSocket, HTTP interactive-session, or
 delegated-lineage namespace now disposes of its promises on that node. Closing
-a connection also sweeps every delegated namespace belonging to it. Ordinary
-request completion, bookkeeping replacement, and termination of one toplevel
-in an open shared WebSocket namespace do not trigger this disposal.
+the final foreign transport attachment also retires its delegated context;
+a returning attachment cannot retire the origin client namespace. Fresh HTTP
+requests have distinct promise owners even when authenticated as the same
+principal, and their unretained producer retirement disposes of their promises.
+Cached producers preserve their original context while paging. Bookkeeping
+replacement and termination of one toplevel in an open shared WebSocket
+namespace do not trigger namespace disposal.
 
 Surviving actors remain alive, but their old references become unavailable,
 and creation under the closed namespace raises
