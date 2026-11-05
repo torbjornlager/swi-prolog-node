@@ -59,15 +59,12 @@ solution_limit(Options, Limit) :-
 
 %!  runtime_property(?Property) is nondet.
 %
-%   Describe host properties outside the portable Web Prolog profile
-%   contract. Portable code should not need these; applications may inspect
-%   them before relying on persistence, inbound addressability, DOM access,
-%   or a particular actor-isolation mechanism.
-runtime_property(implementation(swi_native)).
+%   Enumerate the language-defined capabilities of this environment.
+%   Diagnostic endpoints and deployment metadata identify the host engine.
 runtime_property(persistent(true)).
 runtime_property(inbound_addressable(true)).
 runtime_property(dom(false)).
-runtime_property(actor_isolation(native_thread)).
+runtime_property(actor_isolation(independent)).
 runtime_property(hard_termination(true)).
 
 :- meta_predicate
