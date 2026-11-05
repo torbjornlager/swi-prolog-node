@@ -8,8 +8,8 @@
 
 /** <module> RELATION Query Policy
 
-RELATION nodes do not accept arbitrary Prolog goals. They answer only
-advertised query patterns over `/call`.
+RELATION nodes do not accept arbitrary Prolog goals. They answer advertised
+query patterns and the public read-only node_setting/2 relation over `/call`.
 
 This module is for Prolog-backed RELATION nodes in this codebase. A
 non-Prolog RELATION node would implement the same `/call` contract outside
@@ -82,9 +82,9 @@ relation_check_load_text(LoadText0) :-
     ).
 
 
-%   A RELATION query may be a single advertised relation OR a CONJUNCTION
-%   of advertised relations (a relational join over the published schema):
-%   each conjunct must itself be advertised.  Only `,/2` composes them —
+%   A RELATION query may be a single served relation OR a CONJUNCTION
+%   of served relations (a relational join over the published schema):
+%   each conjunct must be advertised or be node_setting/2. Only `,/2` composes them —
 %   disjunction, if-then, negation, and any unadvertised predicate are
 %   refused, so this admits joins without admitting arbitrary goals.
 relation_check_goal(Goal) :-
@@ -106,6 +106,9 @@ relation_check_goal(Goal) :-
     ).
 
 
+% Family/profile and sandbox checks still run after this admission filter.
+% Do not bind the caller's key/value while admitting the read-only relation.
+relation_goal_allowed(node_setting(_,_)) :- !.
 relation_goal_allowed(Goal) :-
     relation_patterns(Patterns),
     member(Pattern0, Patterns),
