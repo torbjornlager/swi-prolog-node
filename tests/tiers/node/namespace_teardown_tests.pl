@@ -198,4 +198,27 @@ test(default_transport_binding_cannot_be_rebound) :-
        catch(bind_connection_context(Q,test_scope,'http://origin',other-account),E,true),
        assertion(E=error(permission_error(rebind,client_context,Q),_)))).
 
+test(browser_closes_only_its_own_scopes_without_stopping_actors) :-
+    with_connection(Q,One,with_connection(_,Two,with_actor(Pid,
+      setup_call_cleanup(assertz(node_ws:ws_browser_pid_scope(Q)),
+        (with_public_execution_namespace(One,register(alias,Pid)),
+         with_public_execution_namespace(Two,register(alias,Pid)),
+         Principal=principal{id:"browser-test",capabilities:[execute],unknown:false},
+         node_ws:ws_action(context_close,_{request_id:"closed"},Q,Principal),
+         thread_get_message(Q,context_closed(closed),[timeout(1)]),
+         lookup(One,alias,undefined),lookup(Two,alias,Pid),
+         assertion(actors:resolve_actor_thread(Pid,_)),
+         catch(node_ws:ws_require_open_context(Q),Error,true),
+         assertion(Error=error(permission_error(create,closed_client_context,One),_)),
+         node_ws:ws_action(context_close,_{request_id:"again"},Q,Principal),
+         thread_get_message(Q,context_closed(again),[timeout(1)])),
+        retractall(node_ws:ws_browser_pid_scope(Q)))))).
+
+test(unnegotiated_context_close_does_not_retire_scope) :-
+    with_connection(Q,NS,
+      (Principal=principal{id:"browser-test",capabilities:[execute],unknown:false},
+       catch(node_ws:ws_action(context_close,_{request_id:"denied"},Q,Principal),E,true),
+       assertion(E=error(permission_error(use,browser_context,context_close),_)),
+       assertion(client_namespace_status(NS,open)))).
+
 :- end_tests(namespace_teardown).

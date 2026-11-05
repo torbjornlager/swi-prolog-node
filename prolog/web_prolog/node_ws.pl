@@ -575,9 +575,14 @@ ws_relay_message(WebSocket, transport_welcome(Version,AnswerTerms)) :-
         protocol:"web_prolog_browser_actor",
         io_ack:true,
         browser_pids:true,
+        context_close:true,
         answer_terms:AnswerTerms,
         version:Version
     }, []),
+    ws_send(WebSocket, text(Text)).
+
+ws_relay_message(WebSocket, context_closed(RequestId)) :-
+    atom_json_dict(Text, json{type:"context_closed",request_id:RequestId}, []),
     ws_send(WebSocket, text(Text)).
 
 ws_relay_message(WebSocket, browser_io_request(Ref, Event)) :-
@@ -672,6 +677,14 @@ ws_action(lineage_close, _, Queue, Principal) :-
     node_lifetime:reclaim_lineage(Queue).
 ws_action(toplevel_spawn, Dict, Queue, Principal) :-
     ws_action_toplevel_spawn(Dict, Queue, Principal).
+ws_action(context_close, Dict, Queue, Principal) :-
+    require_ws_command_access(Principal, context_close),
+    ws_get_string(Dict, request_id, RequestId),
+    (ws_browser_pid_scope(Queue) -> true;
+     throw(error(permission_error(use,browser_context,context_close),_))),
+    once(node_execution_context:namespace_connection(Queue,Namespace)),
+    node_execution_context:close_client_namespace(Namespace),
+    thread_send_message(Queue,context_closed(RequestId)).
 ws_action(transport_hello, Dict, Queue, _Principal) :-
     ws_action_transport_hello(Dict, Queue).
 ws_action(io_request, Dict, Queue, Principal) :-
@@ -742,6 +755,7 @@ ws_action_transport_hello(Dict, Queue) :-
 %   Spawn a new toplevel actor targeting the connection queue.
 ws_action_toplevel_spawn(Dict, Queue, Principal) :-
     require_ws_command_access(Principal, toplevel_spawn),
+    ws_require_open_context(Queue),
     effective_profile_for_route(ws, EffectiveProfile),
     ws_parse_spawn_options(Dict, UserOptions),
     toplevel_actors:validate_toplevel_spawn_options(UserOptions, public),
@@ -942,6 +956,7 @@ ws_action_toplevel_respond(Dict, Queue, Principal) :-
 %   Spawn a bare actor with its goal, targeting the connection queue.
 ws_action_spawn(Dict, Queue, Principal) :-
     require_ws_command_access(Principal, spawn),
+    ws_require_open_context(Queue),
     effective_profile_for_route(ws, EffectiveProfile),
     ws_get_term_string(Dict, goal, GoalAtom0),
     atom_string(GoalAtom, GoalAtom0),
@@ -1477,6 +1492,12 @@ ws_send_command_reply(Queue, Dict, Reply) :-
     (is_dict(Dict), get_dict(request_id, Dict, Id)
     -> thread_send_message(Queue, spawn_reply(Id, Reply))
     ; thread_send_message(Queue, Reply)).
+
+ws_require_open_context(Queue) :-
+    (node_execution_context:namespace_connection(Queue,NS),
+     node_execution_context:client_namespace_status(NS,closed)
+    -> throw(error(permission_error(create,closed_client_context,NS),_))
+    ; true).
 
 ws_send_error(Queue, Error) :-
     thread_send_message(Queue, error(Error)).

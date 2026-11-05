@@ -1385,3 +1385,28 @@ monitor notifications. These messages still consume accounting space until
 received or flushed. Term depth measures nesting, with an entire flat list
 counting as one level; long lists remain subject to message and input size
 limits.
+
+### Browser context retirement
+
+Browser transport welcome messages advertise `context_close:true`. A negotiated
+browser may send `{"command":"context_close","request_id":"opaque-id"}`.
+The server derives the namespace from that connection, retires its ordinary names
+and promises, and responds with
+`{"type":"context_closed","request_id":"opaque-id"}`. The command takes no
+namespace selector. Supplying delegated lineage fields still requires the
+separate `internal_transport` capability; ordinary browser execution cannot use
+this command to select another client's scope.
+
+Retirement is idempotent and does not terminate existing actors or close the
+socket. Existing actor interactions remain available, while new `spawn` and
+`toplevel_spawn` requests are rejected before source preparation or allocation.
+Queued creation is checked again at the receiver's preparation boundary. Actor
+termination and transport shutdown retain their separate lifetime rules.
+
+The browser closes local admission synchronously and returns a promise for peer
+acknowledgements. An unsupported peer, timeout or connection loss rejects that
+promise; it is not a successful remote retirement certificate. A closed browser
+context cannot open a replacement transport and silently acquire fresh scopes.
+A handshake already in progress may finish only to retire the native scope;
+pending creation is not dispatched afterward. Browser `dispose()` separately
+closes transports and reclaims actors, without waiting for remote confirmation.
