@@ -254,3 +254,20 @@ Every occurrence is validated before source work; the first field with a given
 case-insensitive name wins across all option forms. Field values use UTF-8 bytes. Basic credentials use UTF-8
 then Base64. RPC fields apply to every page and never to source downloads.
 Reserved proxy identity fields are rejected. Caller access policy still applies.
+
+
+The Appendix B library extension in `standard_library.pl` supplies
+`maplist/6-8` and `countall/2` to isolated actor and stateless query modules.
+Callbacks retain the caller's private source module and the node's normal
+sandbox checks. T1 tests the lower-layer private-source path; T4 tests both
+sandbox modes through real HTTP calls. The shared conformance selection also
+covers list/index relations, integer relations, `maplist/2-8`, `foldl/4-6`,
+`call_nth/2`, `countall/2` and `forall/2`. This is development qualification;
+consumer pins and public nodes are unchanged.
+
+Library callbacks validate callable values when invoked. Uninstantiated values
+raise `instantiation_error`; invalid values raise `type_error(callable, Value)`
+with the original culprit. Empty iteration and vacuous `forall` tests leave unused
+callbacks alone, and application exceptions propagate unchanged. ISO `call/N`
+keeps the underlying runtime's existing error contract. The shared fixture
+includes exact callback errors for every required `maplist` and `foldl` arity.

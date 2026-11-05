@@ -102,6 +102,7 @@ actor-coupled.
     append_source_text/3
 ]).
 :- use_module(control_guard, []).
+:- use_module(standard_library, []).
 
 :- multifile
     prepare_module/3,
@@ -380,6 +381,7 @@ shadowing_empty_dynamic(Module, SharedModule, Name, Arity) :-
 
 
 import_actor_api(Module) :-
+    add_import_module(Module, standard_library, end),
     ActorModule = actors,
     (   current_module(ActorModule)
     ->  add_import_module(Module, ActorModule, start)

@@ -8098,6 +8098,19 @@ test(isobase_yield_timeout_callback_is_sandboxed) :-
          with_mutex(promise_lifecycle,
              assertion(\+ rpc:promise_state(_,_,_,_,_,_,http_client(node_port(Port),_)))))).
 
+test(standard_library_closures_retain_sandbox_checks,
+     [forall(member(Mode,[blacklist,whitelist]))]) :-
+    with_node_server_options([profile(actor),sandbox(Mode)], URI,
+        ( json_call_url_with_load_text(URI,
+              'maplist(eq7,[a],[a],[a],[a],[a],[a],[a]),countall(member(X,[a,b]),N),N==2,var(X)',
+              "eq7(X,X,X,X,X,X,X).",Positive),
+          read_json_answer(Positive,Good), assertion(Good.type=="success"),
+          forall(member(Goal,
+              ['maplist(open,[no_such_file],[read],[_])',
+               'countall(open(no_such_file,read,_),_)']),
+              (call_url(URI,Goal,true,0,1,'',none,URL),read_answer(URL,Error),
+               assertion(Error=error(error(permission_error(_,_,_),_))))) )).
+
 test(whitelist_yield_inspects_timeout_callback) :-
     with_sandbox_mode(whitelist,
         (sandbox_check_goal_in_module(isobase,test_node,

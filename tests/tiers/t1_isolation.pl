@@ -127,6 +127,15 @@ test(src_list, Msg == ready) :-
        on_timeout(fail)
    ]).
 
+% The required library remains available below the node layer, and callbacks
+% resolve in the actor's private source rather than in the library module.
+test(required_library_private_callbacks) :-
+   self(Self),
+   spawn(run(Self), Pid, [monitor(true),src_text(
+       "eq7(X,X,X,X,X,X,X). run(P):-maplist(eq7,[a,b],[a,b],[a,b],[a,b],[a,b],[a,b],[a,b]),countall(member(X,[a,b,a]),N),var(X),send(P,library_count(N)).")]),
+   receive({library_count(N) -> assertion(N==3)},[timeout(2),on_timeout(fail)]),
+   receive({down(Pid,Pid,true) -> true},[timeout(2),on_timeout(fail)]).
+
 test(src_text, Msg == hello_from_text) :-
    self(Self),
    spawn(run(Self), _Pid, [
