@@ -70,6 +70,7 @@ http_status(URL, Status) :-
 :- use_module('node/remote_named_creation_tests.pl', []).
 :- use_module('node/toplevel_correlation_transport_tests.pl', []).
 :- use_module('node/namespace_teardown_tests.pl', []).
+:- use_module('node/remote_demonitor_race_tests.pl', []).
 :- user:load_files('node/generic_actor_tests.pl', []).
 :- use_module('node/node_tests.pl', []).
 :- user:load_files('node/actor_remote_exit_failure.plt', []).
@@ -87,7 +88,7 @@ tier_test_units([ http_identity, lifetime_authority, node, public_goal_guard, su
                 wrapper_options,
                 supervisor_child_specs,
                 server_promise_cleanup, supervisor_request_cleanup, supervisor_startup, supervisor_restart, supervisor_intensity, supervisor_startup_ownership, supervisor_restart_ownership, worker_scope, worker_ownership_cleanup, zero_poll_accounting,
-                named_creation, remote_alias_cleanup, remote_named_creation, namespace_teardown,
+                remote_demonitor_races, named_creation, remote_alias_cleanup, remote_named_creation, namespace_teardown,
                 node_assets,
                 goal_walker,
                 generic_actor_api,
