@@ -278,7 +278,8 @@ node_execution_context:hook_namespace_closed(Namespace) :-
     rpc:dispose_promises_for_owner(client_namespace(Scope,Namespace)).
 node_execution_context:hook_connection_closed(Queue) :-
     node_lifetime:scope(Scope),
-    rpc:dispose_promises_for_owner(client_namespace(Scope,ws_lineage(Queue,_))).
+    rpc:dispose_promises_for_owner(client_namespace(Scope,ws_lineage(Queue,_))),
+    node_lifetime:reclaim_connection_lineages(Queue).
 
 promise_client_owner(Owner) :-
     % Resolve the innermost owner frame before matching its carrier; querying

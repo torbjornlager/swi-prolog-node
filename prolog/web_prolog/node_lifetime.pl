@@ -5,7 +5,7 @@
     admit_actor/2, sample_actor_cpu/1, forget_actor/1, deliver_message/3, message_consumed/0,
     command_context/2, with_wire_context/4, connection_owns/2,
     node_log_output/1, current_owner_context/1, rehome_options/2,
-    with_websocket_lease/2, close_namespace_routes/1
+    with_websocket_lease/2, close_namespace_routes/1, reclaim_connection_lineages/1
 ]).
 
 /** <module> Principal subtrees and delegated lineage
@@ -463,6 +463,12 @@ remember_route(Node) :-
          ;current_owner_context(C),assertz(delegation_context(Scope,Lineage,C))))).
 remember_route(_).
 
+% A browser connection owns its local lineage even while no actors are live.
+% In particular, retirement of the old toplevel must not invalidate a context
+% already acquired by a concurrent replacement command on that connection.
+reclaim_unused_lineage(ctx(Scope,Id,Lineage,false,Queue)) :-
+    node_execution_context:namespace_connection(Queue,_),
+    with_mutex(node_lineage,principal_lineage(Scope,tree(Id,Queue),Lineage)), !.
 reclaim_unused_lineage(ctx(Scope,_,Lineage,false,_)) :-
     node_execution_context:client_lineage(Scope,_,Lineage,NS),
     node_execution_context:client_namespace_status(NS,open), !.
@@ -483,6 +489,15 @@ reclaim_unused_lineage(Context) :-
                   in_scope(Scope, distribution:remote_send_command(
                       Node, _{command:lineage_close}))), _, true)).
 reclaim_unused_lineage(_).
+
+% Closing an idle connection has no actor-retirement callback to release the
+% retained mapping. Live actors keep theirs until their normal retirement.
+reclaim_connection_lineages(Queue) :-
+    scope(Scope),
+    with_mutex(node_lineage,
+        findall(ctx(Scope,Id,Lineage,false,Queue),
+                principal_lineage(Scope,tree(Id,Queue),Lineage),Contexts)),
+    maplist(reclaim_unused_lineage,Contexts).
 
 local_to_scope(Scope, Pid) :- in_scope(Scope, pid_utils:pid_local(Pid, _)).
 :- meta_predicate in_scope(+, 0).
