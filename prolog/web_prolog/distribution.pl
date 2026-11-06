@@ -714,7 +714,8 @@ log_remote_exit_failure(Node, Pid, ReasonAtom, Error, Terminal) :-
                 *******************************/
 
 toplevel_actors:hook_toplevel_spawn(RemotePid@NodeURL, SourceModule, Options) :-
-    option(node(NodeURL), Options),
+    option(node(Node0), Options),
+    node_url_atom(Node0, NodeURL),
     \+ localhost_node(NodeURL),
     !,
     (option(name(Name),Options)

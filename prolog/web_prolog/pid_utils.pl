@@ -50,17 +50,19 @@ localhost_node(Node) :-
 
 
 %!  node_url_atom(+Node0, -NodeURL) is det.
+%
+%   Normalize node identity before transport credential/cache lookup and PID
+%   construction. Source/document URI paths use source_utils:uri_atom/2.
 node_url_atom(Input, NodeURL) :-
-    must_be(atom, Input),
-    NodeURL = Input.
+    normalize_node_url(Input, NodeURL).
 
 
 %!  normalize_node_url(+Node0, -Node) is det.
 normalize_node_url(Node0, Node) :-
-    node_url_atom(Node0, Node1),
-    (   sub_atom(Node1, _, 1, 0, '/')
-    ->  sub_atom(Node1, 0, _, 1, Node)
-    ;   Node = Node1
+    must_be(atom, Node0),
+    (   sub_atom(Node0, _, 1, 0, '/')
+    ->  sub_atom(Node0, 0, _, 1, Node)
+    ;   Node = Node0
     ).
 
 

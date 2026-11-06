@@ -43,6 +43,11 @@ test(canonical_text,[forall(member(Input-Expected,['http://example/x?y=%2F'-'htt
     source_utils:uri_atom(Input,Source),assertion(Source==Expected),
     pid_utils:node_url_atom(Input,Node),assertion(Node==Expected),
     rpc:resolve_rpc_uri(Input,RPC),assertion(RPC==Expected),assertion(atom(RPC)).
+test(node_identity_normalization_preserves_source_uri) :-
+    URI='https://example.org/',
+    pid_utils:node_url_atom(URI,Node),assertion(Node=='https://example.org'),
+    source_utils:uri_atom(URI,Source),assertion(Source==URI),
+    pid_utils:normalize_node_url(Node,Again),assertion(Again==Node).
 test(invalid_destinations_before_source,[forall((member(V,[42,1.5,foo(bar),"https://example.org",localhost:3053,host:bad,[104,116,116,112],[h,t,t,p]]),member(Kind,[rpc,promise])))]) :-
     test_uri_options:with_endpoint(Base,Q,
       (atom_concat(Base,'/source',Source),
