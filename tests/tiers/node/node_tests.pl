@@ -3264,6 +3264,39 @@ test(ws_origin_cross_origin_rejected,
         origin("https://evil.example.com")
     ]).
 
+test(ws_origin_normalization_accepts_explicit_and_implicit_default_ports) :-
+    forall(member(A-B, [
+        'https://partner.example.com:443'-"https://partner.example.com",
+        "https://partner.example.com"-'https://partner.example.com:443',
+        'http://partner.example.com:80'-"http://partner.example.com",
+        "http://partner.example.com"-'http://partner.example.com:80'
+    ]),
+      ( node_ws:normalize_origin_text(A, Normalized),
+        node_ws:normalize_origin_text(B, Normalized) )).
+
+test(ws_origin_normalization_preserves_nondefault_ports) :-
+    node_ws:normalize_origin_text('https://partner.example.com:444', A),
+    node_ws:normalize_origin_text("https://partner.example.com", B),
+    assertion(A \== B).
+
+test(ws_origin_allowlist_uses_normalized_startup_settings) :-
+    pick_free_port(Port),
+    setup_call_cleanup(
+        node(Port, [profile(actor),
+                    ws_allowed_origins(['https://partner.example.com'])]),
+        with_node_port_context(Port,
+            ( current_node_value(ws_allowed_origins, Origins),
+              assertion(Origins == ['https://partner.example.com:443']),
+              node_ws:ws_require_allowed_origin([
+                  host("another.example.com"), x_forwarded_proto("https"),
+                  origin("https://partner.example.com")]),
+              catch(node_ws:ws_require_allowed_origin([
+                  host("another.example.com"), x_forwarded_proto("https"),
+                  origin("https://partner.example.com:444")]), Error, true),
+              assertion(nonvar(Error)),
+              assertion(Error = error(permission_error(open, websocket_origin, _), _)) )),
+        stop_node_server(Port)).
+
 test(ws_origin_allowlist_accepts_listed_origin) :-
     setup_call_cleanup(
         (
