@@ -97,6 +97,9 @@ publish_session_prompt(Pid, Queue, correlated(Ref), Prompt) :-
 clear_isotope_prompt(Pid0) :-
     session_pid_key(Pid0, Pid),
     with_mutex(isotope_prompts, retractall(isotope_pending_prompt(Pid, _))).
+:- multifile actors:hook_terminal_stream/1.
+
+actors:hook_terminal_stream(Queue) :- node_session:isotope_session(_, Queue).
 
 
 %  Notify an HTTP ISOTOPE queue when a session ends by itself (notably after

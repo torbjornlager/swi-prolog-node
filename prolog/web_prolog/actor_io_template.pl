@@ -49,7 +49,7 @@ nl :-
     actors:terminal_output("\n", [source(io)]).
 
 write(Term) :-
-    actor_term_output(Term).
+    actor_term_output(Term, io).
 
 writeq(Term) :-
     system:format(string(String), '~q', [Term]),
@@ -60,19 +60,19 @@ write_term(Term, Options) :-
     actors:terminal_output(String, [source(io)]).
 
 writeln(Term) :-
-    actor_term_output(Term).
+    actor_term_output(Term, io_line).
 
 % A character list is a term here, while prompts/format results are text.
 % Render it before the terminal bridge can apply its character-list text
 % conversion. Retain the existing atom/string/structured-message payloads
 % for other arguments, including variable sharing and partial lists.
-actor_term_output(Term) :-
+actor_term_output(Term, Source) :-
     ( is_list(Term),
       forall(member(Char, Term), (atom(Char), atom_length(Char, 1)))
     -> system:format(string(Output), '~q', [Term])
     ; Output = Term
     ),
-    actors:terminal_output(Output, [source(io)]).
+    actors:terminal_output(Output, [source(Source)]).
 
 print(Term) :-
     system:format(string(String), '~p', [Term]),

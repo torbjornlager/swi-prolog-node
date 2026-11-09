@@ -98,9 +98,15 @@ answer_to_json(terminal_io_output(Pid, timing_report(Data)),
     json_pid_value(Pid, JsonPid),
     prompt_to_json_string(Data, DataString).
 answer_to_json(terminal_io_output(Pid, Data),
-               json{type:output, pid:JsonPid, data:DataString}) :-
+               json{type:output, pid:JsonPid, data:DataString, stdout:Text}) :-
     json_pid_value(Pid, JsonPid),
-    terminal_output_to_json_string(Data, DataString).
+    (   nonvar(Data), Data = '$terminal_stream'(Source, Term)
+    ->  true
+    ;   Source = io, Term = Data
+    ),
+    output_to_json_string(Term, Raw),
+    ( Source == io_line -> string_concat(Raw, "\n", Text) ; Text = Raw ),
+    terminal_output_to_json_string(Term, DataString).
 answer_to_json(terminal_output(Pid, timing_report(Data)),
                json{type:output, pid:JsonPid, data:DataString, kind:"timing"}) :-
     json_pid_value(Pid, JsonPid),

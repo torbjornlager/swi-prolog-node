@@ -182,6 +182,9 @@ distribution:hook_terminal_delivery(Queue, '$input_prompt'(Pid, Mode, Prompt)) :
 actors:hook_prompt_relay('$browser_io'(_)).
 actors:hook_prompt_relay(Queue) :- node_ws:ws_connection_meta(Queue, _).
 
+:- multifile actors:hook_terminal_stream/1.
+actors:hook_terminal_stream('$browser_io'(_)).
+actors:hook_terminal_stream(Queue) :- node_ws:ws_connection_meta(Queue, _).
 
 actors:hook_send('$browser_io'(Queue), Message) :-
     !,
