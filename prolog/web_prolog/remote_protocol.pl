@@ -6,6 +6,7 @@
     ws_json_down_reason/2,
     ws_json_is_io_output/1,
     ws_json_to_actor_event/3,
+    prompt_reference_from_wire/2,
     reify_json_row/2
 ]).
 
@@ -25,7 +26,7 @@ The protocol itself is specified in docs/CROSS_NODE_ARCHITECTURE.md.
 
 :- use_module(actors, [transportable_term/1]).
 :- use_module(wire_text, [term_to_wire_text/2, terms_to_wire_texts/2,
-                          wire_text_to_term/2]).
+                          wire_text_to_term/2, wire_read_options/1]).
 
 %!  protocol_version(-Version) is det.
 %
@@ -132,13 +133,17 @@ ws_json_to_actor_event(Dict, CompoundPid, output(CompoundPid, Term)) :-
         )
     ;   Term = ''
     ).
-ws_json_to_actor_event(Dict, CompoundPid, prompt(CompoundPid, Prompt)) :-
+ws_json_to_actor_event(Dict, CompoundPid, prompt(CompoundPid, Payload)) :-
     get_dict(type, Dict, "prompt"),
     !,
     (   get_dict(data, Dict, PromptStr)
-    ->  atom_string(Prompt, PromptStr)
+    ->  string(PromptStr), atom_string(Prompt, PromptStr)
     ;   Prompt = ''
-    ).
+    ),
+    get_dict(prompt_ref, Dict, RefText),
+    prompt_reference_from_wire(RefText, Ref),
+    Payload = prompt_ref(Ref, Prompt).
+
 ws_json_to_actor_event(Dict, CompoundPid, stop(CompoundPid)) :-
     get_dict(type, Dict, "stop"),
     !.
@@ -149,6 +154,20 @@ ws_json_to_actor_event(Dict, CompoundPid, responded(CompoundPid)) :-
     get_dict(type, Dict, "responded"),
     !.
 
+
+% The reference occupies the entire field. term_string/2 alone also accepts
+% a valid first term followed by another term after a full stop.
+prompt_reference_from_wire(Text, Ref) :-
+    string(Text),
+    string_concat(Text, "\n.", Source),
+    wire_read_options(Options),
+    setup_call_cleanup(open_string(Source, Stream),
+        ( catch(read_term(Stream, Ref, Options), error(syntax_error(_), _), fail),
+          at_end_of_stream(Stream)
+        ),
+        close(Stream)),
+    ground(Ref),
+    transportable_term(Ref).
 
 canonical_answer("success", Dict, Pid, Rows, success(Pid, Rows, More)) :-
     is_list(Rows),

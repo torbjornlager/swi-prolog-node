@@ -42,7 +42,7 @@ Architecture per connection:
     exit/2,
     monitor/2,
     demonitor/1,
-    respond/2,
+    respond/3,
     make_id/1,
     actor_module/2,
     op(200, xfx, @)
@@ -58,6 +58,7 @@ Architecture per connection:
 :- use_module(node_response, [answer_to_json/2]).
 :- use_module(actors, [transportable_term/1]).
 :- use_module(wire_text, [term_to_wire_text/2]).
+:- use_module(remote_protocol, [prompt_reference_from_wire/2]).
 :- use_module(node_ip_policy, [ip_access_denied/1]).
 :- use_module(node_log, [
     request_client_meta/3,
@@ -138,7 +139,7 @@ Architecture per connection:
 :- use_module(distribution, [
     is_io_endpoint/1,
     deliver_io_endpoint/2,
-    respond_io_prompt/3,
+    respond_io_prompt/4,
     forget_io_endpoints_for_target/1
 ]).
 
@@ -151,6 +152,7 @@ Architecture per connection:
 
 %   ws_actor(Queue, Pid) — track actors spawned on this connection.
 :- dynamic ws_actor/2.
+:- dynamic ws_pending_prompt/3.
 :- dynamic ws_actor_owner/2.
 :- dynamic ws_actor_kind/2.
 :- dynamic ws_connection_meta/2.
@@ -168,8 +170,18 @@ Architecture per connection:
 :- at_halt(assertz(node_ws:ws_process_halting)).
 
 :- multifile distribution:hook_terminal_delivery/2.
+:- multifile distribution:hook_terminal_prompt_queue/2.
+distribution:hook_terminal_prompt_queue('$browser_io'(Queue), Queue).
 distribution:hook_terminal_delivery('$browser_io'(Queue), Message) :-
     node_ws:browser_terminal_delivery(Queue, Message).
+distribution:hook_terminal_delivery(Queue, '$input_prompt'(Pid, Mode, Prompt)) :-
+    node_ws:ws_connection_meta(Queue, _),
+    thread_send_message(Queue, '$input_prompt'(Pid, Mode, Prompt)).
+
+:- multifile actors:hook_prompt_relay/1.
+actors:hook_prompt_relay('$browser_io'(_)).
+actors:hook_prompt_relay(Queue) :- node_ws:ws_connection_meta(Queue, _).
+
 
 actors:hook_send('$browser_io'(Queue), Message) :-
     !,
@@ -528,6 +540,18 @@ answer_term_text(error(_Pid, Error), Text) :-
 
 % Queue-targeted correlated answers use additive metadata. Native actor
 % targets receive the same envelope through the ordinary actor-term transport.
+ws_relay_message(WebSocket, Queue, '$input_prompt'(Pid, correlated(Ref), Prompt)) :- !,
+    ws_pid_key(Pid, Key),
+    retractall(ws_pending_prompt(Queue, Key, _)),
+    assertz(ws_pending_prompt(Queue, Key, Ref)),
+    ws_relay_message(WebSocket, '$input_prompt'(Pid, correlated(Ref), Prompt)).
+ws_relay_message(WebSocket, Queue, abort(Pid)) :- !,
+    ws_forget_prompt(Queue, Pid),
+    ws_relay_message(WebSocket, abort(Pid)).
+ws_relay_message(WebSocket, Queue, down(Pid, Ref, Reason)) :- !,
+    ws_forget_prompt(Queue, Pid),
+    ws_relay_message(WebSocket, down(Pid, Ref, Reason)).
+
 ws_relay_message(WebSocket, _Queue, '$toplevel_reply'(Ref, Answer)) :-
     !,
     answer_to_json(Answer, JSON0),
@@ -547,9 +571,19 @@ ws_relay_message(WebSocket, Queue, Message) :-
 ws_relay_message(WebSocket, _Queue, Message) :-
     ws_relay_message(WebSocket, Message).
 
+ws_forget_prompt(Queue, Pid) :-
+    ws_pid_key(Pid, Key),
+    retractall(ws_pending_prompt(Queue, Key, _)).
+
 ws_relay_message(WebSocket, spawn_reply(RequestId, Message)) :- !,
     answer_to_json(Message, JSON0),
     put_dict(request_id, JSON0, RequestId, JSON),
+    atom_json_dict(Text, JSON, []), ws_send(WebSocket, text(Text)).
+ws_relay_message(WebSocket, '$input_prompt'(Pid, correlated(Ref), Prompt)) :- !,
+    answer_to_json(prompt(Pid, Prompt), JSON0),
+    term_to_wire_text(Ref, RefAtom),
+    atom_string(RefAtom, RefText),
+    put_dict(prompt_ref, JSON0, RefText, JSON),
     atom_json_dict(Text, JSON, []), ws_send(WebSocket, text(Text)).
 ws_relay_message(WebSocket, Message) :-
     answer_to_json(Message, JSON),
@@ -927,13 +961,22 @@ ws_action_toplevel_respond(Dict, Queue, Principal) :-
     ws_get_pid(Dict, Pid),
     ws_get_term_string(Dict, input, InputString),
     ws_read_term(input, InputString, Input),
-    (   respond_io_prompt(Queue, Pid, Input)
-    ->  true
-    ;   ws_require_owned_session(Queue, Principal, Pid),
-        with_isotope_session_public_execution_profile(Pid,
-                                                      respond(Pid, Input))
-    ),
-    thread_send_message(Queue, responded(Pid)).
+    (   ws_prompt_reply_ref(Dict, Ref),
+        (   respond_io_prompt(Queue, Pid, correlated(Ref), Input)
+        ->  true
+        ;   ws_pid_key(Pid, Key),
+            ws_pending_prompt(Queue, Key, Ref),
+            ws_require_owned_session(Queue, Principal, Pid),
+            with_isotope_session_public_execution_profile(Pid, respond(Pid, Ref, Input))
+        )
+    ->  thread_send_message(Queue, responded(Pid))
+    ;   thread_send_message(Queue, error(Pid, invalid_prompt_ref))
+    ).
+
+ws_prompt_reply_ref(Dict, Ref) :-
+    get_dict(prompt_ref, Dict, Text),
+    check_term_text_size(prompt_ref, Text),
+    prompt_reference_from_wire(Text, Ref).
 
 
                 /*******************************
@@ -1002,14 +1045,26 @@ ws_action_io_request(Dict, Queue, Principal) :-
     ws_read_term(message, MessageString, Message),
     (   get_dict(request_id, Dict, _)
     ->  ws_get_string(Dict, request_id, RequestId),
-        (   catch(deliver_io_endpoint(Token, Message), _, fail)
+        (   catch(deliver_ws_io_endpoint(Dict, Token, Message), _, fail)
         ->  Status = ok
         ;   Status = endpoint_unavailable
         ),
         thread_send_message(Queue, io_reply(RequestId, Status))
     ;   % Older senders did not request acknowledgement.
-        ignore(deliver_io_endpoint(Token, Message))
+        ignore(deliver_ws_io_endpoint(Dict, Token, Message))
     ).
+
+deliver_ws_io_endpoint(Dict, Token, Message) :-
+    ( get_dict(prompt_mode, Dict, Kind) ->
+        terminal_wire_prompt(Kind, Message, Event)
+    ; Event = Message
+    ),
+    deliver_io_endpoint(Token, Event).
+
+terminal_wire_prompt("correlated", prompt(Pid, prompt_ref(Ref, Prompt)),
+                     '$input_prompt'(Pid, correlated(Ref), Prompt)) :-
+    ground(Ref),
+    transportable_term(Ref).
 
 %!  ws_action_send(+Dict, +Queue, +Principal) is det.
 %
@@ -1266,6 +1321,7 @@ ws_cleanup(Queue, RelayThread, ConnectionMeta) :-
     ->  true
     ;   catch(thread_join(RelayThread, _), _, true)
     ),
+    retractall(ws_pending_prompt(Queue, _, _)),
     retractall(ws_connection_meta(Queue, _)),
     retractall(ws_answer_terms(Queue)),
     retractall(ws_browser_connection(_, Queue)),

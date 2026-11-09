@@ -220,7 +220,8 @@ builtin_goal_policy(output(_), actor_io, actor).
 builtin_goal_policy(output(_, _), actor_io, actor).
 builtin_goal_policy(input(_, _), actor_io, actor).
 builtin_goal_policy(input(_, _, _), actor_io, actor).
-builtin_goal_policy(respond(_, _), actor_io, actor).
+builtin_goal_policy(respond(_, _, _), actor_io, actor).
+builtin_goal_policy(retarget_prompt(_, _, _), actor_io, actor).
 
 builtin_goal_policy(toplevel_spawn(_), toplevel, actor).
 builtin_goal_policy(toplevel_spawn(_, _), toplevel, actor).
@@ -428,7 +429,7 @@ builtin_family_spec(actor_io,
                     "Actor I/O",
                     "Expose actor-level conversational output and prompt messages.",
                     ["output/1", "output/2", "input/2", "input/3",
-                     "respond/2"],
+                     "respond/3", "retarget_prompt/3"],
                     [actor]).
 builtin_family_spec(toplevel,
                     "Toplevel sessions",

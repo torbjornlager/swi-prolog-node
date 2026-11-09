@@ -164,13 +164,15 @@ Design notes:
     admin_terminate_isotope_session/2,
     set_isotope_session_trace/2,
     wait_for_session_event/4,
+    wait_for_session_event/5,
+    abort_isotope_session/4,
     ensure_isotope_ready/3,
     with_isotope_session_public_execution_profile/2
 ]).
 :- use_module(node_isotope_controller, [
     isotope_spawn_event/5,
     isotope_call_event/11,
-    isotope_respond_event/3,
+    isotope_respond_event/4,
     parse_isotope_wait_request/5
 ]).
 :- use_module(node_http_identity, [with_http_identity/2, with_query_owner/2]).
@@ -751,6 +753,7 @@ node_controller_isotope_respond_1(Request) :-
     http_parameters(Request, [
         pid(Pid0, [atom]),
         input(InputAtom, [atom]),
+        prompt_ref(SubmittedRef, [atom, optional(true)]),
         format(Format, [atom, default(json)])
     ]),
     check_term_text_size(input, InputAtom),
@@ -768,7 +771,7 @@ node_controller_isotope_respond_1(Request) :-
         Principal,
         Format,
         LogContext,
-        isotope_respond_authorized_event(Principal, Pid, InputAtom),
+        isotope_respond_authorized_event(Principal, Pid, SubmittedRef, InputAtom),
         pid_error_mapper(Pid)
     ).
 
@@ -1889,9 +1892,9 @@ isotope_trace_authorized_event(Principal, Pid, Enabled, Event) :-
     Event = responded(Pid).
 
 
-isotope_respond_authorized_event(Principal, Pid, InputAtom, Event) :-
+isotope_respond_authorized_event(Principal, Pid, SubmittedRef, InputAtom, Event) :-
     authorize_isotope_session_access(Principal, toplevel_respond, Pid),
-    isotope_sequenced(Pid, isotope_respond_event(Pid, InputAtom), Event).
+    isotope_sequenced(Pid, isotope_respond_event(Pid, SubmittedRef, InputAtom), Event).
 
 
 %!  isotope_sequenced(+Pid, :EventGoal, -Event) is det.
@@ -1991,11 +1994,9 @@ isotope_next_event(Pid, Timeout, LimitSpec, Event) :-
     profile_check_route(toplevel_next),
     isotope_session_queue(Pid, Queue),
     isotope_next_options(LimitSpec, Queue, Options),
-    with_isotope_session_public_execution_profile(
-        Pid,
-        toplevel_next(Pid, Options)
-    ),
-    wait_for_session_event(Pid, Queue, Timeout, Event),
+    wait_for_session_event(Pid, Queue, Timeout,
+        with_isotope_session_public_execution_profile(Pid, toplevel_next(Pid, Options)),
+        Event),
     capture_answer_bindings(Event).
 
 isotope_next_options(inherit, Queue, [target(Queue)]) :-
@@ -2022,26 +2023,7 @@ isotope_abort_event(Pid, Event) :-
     %  An abort must reach the toplevel inside its PTCP boundary, which a
     %  freshly spawned session may not have entered yet.
     ensure_isotope_ready(Pid, Queue, Timeout),
-    toplevel_abort(Pid, Queue),
-    get_time(Now),
-    Deadline is Now + Timeout,
-    await_abort_ack(Pid, Queue, Deadline, Event).
-
-%   Events queued before the toplevel's abort(Pid) acknowledgement belong to
-%   the aborted query and are discarded; the acknowledgement is the reply.
-%   If the toplevel does not acknowledge in time (it may be unwinding), the
-%   reply is timeout(Pid) and the acknowledgement arrives with a later poll.
-await_abort_ack(Pid, Queue, Deadline, Event) :-
-    (   thread_get_message(Queue, Message, [deadline(Deadline)])
-    ->  (   Message = abort(_)
-        ->  Event = abort(Pid)
-        ;   Message = down(_, _, _)
-        ->  node_session:session_pid_key(Pid, SessionPid),
-            node_session:session_message_event(SessionPid, Message, Event)
-        ;   await_abort_ack(Pid, Queue, Deadline, Event)
-        )
-    ;   Event = timeout(Pid)
-    ).
+    abort_isotope_session(Pid, Queue, Timeout, Event).
 
 %!  node_image_page(+Request) is det.
 %
