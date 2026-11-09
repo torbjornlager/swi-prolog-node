@@ -1,4 +1,5 @@
 :- module(wire_text, [
+    check_portable_wire_term/1,
     term_to_wire_text/2,        % @Term, -Atom
     terms_to_wire_texts/2,      % @Terms, -Atoms
     wire_text_to_term/2,        % +Text, -Term
@@ -42,9 +43,27 @@ term_to_wire_text(Term, Atom) :-
 %   gets the same name in each text, so reading the texts together, for
 %   example as `(Goal)+(Template)`, restores the sharing.
 terms_to_wire_texts(Terms, Atoms) :-
+    maplist(check_portable_wire_term, Terms),
     term_variables(Terms, Vars),
     wire_variable_names(Vars, 1, Names),
     maplist(write_wire_text(Names), Terms, Atoms).
+
+% These host values either change meaning on a peer or cannot be parsed.
+% Callers enforce their own cycle policy; never descend into a rational tree.
+check_portable_wire_term(Term) :-
+    (   acyclic_term(Term),
+        sub_term(Sub, Term),
+        ambiguous_wire_subterm(Sub)
+    ->  throw(error(representation_error(portable_term), _))
+    ;   true
+    ).
+
+ambiguous_wire_subterm(Sub) :-
+    (   Sub == '[]'
+    ;   compound(Sub),
+        compound_name_arity(Sub, Name, Arity),
+        (Arity == 0 ; Name == '.', Arity == 2)
+    ).
 
 write_wire_text(Names, Term, Atom) :-
     with_output_to(atom(Atom),

@@ -57,6 +57,7 @@ rewrite_goal_if_needed/3.
 :- use_module(library(option)).
 :- use_module(library(apply)).
 :- use_module(library(error)).
+:- use_module(wire_text, [check_portable_wire_term/1]).
 :- op(1000, xfy, if).
 :- use_module(library(time), [
     alarm/4,
@@ -508,7 +509,8 @@ answer_slice(pending_error(Slice, _), Slice).
 checked_solution(Goal, Template) :-
     call(Goal),
     ( acyclic_term(Template) -> true ; throw(error(representation_error(cyclic_term),
-                 context(toplevel_actors:answer/5, 'cyclic answer'))) ).
+                 context(toplevel_actors:answer/5, 'cyclic answer'))) ),
+    check_portable_wire_term(Template).
 
 finite_query_error(Error0, Error) :-
     \+ acyclic_term(Error0),
@@ -516,7 +518,10 @@ finite_query_error(Error0, Error) :-
     Error = error(representation_error(cyclic_term),
                   context(toplevel_actors:answer/5,
                           'answer or exception contains a cyclic term')).
-finite_query_error(Error, Error).
+finite_query_error(Error0, Error) :-
+    catch((check_portable_wire_term(Error0), Error = Error0),
+          error(representation_error(portable_term), _),
+          Error = error(representation_error(portable_term), _)).
 
 %   Run Goal, recording an ordinary exception instead of letting it discard
 %   the solutions already collected for the current page.  With a finite

@@ -94,7 +94,7 @@ rewrite_goal_(Module, call_cleanup(Goal0, Cleanup0),
     rewrite_goal(Module, Cleanup0, Cleanup).
 rewrite_goal_(Module, Vars^Goal0, Vars^Goal) :-
     rewrite_goal(Module, Goal0, Goal).
-rewrite_goal_(Module, \+ Goal0, \+ Goal) :-
+rewrite_goal_(Module, \+ Goal0, \+ control_guard:'$negated_goal'(Module, Goal)) :-
     rewrite_goal(Module, Goal0, Goal).
 rewrite_goal_(Module, call_nth(Goal0, N), call_nth(Goal, N)) :-
     rewrite_goal(Module, Goal0, Goal).
@@ -277,6 +277,8 @@ restore_goal_(Module, call_cleanup(Goal0, Cleanup0),
     restore_goal(Module, Goal0, Goal),
     restore_goal(Module, Cleanup0, Cleanup).
 restore_goal_(Module, Vars^Goal0, Vars^Goal) :-
+    restore_goal(Module, Goal0, Goal).
+restore_goal_(Module, \+ control_guard:'$negated_goal'(_, Goal0), \+ Goal) :-
     restore_goal(Module, Goal0, Goal).
 restore_goal_(Module, \+ Goal0, \+ Goal) :-
     restore_goal(Module, Goal0, Goal).
@@ -507,6 +509,11 @@ rewrite_receive_option(Module, on_timeout(Goal0), on_timeout(Goal)) :-
     !,
     rewrite_goal(Module, Goal0, Goal).
 rewrite_receive_option(_, Option, Option).
+
+% The compiler examines a transparent control body before running it.
+% A negation's argument is a separate invocation and is checked on entry.
+'$negated_goal'(Module, Goal) :-
+    runtime_call(Module, Goal).
 
 runtime_execute(Module, Goal0) :-
     rewrite_goal(Module, Goal0, Goal),
