@@ -4856,9 +4856,12 @@ test(answer_to_json_strips_trailing_newline_from_terminal_output_string) :-
     once(answer_to_json(terminal_output(42, "Ping received pong.\n"), JSON)),
     JSON = json{type:output, pid:42, data:"Ping received pong."}.
 
-test(answer_to_json_keeps_io_provenance_off_wire) :-
+test(answer_to_json_preserves_stdout_alongside_legacy_display) :-
     once(answer_to_json(terminal_io_output(42, "Ping received pong.\n"), JSON)),
-    JSON = json{type:output, pid:42, data:"Ping received pong."}.
+    JSON = json{type:output, pid:42, data:"Ping received pong.",
+                stdout:"Ping received pong.\n"},
+    once(answer_to_json(terminal_io_output(42, '$terminal_stream'(io_line, a)), Line)),
+    Line = json{type:output, pid:42, data:"a", stdout:"a\n"}.
 
 test(isotope_goal_rewrite_preserves_variable_colon_data) :-
     Goal = (between(1, 20, N), writeln(N:Pid)),

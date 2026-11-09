@@ -59,6 +59,9 @@ Session lifecycle and queue/message normalization for node ISOTOPE endpoints.
 :- meta_predicate with_isotope_session_public_execution_profile(+, 0).
 
 :- multifile actors:hook_stop/1.
+:- multifile actors:hook_terminal_stream/1.
+
+actors:hook_terminal_stream(Queue) :- node_session:isotope_session(_, Queue).
 
 
 %  Notify an HTTP ISOTOPE queue when a session ends by itself (notably after

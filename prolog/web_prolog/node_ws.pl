@@ -170,6 +170,9 @@ Architecture per connection:
 :- multifile distribution:hook_terminal_delivery/2.
 distribution:hook_terminal_delivery('$browser_io'(Queue), Message) :-
     node_ws:browser_terminal_delivery(Queue, Message).
+:- multifile actors:hook_terminal_stream/1.
+actors:hook_terminal_stream('$browser_io'(_)).
+actors:hook_terminal_stream(Queue) :- node_ws:ws_connection_meta(Queue, _).
 
 actors:hook_send('$browser_io'(Queue), Message) :-
     !,

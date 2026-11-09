@@ -101,6 +101,7 @@ Takeover-style (semidet; if a clause succeeds the core path is skipped):
   - hook_spawn(:Goal, -Pid, +Options): take over a spawn entirely
     (distribution claims spawns whose node(N) is non-local).
   - hook_send(+Pid, +Message): take over delivery (Id@Node, sockets).
+  - hook_terminal_stream(+Target): target serializes terminal I/O for the browser.
   - hook_exit(+Pid, +Reason): take over exit delivery.
   - hook_start_body(+Pid, :Goal, +Options, :OnReady, :OnPrepError,
     :Runner, -Start): select a module-qualified closure for the child-side
@@ -178,6 +179,7 @@ Transactional triple (semidet prepare; commit/abort run via forall/2):
     hook_spawn/3,
     hook_local_spawn_node/1,
     hook_send/2,
+    hook_terminal_stream/1,
     hook_exit/2,
     hook_start_body/7,
     hook_spawn_options/3,
@@ -1440,9 +1442,17 @@ terminal_output(Term, Options) :-
     ).
 
 send_terminal_output(Target, Self, Term, Options) :-
-    (   option(source(io), Options),
-        best_effort_fail(message_queue_property(Target, size(_)))
-    ->  send(Target, terminal_io_output(Self, Term))
+    (   option(source(Source), Options),
+        memberchk(Source, [io,io_line]),
+        ( hook_terminal_stream(Target)
+        -> ( nonvar(Term), Term = timing_report(_)
+           -> Data = Term
+           ;  Data = '$terminal_stream'(Source, Term)
+           )
+        ;  best_effort_fail(message_queue_property(Target, size(_))),
+           Data = Term
+        )
+    ->  send(Target, terminal_io_output(Self, Data))
     ;   send(Target, terminal_output(Self, Term))
     ).
 
