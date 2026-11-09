@@ -1,7 +1,7 @@
 :- module(node_isotope_controller, [
     isotope_spawn_event/5,
     isotope_call_event/11,
-    isotope_respond_event/3,
+    isotope_respond_event/4,
     parse_isotope_wait_request/5
 ]).
 
@@ -10,7 +10,7 @@
 Build endpoint events and parse shared ISOTOPE wait-request parameters.
 */
 
-:- use_module(actor_api, [respond/2, actor_module/2, make_id/1]).
+:- use_module(actor_api, [respond/3, actor_module/2, make_id/1]).
 :- use_module(toplevel_actors, [toplevel_spawn/2, toplevel_call/3]).
 :- use_module(rpc, [
     text_to_string/2,
@@ -25,9 +25,9 @@ Build endpoint events and parse shared ISOTOPE wait-request parameters.
     set_isotope_session_trace/2,
     isotope_session_queue/2,
     ensure_isotope_ready/3,
-    wait_for_session_event/4,
+    wait_for_session_event/5,
     load_text_into_session/2,
-    read_response_input/3,
+    read_response_input/5,
     with_isotope_session_public_execution_profile/2
 ]).
 :- use_module(node_log, [request_client_meta/3, start_activity/3]).
@@ -149,22 +149,22 @@ isotope_call_event(Pid, EffectiveProfile, GoalAtom0, TemplateAtom0, Offset, Limi
         ( Limit == none -> LimitOptions = [] ; LimitOptions = [limit(Limit)] ),
         append(LimitOptions, [template(Template), offset(Offset),
                               once(Once), target(Queue)], CallOptions),
-        with_isotope_session_public_execution_profile(
-            Pid,
-            toplevel_call(Pid, RewrittenGoal, CallOptions)
-        ),
         node:effective_timeout(RequestedTimeout, Timeout),
-        wait_for_session_event(Pid, Queue, Timeout, Event)
+        wait_for_session_event(Pid, Queue, Timeout,
+            with_isotope_session_public_execution_profile(
+                Pid, toplevel_call(Pid, RewrittenGoal, CallOptions)), Event)
     ;   Event = error(Pid, load_text_error(LoadError))
     ),
     capture_answer_bindings(Event).
 
 
-%!  isotope_respond_event(+Pid, +InputAtom, -Event) is det.
+%!  isotope_respond_event(+Pid, +SubmittedRef, +InputAtom, -Event) is det.
 %
 %   Parse input term and deliver it to a waiting session prompt.
-isotope_respond_event(Pid, InputAtom, Event) :-
+isotope_respond_event(Pid, SubmittedRef, InputAtom, Event) :-
     profile_check_route(toplevel_respond),
-    read_response_input(Pid, InputAtom, Input),
-    with_isotope_session_public_execution_profile(Pid, respond(Pid, Input)),
-    Event = responded(Pid).
+    ( read_response_input(Pid, SubmittedRef, InputAtom, Ref, Input) ->
+        with_isotope_session_public_execution_profile(Pid, respond(Pid, Ref, Input)),
+        Event = responded(Pid)
+    ; Event = error(Pid, invalid_prompt_ref)
+    ).

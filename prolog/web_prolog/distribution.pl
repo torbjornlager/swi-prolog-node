@@ -7,7 +7,7 @@
      remote_drop_connection/1,% +NodeURL
      is_io_endpoint/1,        % @Endpoint
      deliver_io_endpoint/2,  % +Token, +Message
-     respond_io_prompt/3,    % +Queue, +Pid, +Input
+     respond_io_prompt/4,    % +Queue, +Pid, +Mode, +Input
      forget_io_endpoints_for_target/1, % +Target
      op(200, xfx, @)
    ]).
@@ -73,7 +73,7 @@ Own hooks (multifile, implemented by the node layer in Phase 6):
     hook_event/1,
     hook_connection_context/2, hook_transport_options/2,
     hook_ws_endpoint_override/2,
-    hook_terminal_delivery/2,
+    hook_terminal_delivery/2, hook_terminal_prompt_queue/2,
     hook_command_context/2, hook_remote_actor/1, hook_remote_retired/1, hook_remote_spawn_start/1.
 
 :- dynamic ws_connection/4.
@@ -83,7 +83,7 @@ Own hooks (multifile, implemented by the node layer in Phase 6):
 :- dynamic spawn_queue_user/1.
 :- dynamic closed_spawn_queue/1.
 :- dynamic io_endpoint_target/2.
-:- dynamic pending_io_prompt/3.
+:- dynamic pending_io_prompt/4.
 :- dynamic pending_io_request/3. % NodeURL, RequestId, private reply queue
 :- dynamic remote_named_start/5. % Token, Node, RequestId, Pid|pending, active|failed(Reason)
 :- thread_local remote_named_scope/1.
@@ -438,6 +438,8 @@ actors:hook_send('$io_endpoint'(Token)@HomeNode, Message) :-
 actors:hook_send('$io_sink'(distributed), _Message) :-
     !.
 
+actors:hook_prompt_relay(Endpoint) :- is_io_endpoint(Endpoint).
+
 route_io_endpoint(Token, HomeNode, Message) :-
     io_protocol_message(Message),
     !,
@@ -446,14 +448,17 @@ route_io_endpoint(Token, HomeNode, Message) :-
         ->  true
         ;   io_request_result("endpoint_unavailable")
         )
-    ;   term_to_wire_atom(Message, MessageAtom),
-        remote_request_io(HomeNode, json{
-            command: io_request,
-            token: Token,
-            message: MessageAtom
-        })
+    ;   io_wire_command(Message, json{command:io_request, token:Token}, Command),
+        remote_request_io(HomeNode, Command)
     ).
 route_io_endpoint(_, _, _).
+
+io_wire_command('$input_prompt'(Pid, correlated(Ref), Prompt), Base, Command) :- !,
+    actors:input_prompt_event(Pid, correlated(Ref), Prompt, Event),
+    io_wire_command(Event, Base.put(prompt_mode, "correlated"), Command).
+io_wire_command(Message, Base, Command) :-
+    term_to_wire_atom(Message, Text),
+    Command = Base.put(message, Text).
 
 % An I/O operation completes at the shared terminal queue, not at the
 % sender's socket. A reply after enqueueing establishes happens-before
@@ -504,19 +509,21 @@ deliver_io_reply(NodeURL, RequestId, Result) :-
 
 io_protocol_message(terminal_output(_, _)).
 io_protocol_message(terminal_io_output(_, _)).
-io_protocol_message(prompt(_, _)).
+io_protocol_message('$input_prompt'(_, correlated(Ref), _)) :- ground(Ref).
 
 %!  deliver_io_endpoint(+Token, +Message) is semidet.
 %
 %   Deliver one validated terminal message at the endpoint's home node.  A
-%   prompt also installs a one-shot, connection-scoped authorization for the
+%   prompt also installs a connection-scoped authorization for the
 %   browser's subsequent toplevel_respond command.
 
 deliver_io_endpoint(Token, Message) :-
     atom(Token),
     io_protocol_message(Message),
-    io_endpoint_target(Token, Target),
-    remember_pending_io_prompt(Token, Target, Message),
+    with_mutex(distributed_io_endpoints,
+        ( io_endpoint_target(Token, Target),
+          remember_pending_io_prompt(Token, Target, Message)
+        )),
     deliver_terminal_target(Target, Message).
 
 % A browser-owned terminal can require an acknowledgement beyond this
@@ -526,35 +533,48 @@ deliver_terminal_target(Target, Message) :-
     !.
 deliver_terminal_target(Target, Message) :-
     actors:resolve_thread(Target, Thread),
-    thread_send_message(Thread, Message).
+    ( Message = '$input_prompt'(Pid, Mode, Prompt) ->
+        actors:input_prompt_event(Pid, Mode, Prompt, Event)
+    ; Event = Message
+    ),
+    thread_send_message(Thread, Event).
 
-remember_pending_io_prompt(Token, Queue, prompt(Pid, _)) :-
-    best_effort_fail(message_queue_property(Queue, size(_))),
+remember_pending_io_prompt(Token, Target, '$input_prompt'(Pid, Mode, _)) :-
+    terminal_prompt_queue(Target, Queue),
     !,
     with_mutex(distributed_io_prompts,
-        ( retractall(pending_io_prompt(Token, Queue, Pid)),
-          assertz(pending_io_prompt(Token, Queue, Pid))
+        ( retractall(pending_io_prompt(_, Queue, Pid, _)),
+          assertz(pending_io_prompt(Token, Queue, Pid, Mode))
         )).
 remember_pending_io_prompt(_, _, _).
 
-%!  respond_io_prompt(+Queue, +Pid, +Input) is semidet.
-%
-%   Consume exactly one prompt authorization owned by Queue and route its
-%   response to the remote prompting actor.
+terminal_prompt_queue(Target, Queue) :-
+    hook_terminal_prompt_queue(Target, Queue), !.
+terminal_prompt_queue(Queue, Queue) :-
+    best_effort_fail(message_queue_property(Queue, size(_))).
 
-respond_io_prompt(Queue, Pid, Input) :-
+respond_io_prompt(Queue, Pid, Mode, Input) :-
     with_mutex(distributed_io_prompts,
-        retract(pending_io_prompt(_Token, Queue, Pid))),
+        authorize_io_prompt_reply(Queue, Pid, Mode)),
     !,
-    send(Pid, '$input'(distributed_io, Input)).
+    send_io_prompt_reply(Mode, Pid, Input).
+
+% The actor applies the reply pattern. Keep the current reference available
+% for retries until another prompt replaces it or the route is retired.
+authorize_io_prompt_reply(Queue, Pid, correlated(Ref)) :-
+    ground(Ref),
+    pending_io_prompt(_, Queue, Pid, correlated(Ref)).
+
+send_io_prompt_reply(correlated(Ref), Pid, Input) :-
+    send(Pid, '$input'(distributed_io, Ref, Input)).
 
 forget_io_endpoints_for_target(Target) :-
     with_mutex(distributed_io_endpoints,
         findall(Token, retract(io_endpoint_target(Token, Target)), Tokens)),
     with_mutex(distributed_io_prompts,
         ( forall(member(Token, Tokens),
-                 retractall(pending_io_prompt(Token, _, _))),
-          retractall(pending_io_prompt(_, Target, _))
+                 retractall(pending_io_prompt(Token, _, _, _))),
+          retractall(pending_io_prompt(_, Target, _, _))
         )).
 
 
@@ -989,7 +1009,9 @@ remote_drop_connection_locked(NodeURL) :-
              ignore(best_effort(ws_close(Socket, 1000, "done"))),
              close_spawn_queue(SpawnQueue)
            )),
-    retractall(ws_pending_event(NodeURL, _, _)).
+    retractall(ws_pending_event(NodeURL, _, _)),
+    with_mutex(distributed_io_prompts,
+        retractall(pending_io_prompt(_, _, _@NodeURL, _))).
 
 remote_ws_reader(NodeURL, Socket, SpawnQueue) :-
     best_effort(remote_ws_read_loop(NodeURL, Socket, SpawnQueue)),
@@ -1054,9 +1076,10 @@ remote_ws_dispatch(NodeURL, SpawnQueue, Dict) :-
         %  replayed by flush_pending_for_pid/2.
         remote_event_pid(Dict, RemotePid),
         CompoundPid = RemotePid@NodeURL,
-        node_controller:current_remote_target(CompoundPid, Target),
-        ws_json_to_actor_event(Dict, CompoundPid, Event)
-    ->  send(Target, Event)
+        node_controller:current_remote_target(CompoundPid, Target)
+    ->  ( ws_json_to_actor_event(Dict, CompoundPid, Event) -> send(Target, Event)
+        ; true
+        )
     ;   remote_event_pid(Dict, RemotePid)
     ->  route_remote_event(NodeURL, RemotePid, Dict)
     ;   true
@@ -1090,6 +1113,8 @@ deliver_remote_down_via_controller(CompoundPid, Dict) :-
     ->  true
     ;   Reason = unknown
     ),
+    with_mutex(distributed_io_prompts,
+        retractall(pending_io_prompt(_, _, CompoundPid, _))),
     %  Alias withdrawal precedes monitor notification.  Use the same lock
     %  order as local retirement: registry, then monitor lifecycle.
     with_mutex(actors_registry,

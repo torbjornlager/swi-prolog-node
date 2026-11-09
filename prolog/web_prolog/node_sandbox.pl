@@ -1275,7 +1275,8 @@ sandbox:safe_primitive(actors:terminal_output(_)).
 sandbox:safe_primitive(actors:terminal_output(_, _)).
 sandbox:safe_primitive(actors:input(_, _)).
 sandbox:safe_primitive(actors:input(_, _, _)).
-sandbox:safe_primitive(actors:respond(_, _)).
+sandbox:safe_primitive(actors:respond(_, _, _)).
+sandbox:safe_primitive(actors:retarget_prompt(_, _, _)).
 sandbox:safe_primitive(actors:flush).
 %  listing_private is the current actor's public listing/0-1 backend.
 %  The cross-actor listing_actor_private/1 helper is intentionally not safe.
