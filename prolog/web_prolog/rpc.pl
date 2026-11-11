@@ -260,7 +260,7 @@ query_option_type(src_uri, atom_or_string).
 query_option_type(src_predicates, predicate_indicators).
 query_option_type(request_header, request_header).
 query_option_type(authorization, authorization).
-query_option_type(user_agent, atom_or_string).
+query_option_type(user_agent, http_field).
 
 validate_client_value(template, _) :- !.
 validate_client_value(remote_timeout, Value) :- !,
@@ -276,23 +276,9 @@ validate_client_value(atom_or_string, Value) :- !,
     (atom(Value) -> true ; string(Value) -> true ; type_error(atom_or_string, Value)).
 validate_client_value(predicate_indicators, Value) :- !,
     must_be(list, Value), maplist(validate_client_pi, Value).
-validate_client_value(request_header, Value) :- !,
-    must_be(nonvar, Value),
-    (   compound(Value), compound_name_arity(Value, '=', 2)
-    ->  arg(1, Value, Name), arg(2, Value, Text),
-        must_be(atom, Name), validate_client_value(atom_or_string, Text)
-    ;   type_error(http_request_header, Value)
-    ).
-validate_client_value(authorization, Value) :- !,
-    must_be(nonvar, Value),
-    (   compound(Value), compound_name_arity(Value, basic, 2)
-    ->  arg(1, Value, User), arg(2, Value, Password),
-        validate_client_value(atom_or_string, User),
-        validate_client_value(atom_or_string, Password)
-    ;   compound(Value), compound_name_arity(Value, bearer, 1)
-    ->  arg(1, Value, Token), validate_client_value(atom_or_string, Token)
-    ;   domain_error(http_authorization, Value)
-    ).
+validate_client_value(request_header,Value) :- !, rpc_http_validate(request_header(Value)).
+validate_client_value(authorization,Value) :- !, rpc_http_validate(authorization(Value)).
+validate_client_value(http_field,Value) :- !, rpc_http_validate(user_agent(Value)).
 validate_client_value(Type, Value) :- must_be(Type, Value).
 
 validate_client_pi(PI) :-
@@ -311,12 +297,9 @@ rpc_http_options(Options0, HTTPOptions) :-
     ;   Options1 = Options0,
         HTTPPrefix = []
     ),
-    include(rpc_transport_option, Options1, HTTPFiltered),
+    rpc_http_fields(Options1,Fields),
+    rpc_http_native_options(Fields,HTTPFiltered),
     append(HTTPPrefix, HTTPFiltered, HTTPOptions).
-
-rpc_transport_option(request_header(_)).
-rpc_transport_option(authorization(_)).
-rpc_transport_option(user_agent(_)).
 
 %!  append_optional_param(+Search0, +Key, +Value, -Search) is det.
 append_optional_param(Search, _, '', Search) :- !.
@@ -657,3 +640,13 @@ query_owner_options(Options,HTTPOptions) :-
     -> HTTPOptions=Options
     ; crypto_n_random_bytes(32,Bytes),hex_bytes(Token,Bytes),
       HTTPOptions=[request_header('X-Web-Prolog-Query-Owner'=Token)|Options]).
+
+:- include(rpc_http_fields).
+rpc_http_string_chars(Value,Chars) :- string(Value),string_chars(Value,Chars).
+
+rpc_http_host_utf8(Chars,Bytes) :- rpc_http_utf8(Chars,Bytes).
+
+% SWI http_open serializes field atoms as bytes; UTF-8 conversion stays here.
+rpc_http_native_value(Value,Wire) :- atom_chars(Value,Chars),rpc_http_utf8(Chars,Bytes),atom_codes(Wire,Bytes).
+
+rpc_http_one_char(C,[C]) :- atom(C),atom_length(C,1).
