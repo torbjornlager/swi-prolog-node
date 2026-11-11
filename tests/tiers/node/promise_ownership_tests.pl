@@ -172,6 +172,20 @@ test(namespace_teardown_disposes_promises_and_rejects_late_creation) :-
          assertion(CreateError=error(permission_error(create,promise,closed_namespace(NS)),_)),
          assertion(\+rpc:promise_state(LateKey,_,_,_,_,_,_))))),close_client_namespace(NS)).
 
+test(completion_after_context_closure_cannot_republish,
+     [forall(member(Kind,[ws_client,isotope_session])),timeout(5)]) :-
+    with_live_namespace(Kind,NS,
+      with_owned_pending(19101,NS,Ref,Key,
+        (once(rpc:promise_state(Key,Q,_,_,_,_,_)),
+         close_client_namespace(NS),
+         % The completion has already escaped transport cancellation. Deliver
+         % it after retirement, rather than relying on a scheduler race.
+         rpc:deliver_promise_answer(Key,success([late],false)),
+         assertion(\+rpc:promise_state(Key,_,_,_,_,_,_)),
+         assertion(queue_gone(Q)),foreign_yield(Ref),
+         close_client_namespace(NS),
+         assertion(\+rpc:promise_state(Key,_,_,_,_,_,_))))).
+
 test(teardown_reclaims_local_resources_and_preserves_surviving_actor,
      [forall(member(Kind,[ws_client,isotope_session])),timeout(5)]) :-
     with_events(Events,Gate,with_live_namespace(Kind,NS,
