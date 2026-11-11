@@ -437,3 +437,20 @@ distribution:hook_transport_options(NodeURL, [request_header('Authorization'=Bea
     current_node_value(peer_transport_tokens, Credentials),
     memberchk(NodeURL-Token, Credentials),
     format(atom(Bearer), 'Bearer ~w', [Token]).
+
+% Public programs may supply real credentials, but cannot impersonate the
+% proxy or forge addresses used by another node's admission controls.
+:- multifile rpc:hook_validate_transport_options/1.
+rpc:hook_validate_transport_options(Options) :-
+    current_public_execution_profile(_),
+    forall(member(request_header(Name=_),Options),
+      node_glue:check_public_rpc_header(Name)).
+
+check_public_rpc_header(Name) :-
+    downcase_atom(Name,Lower),atomic_list_concat(Parts,'_',Lower),
+    atomic_list_concat(Parts,'-',Canonical),
+    (memberchk(Canonical,['x-forwarded-for','x-real-ip','x-web-prolog-user',
+       'x-web-prolog-principal','x-authenticated-user','x-web-prolog-capabilities',
+       'x-web-prolog-caps','x-web-prolog-internal-proxy','x-web-prolog-query-budget'])
+    -> throw(error(permission_error(set,proxy_header,Name),context(rpc/3,'proxy identity headers are reserved')))
+    ;true).

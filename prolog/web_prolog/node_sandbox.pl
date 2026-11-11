@@ -144,6 +144,7 @@ sandbox_check_qualified_goal(blacklist, Profile, Module, Goal) :-
     ;   Module == node
     ),
     !,
+    (Module==node->reject_forbidden_qualified_goal(Profile,node,Goal);true),
     sandbox_check_goal_in_module_(blacklist, Profile, Module, Goal).
 sandbox_check_qualified_goal(blacklist, _Profile, Module, Goal) :-
     throw(error(permission_error(call, sandboxed, Module:Goal),
@@ -616,7 +617,8 @@ sandbox_check(Mode, Profile, Module, Goal) :-
         ->  reject_forbidden_qualified_goal(Profile, QM, Inner),
             reject_forbidden_goal(Profile, QM, Inner)
         ;   Mode == blacklist,
-            QM == Module
+            QM == Module,
+            \+ sub_atom(QM,0,5,_,'node_')
         ->  reject_forbidden_goal(Profile, QM, Inner)
         ;   Mode == blacklist
         ->  throw(error(permission_error(call, sandboxed, QM:Inner),
@@ -625,7 +627,10 @@ sandbox_check(Mode, Profile, Module, Goal) :-
         ;   reject_forbidden_qualified_goal(Profile, QM, Inner),
             reject_forbidden_goal(Profile, QM, Inner)
         )
-    ;   % Unqualified goal — dispatch on goal functor
+    ;   % Qualified meta-calls must not re-enter private node predicates via
+        % an unqualified closure (for example node:call(cache(...))).
+        (Mode==blacklist,Module==node
+        ->reject_forbidden_qualified_goal(Profile,node,Goal);true),
         (   sandbox_check_unqualified_(Mode, Goal, Profile, Module)
         ->  true
         ;   sandbox_forbidden_goal(Mode, Module, Goal, Category)
@@ -1017,6 +1022,15 @@ reject_forbidden_qualified_goal(Profile, node, Goal) :-
                     context(node_sandbox:reject_forbidden_goal/2,
                             'predicate not available in the current profile')))
     ).
+% `node:` is a public API alias, not access to controller/cache internals.
+% Ordinary system/library calls remain checked by the same blacklist walker.
+reject_forbidden_qualified_goal(_,node,Goal) :-
+    (predicate_property(system:Goal,built_in)
+    ;predicate_property(node:Goal,imported_from(Library)),
+     memberchk(Library,[lists,apply,aggregate])), !.
+reject_forbidden_qualified_goal(_,node,Goal) :- !,
+    throw(error(permission_error(call,sandboxed,node:Goal),
+                context(node_sandbox:reject_forbidden_goal/2,'private controller predicate'))).
 reject_forbidden_qualified_goal(_, _, _).
 
 reject_nested_spawn_goal(Profile, GoalModule, Goal, Options) :-

@@ -18,6 +18,7 @@ Core `/call` answer computation and continuation cache management.
 :- use_module(rpc, [text_to_string/2]).
 :- use_module(node_runtime_state, [current_node_port/1]).
 
+:- use_module(node_http_identity, [current_query_owner/1]).
 :- use_module(library(settings)).
 :- use_module(library(time), [alarm/4, install_alarm/1, remove_alarm/1]).
 
@@ -179,8 +180,9 @@ goal_id(GoalTemplate, Gid) :-
     term_hash(Gid0, Gid).
 
 
-cache_key(GoalId, node_cache(NodeKey, GoalId)) :-
-    node_cache_key(NodeKey).
+cache_key(GoalId, node_cache(NodeKey, ScopedGoalId)) :-
+    node_cache_key(NodeKey),
+    (current_query_owner(Owner)->ScopedGoalId=owned(Owner,GoalId);ScopedGoalId=GoalId).
 
 
 node_cache_key(NodeKey) :-
@@ -261,12 +263,24 @@ cache_insert(Gid, N, Pid, TimerRef, Size, Evicted) :-
     assertz(cache_alarm(Gid, N, Pid, TimerRef)),
     cache_node_key(Gid, NodeKey),
     aggregate_all(count, cache(node_cache(NodeKey, _), _, _), NC),
-    (   NC > Size
-    ->  cache_take(node_cache(NodeKey, _), _, EvictedPid, EvictedAlarm),
-        Evicted = cache_entry(EvictedPid, EvictedAlarm)
-    ;   Evicted = none
-    ).
+    (   owner_cache_overflow(Gid,NodeKey,NC,Size)
+    ->  cache_take_for_owner(Gid,NodeKey,EvictedPid,EvictedAlarm),
+        Evicted=cache_entry(EvictedPid,EvictedAlarm)
+    ;   Evicted=none).
 
+owner_cache_overflow(node_cache(_,owned(Owner,_)),NodeKey,NC,Size) :- !,
+    aggregate_all(count,cache(node_cache(NodeKey,owned(Owner,_)),_,_),Owned),
+    (Owned>16;NC>Size;owner_ip_cache_overflow(Owner,NodeKey)).
+owner_cache_overflow(_,_,NC,Size) :- NC>Size.
+
+owner_ip_cache_overflow(http_owner(_,IP),NodeKey) :-
+    aggregate_all(count,cache(node_cache(NodeKey,owned(http_owner(_,IP),_)),_,_),Count),
+    Count>32.
+
+cache_take_for_owner(node_cache(_,owned(Owner,_)),NodeKey,Pid,Alarm) :- !,
+    cache_take(node_cache(NodeKey,owned(Owner,_)),_,Pid,Alarm).
+cache_take_for_owner(_,NodeKey,Pid,Alarm) :-
+    cache_take(node_cache(NodeKey,_),_,Pid,Alarm).
 
 rollback_cache_insert(Gid, N, Pid, TimerRef) :-
     with_mutex(node_engine_cache,
