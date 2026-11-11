@@ -470,7 +470,7 @@ Native local named creation by `toplevel_spawn/2`, `server_spawn/4`,
 `supervisor_spawn/3`, and `statechart_spawn/2` reserves the first `name/1`
 in the caller's existing ordinary namespace before launching an actor.
 Existing namespace isolation and the independent service registry are
-unchanged. An occupied or reserved name raises `name_is_in_use(Name)` before
+unchanged. An occupied or reserved name raises `error(permission_error(register,actor_name,Name),_)` before
 local launch. Ordinary `register/2` respects pending name/pid claims, using
 its existing collision errors.
 
@@ -1058,7 +1058,7 @@ use the same list validator.
 - Only unary `start/1`, `restart/1`, `shutdown/1`, and `type/1` options are
   accepted. Unknown names/arities raise
   `error(domain_error(supervisor_child_option,Option),_)`. Missing `start/1`
-  retains `error(missing_start_option(Id),supervisor)`.
+  retains `error(existence_error(option,start(Id)),_)`.
 - Restart policies are `permanent`, `transient`, or `temporary`; types are
   `worker` or `supervisor`. Shutdown is `brutal_kill`, `infinity`, or a
   nonnegative numeric timeout, including zero and fractional seconds.
@@ -1092,7 +1092,7 @@ Browser child lists and option lists must be proper and specifications acyclic
 passed as a name. Initial sibling ids must be unique (the same id can occur
 under a different nested supervisor); duplicates raise
 `permission_error(duplicate,supervisor_child_id,Id)`. A missing `start/1` raises
-`missing_start_option(Id)`. Every option occurrence is checked, including
+`existence_error(option,start(Id))`. Every option occurrence is checked, including
 unused duplicates. Start goals and server callbacks must be callable, with
 atom module qualifiers; goal arguments and arbitrary server states can retain
 shared variables. Recognised `server(Pred,ServerOptions)` and
