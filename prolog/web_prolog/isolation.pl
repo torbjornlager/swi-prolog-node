@@ -71,6 +71,7 @@ actor-coupled.
     empty dynamic shadows of its predicates are repaired after load.
 */
 
+:- use_module(integer_relations, []).
 :- use_module(library(modules)).
 :- use_module(library(option)).
 :- use_module(library(memfile)).
@@ -358,6 +359,7 @@ shadowing_empty_dynamic(Module, SharedModule, Name, Arity) :-
 
 
 import_actor_api(Module) :-
+    @(import(integer_relations:succ/2), Module),
     ActorModule = actors,
     (   current_module(ActorModule)
     ->  add_import_module(Module, ActorModule, start)
