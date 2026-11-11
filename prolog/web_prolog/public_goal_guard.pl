@@ -214,6 +214,11 @@ rewrite_goal_(Module, assertz(Clause0),
 rewrite_goal_(Module, assertz(Clause0, Ref),
               public_goal_guard:'$sandbox_assertz'(Module, Clause0, Ref)).
 rewrite_goal_(Module, Goal0, Goal) :-
+    callable(Goal0), functor(Goal0, Name, Arity),
+    (Name == maplist, between(2,8,Arity); Name == foldl, between(4,6,Arity)),
+    Goal0 =.. [Name,Closure|Args],
+    Goal =.. [Name,public_goal_guard:'$library_call'(Module,Closure)|Args].
+rewrite_goal_(Module, Goal0, Goal) :-
     callable(Goal0),
     functor(Goal0, Name, Arity),
     Name \== (:),
@@ -361,7 +366,8 @@ restore_goal_(Module, Goal0, Goal) :-
 
 restore_sandbox_call(Module, Guarded, Goal) :-
     Guarded = public_goal_guard:Call,
-    Call =.. ['$sandbox_call', _StoredModule, Closure|ExtraArgs],
+    Call =.. [GuardName, _StoredModule, Closure|ExtraArgs],
+    memberchk(GuardName, ['$sandbox_call','$library_call']),
     restore_goal(Module, Closure, RestoredClosure),
     Goal =.. [call, RestoredClosure|ExtraArgs].
 
@@ -401,7 +407,8 @@ restore_meta_argument(//, _Module, Guarded, Grammar) :-
 restore_meta_argument(Extra, _Module, Guarded, Closure) :-
     integer(Extra), Extra > 0,
     nonvar(Guarded), Guarded = public_goal_guard:Call,
-    nonvar(Call), Call = '$sandbox_call'(_StoredModule, Closure),
+    nonvar(Call), Call =.. [GuardName,_StoredModule,Closure],
+    memberchk(GuardName, ['$sandbox_call','$library_call']),
     !.
 restore_meta_argument(_, _, Arg, Arg).
 
@@ -413,6 +420,28 @@ restore_meta_argument(_, _, Arg, Arg).
     Head = guard_dcg(Input, Rest),
     runtime_execute_goal(Module, Goal).
 
+
+'$library_call'(Module, Closure, A1) :-
+    strip_module(Closure, _, Plain), must_be(callable, Plain),
+    runtime_execute_closure(Module, Closure, [A1]).
+'$library_call'(Module, Closure, A1, A2) :-
+    strip_module(Closure, _, Plain), must_be(callable, Plain),
+    runtime_execute_closure(Module, Closure, [A1, A2]).
+'$library_call'(Module, Closure, A1, A2, A3) :-
+    strip_module(Closure, _, Plain), must_be(callable, Plain),
+    runtime_execute_closure(Module, Closure, [A1, A2, A3]).
+'$library_call'(Module, Closure, A1, A2, A3, A4) :-
+    strip_module(Closure, _, Plain), must_be(callable, Plain),
+    runtime_execute_closure(Module, Closure, [A1, A2, A3, A4]).
+'$library_call'(Module, Closure, A1, A2, A3, A4, A5) :-
+    strip_module(Closure, _, Plain), must_be(callable, Plain),
+    runtime_execute_closure(Module, Closure, [A1, A2, A3, A4, A5]).
+'$library_call'(Module, Closure, A1, A2, A3, A4, A5, A6) :-
+    strip_module(Closure, _, Plain), must_be(callable, Plain),
+    runtime_execute_closure(Module, Closure, [A1, A2, A3, A4, A5, A6]).
+'$library_call'(Module, Closure, A1, A2, A3, A4, A5, A6, A7) :-
+    strip_module(Closure, _, Plain), must_be(callable, Plain),
+    runtime_execute_closure(Module, Closure, [A1, A2, A3, A4, A5, A6, A7]).
 
 '$sandbox_call'(Module, Goal0) :-
     runtime_execute_goal(Module, Goal0).
