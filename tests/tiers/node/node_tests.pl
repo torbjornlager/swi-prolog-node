@@ -8088,11 +8088,17 @@ test(isobase_yield_timeout_callback_uses_loaded_context) :-
 
 test(isobase_yield_timeout_callback_is_sandboxed) :-
     with_node_server_options([profile(isobase),sandbox(blacklist)], URI,
+        % A rejected callback keeps its promise valid. Drain the self-RPC
+        % before stopping this server, even when the callback throws.
         (format(atom(Goal),
-             'promise(~q,sleep(0.1),Ref),yield(Ref,_,[timeout(0),on_timeout(nb_getval(secret,_))])',[URI]),
+             'setup_call_cleanup(promise(~q,sleep(0.1),Ref),yield(Ref,_,[timeout(0),on_timeout(nb_getval(secret,_))]),yield(Ref,_))',[URI]),
          json_call_url(URI,Goal,0,1,URL), read_json_answer(URL,JSON),
          assertion(JSON.type=="error"),
-         assertion(sub_string(JSON.data,_,_,_,"sandboxed")))).
+         assertion(sub_string(JSON.data,_,_,_,"sandboxed")),
+         assertion(sub_string(JSON.data,_,_,_,"nb_getval(secret,")),
+         parse_url(URI, Parts), memberchk(port(Port), Parts),
+         with_mutex(promise_lifecycle,
+             assertion(\+ rpc:promise_state(_,_,_,_,_,_,http_client(node_port(Port),_)))))).
 
 test(whitelist_yield_inspects_timeout_callback) :-
     with_sandbox_mode(whitelist,
