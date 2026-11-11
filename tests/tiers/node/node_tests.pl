@@ -2765,6 +2765,7 @@ test(private_ws_remote_actor_terminal_input_roundtrip,
                     ws_send_json(WS, json{
                         command:toplevel_respond,
                         pid:PromptPid,
+                        prompt_ref:Prompt.prompt_ref,
                         input:"answer"
                     }),
                     ws_receive_json_until_expected_types(
