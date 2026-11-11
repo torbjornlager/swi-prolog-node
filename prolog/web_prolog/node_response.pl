@@ -117,7 +117,7 @@ answer_to_json(terminal_output(Pid, Data), json{type:output, pid:JsonPid, data:D
 answer_to_json(prompt(Pid, Prompt), json{type:prompt, pid:JsonPid, data:PromptString}) :-
     json_pid_value(Pid, JsonPid),
     prompt_to_json_string(Prompt, PromptString).
-answer_to_json(prompt(Pid, Prompt, Token), JSON) :-
+answer_to_json(prompt(Pid, Token, Prompt), JSON) :-
     answer_to_json(prompt(Pid, Prompt), Base),
     atom_string(Token, Text),
     JSON = Base.put(prompt_ref, Text).

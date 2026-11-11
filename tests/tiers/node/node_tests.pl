@@ -787,6 +787,17 @@ rp(right).
 
 :- begin_tests(node).
 
+test(correlated_prompt_wire_decoder_returns_three_arguments) :-
+    remote_protocol:ws_json_to_actor_event(
+        _{type:"prompt", prompt_ref:"ref(123)", data:"prompt_ref(ref(999),question)"},
+        42, Event),
+    assertion(Event == prompt(42, ref(123), 'prompt_ref(ref(999),question)')).
+
+test(correlated_http_prompt_keeps_reference_and_data_separate) :-
+    node_response:answer_to_json(prompt(42, '123', question), JSON),
+    assertion(JSON.prompt_ref == "123"), assertion(JSON.data == "question").
+
+
 test(make_id_is_unique_ten_digit_integer,
      true((Length == 64, UniqueLength == 64))) :-
     findall(Id,

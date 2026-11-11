@@ -690,7 +690,7 @@ test(input, Results == true) :-
        template(.)
    ]),
    receive({
-       prompt(Pid, prompt_ref(Ref, prompt)) ->
+       prompt(Pid, Ref, prompt) ->
            respond(Pid, Ref, hello)
    }, [ timeout(20), on_timeout(throw(shell_receive_timeout)) ]),
    receive({
@@ -702,6 +702,25 @@ test(input, Results == true) :-
    receive({
        down(Pid, _, Results) -> true
    }, [ timeout(20), on_timeout(throw(shell_receive_timeout)) ]).
+
+test(flat_prompt_preserves_literal_data_and_rejects_stale_reply) :-
+    setup_call_cleanup(
+        toplevel_spawn(Pid, [session(true)]),
+        ( toplevel_call(Pid, input(prompt_ref(ref(999), question), First),
+                        [template(First)]),
+          receive({prompt(Pid, Ref1, prompt_ref(ref(999), question)) ->
+                       respond(Pid, Ref1, first)},
+                  [timeout(2), on_timeout(throw(missing_flat_prompt))]),
+          receive({success(Pid, [first], false) -> true},
+                  [timeout(2), on_timeout(throw(missing_first_reply))]),
+          toplevel_call(Pid, input(next_question, Next), [template(Next)]),
+          receive({prompt(Pid, Ref2, next_question) -> true},
+                  [timeout(2), on_timeout(throw(missing_next_prompt))]),
+          assertion(Ref1 \== Ref2),
+          respond(Pid, Ref1, stale), respond(Pid, Ref2, fresh),
+          receive({success(Pid, [fresh], false) -> true},
+                  [timeout(2), on_timeout(throw(stale_reply_accepted))]) ),
+        exit(Pid, cleanup)).
 
 test(toplevel_call_does_not_share_goal_variables_with_caller,
      [Result == ok]) :-

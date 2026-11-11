@@ -1494,7 +1494,7 @@ send_input_prompt(Target, Pid, Mode, Prompt) :-
     ),
     send(Target, Event).
 
-input_prompt_event(Pid, correlated(Ref), Prompt, prompt(Pid, prompt_ref(Ref, Prompt))).
+input_prompt_event(Pid, correlated(Ref), Prompt, prompt(Pid, Ref, Prompt)).
 
 
 %!  respond(+Pid, +PromptRef, +Input) is det.

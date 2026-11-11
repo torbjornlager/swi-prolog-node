@@ -133,7 +133,7 @@ ws_json_to_actor_event(Dict, CompoundPid, output(CompoundPid, Term)) :-
         )
     ;   Term = ''
     ).
-ws_json_to_actor_event(Dict, CompoundPid, prompt(CompoundPid, Payload)) :-
+ws_json_to_actor_event(Dict, CompoundPid, prompt(CompoundPid, Ref, Prompt)) :-
     get_dict(type, Dict, "prompt"),
     !,
     (   get_dict(data, Dict, PromptStr)
@@ -141,8 +141,7 @@ ws_json_to_actor_event(Dict, CompoundPid, prompt(CompoundPid, Payload)) :-
     ;   Prompt = ''
     ),
     get_dict(prompt_ref, Dict, RefText),
-    prompt_reference_from_wire(RefText, Ref),
-    Payload = prompt_ref(Ref, Prompt).
+    prompt_reference_from_wire(RefText, Ref).
 
 ws_json_to_actor_event(Dict, CompoundPid, stop(CompoundPid)) :-
     get_dict(type, Dict, "stop"),

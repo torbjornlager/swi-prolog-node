@@ -91,7 +91,7 @@ actors:hook_send('$isotope_abort_ack'(Queue, AckQueue), Event) :-
 publish_session_prompt(Pid, Queue, correlated(Ref), Prompt) :-
     term_to_atom(Ref, Token),
     remember_pending_prompt(Pid, correlated(Ref, Token), Prompt),
-    thread_send_message(Queue, prompt(Pid, Prompt, Token)).
+    thread_send_message(Queue, prompt(Pid, Token, Prompt)).
 
 
 clear_isotope_prompt(Pid0) :-
@@ -482,7 +482,7 @@ session_message_event(Pid, output(Pid, Data), output(Pid, Data)).
 session_message_event(Pid, terminal_io_output(Pid, Data), terminal_io_output(Pid, Data)).
 session_message_event(Pid, terminal_output(Pid, Data), terminal_output(Pid, Data)).
 session_message_event(Pid, prompt(Pid, Prompt), prompt(Pid, Prompt)).
-session_message_event(Pid, prompt(Pid, Prompt, Token), prompt(Pid, Prompt, Token)).
+session_message_event(Pid, prompt(Pid, Token, Prompt), prompt(Pid, Token, Prompt)).
 session_message_event(Pid, '$abort_goal', abort(Pid)).
 session_message_event(Pid, abort(_), abort(Pid)).
 session_message_event(Pid, down(Pid, Ref, Reason), down(Pid, Ref, Reason)) :-

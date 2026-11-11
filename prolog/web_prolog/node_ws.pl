@@ -543,6 +543,8 @@ answer_term_text(error(_Pid, Error), Text) :-
 
 % Queue-targeted correlated answers use additive metadata. Native actor
 % targets receive the same envelope through the ordinary actor-term transport.
+ws_relay_message(WebSocket, Queue, prompt(Pid, Ref, Prompt)) :- !,
+    ws_relay_message(WebSocket, Queue, '$input_prompt'(Pid, correlated(Ref), Prompt)).
 ws_relay_message(WebSocket, Queue, '$input_prompt'(Pid, correlated(Ref), Prompt)) :- !,
     ws_pid_key(Pid, Key),
     retractall(ws_pending_prompt(Queue, Key, _)),
@@ -1066,7 +1068,7 @@ deliver_ws_io_endpoint(Dict, Token, Message) :-
     ),
     deliver_io_endpoint(Token, Event).
 
-terminal_wire_prompt("correlated", prompt(Pid, prompt_ref(Ref, Prompt)),
+terminal_wire_prompt("correlated", prompt(Pid, Ref, Prompt),
                      '$input_prompt'(Pid, correlated(Ref), Prompt)) :-
     ground(Ref),
     transportable_term(Ref).
