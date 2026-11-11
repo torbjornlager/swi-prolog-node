@@ -3056,19 +3056,20 @@ test(distributed_io_endpoint_cleanup_revokes_prompts_and_delivery) :-
                                                      browser_queue)),
             assertz(distribution:pending_io_prompt(test_token,
                                                     browser_queue,
-                                                    remote_pid))
+                                                    remote_pid,
+                                                    correlated(cleanup_ref)))
         ),
         (
             distribution:forget_io_endpoints_for_target(browser_queue),
             assertion(\+ distribution:io_endpoint_target(test_token, _)),
-            assertion(\+ distribution:pending_io_prompt(test_token, _, _)),
+            assertion(\+ distribution:pending_io_prompt(test_token, _, _, _)),
             assertion(\+ distribution:deliver_io_endpoint(
                               test_token,
                               terminal_output(remote_pid, hello)))
         ),
         (
             retractall(distribution:io_endpoint_target(test_token, _)),
-            retractall(distribution:pending_io_prompt(test_token, _, _))
+            retractall(distribution:pending_io_prompt(test_token, _, _, _))
         )
     ).
 
