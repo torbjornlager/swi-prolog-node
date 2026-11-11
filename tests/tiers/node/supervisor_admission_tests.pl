@@ -51,7 +51,7 @@ test(runtime_list_blacklist) :-
 test(missing_start_runtime, [forall(test_supervisor_admission:mode(Mode))]) :-
     test_supervisor_admission:runtime_context(Mode,
       (Specs=[child(a,[])],catch(supervisor_spawn(Specs,Sup),E,true),
-       nonvar(E),E=error(missing_start_option(a),_),var(Sup))).
+       nonvar(E),E=error(existence_error(option,start(a)),_),var(Sup))).
 
 test(malformed_runtime, [forall(test_supervisor_admission:mode(Mode))]) :-
     test_supervisor_admission:runtime_context(Mode,

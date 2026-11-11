@@ -306,8 +306,8 @@ sanitize_error_term_for_message(Term0, Term) :-
     compound_name_arguments(Term, Name, Args).
 sanitize_error_term_for_message(Term, Term).
 
-actor_naming_error_string(name_is_in_use(_), "Name is in use.").
-actor_naming_error_string(process_already_has_a_name(_), "Name is in use.").
+actor_naming_error_string(error(permission_error(register,actor_name,_),_), "Name is in use.").
+actor_naming_error_string(error(permission_error(register,process,_),_), "Actor already has a name.").
 
 timeout_error_string(timeout, "Timeout exceeded").
 timeout_error_string(error(timeout, _), "Timeout exceeded").

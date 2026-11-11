@@ -1089,9 +1089,9 @@ ensure_registerable_local_pid(Pid, CanonPid) :-
 
 ensure_name_registration_available(Namespace, Name, Pid, CanonPid) :-
     (   (ordinary_registered_pid(Namespace, CanonPid) ; reserved_spawn_pid(Namespace, CanonPid))
-    ->  throw(process_already_has_a_name(Pid))
+    ->  throw(error(permission_error(register,process,Pid),context(actors:register/2,'ordinary registration conflict')))
     ;   (ordinary_registered_name(Namespace, Name) ; reserved_spawn_name(Namespace, Name))
-    ->  throw(name_is_in_use(Name))
+    ->  throw(error(permission_error(register,actor_name,Name),context(actors:register/2,'ordinary registration conflict')))
     ;   true
     ).
 
@@ -1100,7 +1100,7 @@ reserve_spawn_name(Name, Token) :-
     with_mutex(actors_registry,
         (   ensure_registry_namespace_open(Namespace),
             (   (ordinary_registered_name(Namespace,Name) ; reserved_spawn_name(Namespace,Name))
-            ->  throw(name_is_in_use(Name))
+            ->  throw(error(permission_error(register,actor_name,Name),context(actors:register/2,'ordinary registration conflict')))
             ;   assertz(spawn_name_reservation(Token,Namespace,Name,Owner,pending,reserved))
             )
         )).
