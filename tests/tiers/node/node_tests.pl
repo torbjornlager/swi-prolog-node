@@ -3874,7 +3874,7 @@ test(relation_call_uses_explicit_relation_whitelist,
             RejectedData = RejectedJSON.get(data)
         )).
 
-test(relation_call_rejects_all_queries_when_no_relations_are_advertised,
+test(relation_call_rejects_unadvertised_application_queries,
      true((Type == "error",
            sub_string(Data, _, _, _, "Unknown procedure: wife/2")))) :-
     with_node_server_options([profile(relation)], URI,
@@ -3884,6 +3884,48 @@ test(relation_call_rejects_all_queries_when_no_relations_are_advertised,
             Type = JSON.get(type),
             Data = JSON.get(data)
         )).
+
+test(relation_call_allows_public_node_settings_without_advertised_patterns) :-
+    forall(member(Mode,[blacklist,whitelist,off]),
+      with_node_server_options([profile(relation),sandbox(Mode)],URI,
+        ( json_call_url(URI,'node_setting(profile,P),node_setting(sandbox,S)',0,2,URL),
+          read_json_answer(URL,JSON),
+          assertion(JSON.type=="success"),
+          JSON.data=[Row],
+          assertion(Row.get('P')=="relation"),
+          atom_string(Mode,ModeText),assertion(Row.get('S')==ModeText) ))).
+
+test(relation_node_setting_admission_does_not_bind_query_arguments) :-
+    relation_check_call(relation,node_setting(Key,Value),""),
+    assertion(var(Key)),assertion(var(Value)).
+
+test(relation_node_setting_admission_does_not_allow_wrappers_or_other_arities) :-
+    forall(member(Goal,[call(node_setting(profile,_)),
+                       findall(K,node_setting(K,_),_),
+                       node_setting(profile),node_setting(profile,_,_)]),
+      (catch(relation_check_call(relation,Goal,""),Error,true),
+       assertion(nonvar(Error)),
+       assertion(Error=error(existence_error(procedure,_),_)))).
+
+test(relation_node_setting_still_rejects_source_loading,
+     [throws(error(relation_violation(src_text),_))]) :-
+    relation_check_call(relation,node_setting(_,_),"p.").
+
+test(relation_node_setting_respects_owner_disabled_node_info_family) :-
+    with_node_server_options(
+      [profile(relation),auth(dev),dev_capabilities([admin,execute])],URI,
+      ( admin_config_url(URI,ConfigURL),
+        read_json_post(ConfigURL,
+          json{builtin_families:[json{id:"node_info",profiles:json{relation:false}}]},_),
+        json_call_url(URI,'node_setting(profile,P)',0,1,URL),
+        read_json_answer(URL,Denied),
+        assertion(Denied.type=="error"),
+        assertion(sub_string(Denied.data,_,_,_,"node_setting")),
+        read_json_post(ConfigURL,
+          json{builtin_families:[json{id:"node_info",profiles:json{relation:true}}]},_),
+        read_json_answer(URL,Restored),
+        assertion(Restored.type=="success"),Restored.data=[Row],
+        assertion(Row.get('P')=="relation") )).
 
 test(relation_call_uses_shared_db_relation_filter,
      true((AllowedType == "success",

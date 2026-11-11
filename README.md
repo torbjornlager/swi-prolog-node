@@ -23,6 +23,11 @@ byte-identical historical server in [tests/fixtures](tests/fixtures/README.md).
 It needs no historical Git tag, network fetch or existing n3/n5 process.
 All original T5 interoperability assertions are preserved.
 
+RELATION's `/call` endpoint serves advertised relations and the public
+`node_setting/2` relation, including conjunctions. Introspection follows the
+node's configured profile and built-in family policy. The profile's general
+query and source-loading restrictions remain in force.
+
 ## External demonstrator assets
 
 The native API works without a browser asset tree. To serve the existing
