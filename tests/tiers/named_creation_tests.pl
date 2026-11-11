@@ -68,7 +68,7 @@ test(occupied_name_does_not_start_any_wrapper,
         with_actor(Existing,
             (register(Name,Existing),
              catch(invoke(Kind,Name,[name_test_event(Q)],Pid),Error,true),
-             assertion(Error==name_is_in_use(Name)),assertion(var(Pid)),
+             assertion(nonvar(Error)),assertion(Error=error(permission_error(register,actor_name,Name),_)),assertion(var(Pid)),
              assertion(\+thread_get_message(Q,_,[timeout(0)])),
              whereis(Name,Found),assertion(Found==Existing))),
         message_queue_destroy(Q)).
@@ -111,9 +111,9 @@ test(pending_reservation_hidden_and_respected_by_register) :-
       (thread_get_message(Events,prepared(Child),[timeout(2)]),
        setup_call_cleanup(true,
         (whereis(Name,Hidden),assertion(Hidden==undefined),
-         self(Self),catch(register(Name,Self),Error,true),assertion(Error==name_is_in_use(Name)),
+         self(Self),catch(register(Name,Self),Error,true),assertion(nonvar(Error)),assertion(Error=error(permission_error(register,actor_name,Name),_)),
          unregister(Name),
-         catch(invoke(supervisor,Name,[],_),Again,true),assertion(Again==name_is_in_use(Name)),
+         catch(invoke(supervisor,Name,[],_),Again,true),assertion(nonvar(Again)),assertion(Again=error(permission_error(register,actor_name,Name),_)),
          thread_send_message(Gate,go),thread_get_message(Events,result(ok(Pid)),[timeout(2)]),
          assertion(Pid==Child),whereis(Name,Found),assertion(Found==Pid)),
         stop_actor(Child)))).
@@ -124,7 +124,7 @@ test(concurrent_creators_one_wins) :-
        setup_call_cleanup(true,
         with_creator(Name,_T2,E2,_G2,
           (thread_get_message(E2,result(Result),[timeout(2)]),
-           assertion(Result==error(name_is_in_use(Name))),
+           assertion(nonvar(Result)),assertion(Result=error(error(permission_error(register,actor_name,Name),_))),
            thread_send_message(G1,go),thread_get_message(E1,result(ok(Pid)),[timeout(2)]),
            assertion(Pid==Child))),stop_actor(Child)))).
 test(cancellation_releases_pending_name_without_late_publication) :-

@@ -95,7 +95,7 @@ test(occupied_name_sends_no_request,
     with_mock(ok,Name,_Pid,Events,
       (self(Self),register(Name,Self),
        catch(invoke(Kind,Name,'http://named-startup.invalid:12345',_),Error,true),
-       assertion(Error==name_is_in_use(Name)),whereis(Name,Found),assertion(Found==Self),
+       assertion(nonvar(Error)),assertion(Error=error(permission_error(register,actor_name,Name),_)),whereis(Name,Found),assertion(Found==Self),
        assertion(\+thread_get_message(Events,requested,[timeout(0)])))).
 
 test(named_generic_wrappers_preserve_spawn_admission_checks,
@@ -171,7 +171,7 @@ test(namespace_close_during_startup_rejects_publication_and_stops_actor) :-
 test(pid_named_during_startup_preserves_one_name_per_pid_rule) :-
     with_mock(after_ack(test_remote_named_creation:name_current_remote_pid),Name,Pid,Events,
       (catch(invoke(server,Name,'http://named-startup.invalid:12345',_),Error,true),
-       assertion(Error==process_already_has_a_name(Pid)),
+       assertion(nonvar(Error)),assertion(Error=error(permission_error(register,process,Pid),_)),
        Pid=Id@_,assert_stopped(Events,Id),assert_no_startup(Pid,Name))).
 
 test(publication_error_rolls_back_published_alias_and_routing) :-
@@ -199,9 +199,9 @@ test(pending_name_is_hidden_and_prevents_competing_remote_creation,
          setup_call_cleanup(true,
            (thread_get_message(Events,pending,[timeout(2)]),
             whereis(Name,Hidden),assertion(Hidden==undefined),
-            self(Self),catch(register(Name,Self),RegError,true),assertion(RegError==name_is_in_use(Name)),
+            self(Self),catch(register(Name,Self),RegError,true),assertion(nonvar(RegError)),assertion(RegError=error(permission_error(register,actor_name,Name),_)),
             unregister(Name),catch(invoke(toplevel,Name,Node,_),Error,true),
-            assertion(Error==name_is_in_use(Name)),
+            assertion(nonvar(Error)),assertion(Error=error(permission_error(register,actor_name,Name),_)),
             thread_get_message(Events,requested,[timeout(0)]),
             assertion(\+thread_get_message(Events,requested,[timeout(0)])),
             (Mode==complete

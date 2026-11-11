@@ -4978,14 +4978,14 @@ test(answer_to_json_simplifies_shell_command_sandbox_error,
     Data = JSON.data.
 
 test(answer_to_json_formats_name_is_in_use_error) :-
-    answer_to_json(error(name_is_in_use(echo_actor)), JSON),
+    answer_to_json(error(error(permission_error(register,actor_name,echo_actor),test_context)), JSON),
     JSON = json{type:error, data:"Name is in use.",
-                details:"name_is_in_use(echo_actor)"}.
+                details:"error(permission_error(register,actor_name,echo_actor),_)"}.
 
 test(answer_to_json_formats_process_already_has_name_error) :-
-    answer_to_json(error(process_already_has_a_name(42)), JSON),
-    JSON = json{type:error, data:"Name is in use.",
-                details:"process_already_has_a_name(42)"}.
+    answer_to_json(error(error(permission_error(register,process,42),test_context)), JSON),
+    JSON = json{type:error, data:"Actor already has a name.",
+                details:"error(permission_error(register,process,42),_)"}.
 
 test(rewrite_source_text_if_needed_noops_when_blacklist_disabled,
      true(Source == "q :- saved(G), G.")) :-

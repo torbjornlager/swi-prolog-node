@@ -36,7 +36,7 @@ test(unknown_child_options,
      [forall(member(Option,[restarts(permanent),limit(1),start,start(true,false)]))]) :-
     catch(supervisor_spawn([child(a,[start(true),Option])],Pid),Error,true),
     assertion(Error=error(domain_error(supervisor_child_option,Option),_)),assertion(var(Pid)).
-test(missing_start_preserved, [throws(error(missing_start_option(a),supervisor))]) :-
+test(missing_start_preserved, [throws(error(existence_error(option,start(a)),supervisor))]) :-
     supervisor_spawn([child(a,[])],_).
 test(bad_values,
      [forall(member(Option,[start(17),restart(unknown),type(unknown),shutdown(-1),shutdown(bad)]))]) :-

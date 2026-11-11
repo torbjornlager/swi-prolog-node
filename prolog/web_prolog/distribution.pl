@@ -220,7 +220,7 @@ publish_remote_name(Token, Pid) :-
         (ensure_remote_name_active(Token),
          actors:current_registry_namespace(NS),
          ((actors:ordinary_registered_pid(NS,AliasPid);actors:reserved_spawn_pid(NS,AliasPid))
-         -> throw(process_already_has_a_name(Pid));true),
+         -> throw(error(permission_error(register,process,Pid),context(actors:register/2,'ordinary registration conflict')));true),
          actors:attach_spawn_name([name_reservation(Token)],AliasPid),
          actors:publish_spawn_name(Self,AliasPid,[name_reservation(Token)]))).
 
