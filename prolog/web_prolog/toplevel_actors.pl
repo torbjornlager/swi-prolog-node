@@ -131,7 +131,7 @@ toplevel_spawn(Pid, Options0) :-
 validate_toplevel_spawn_options(Options, Scope) :-
     actors:validate_spawn_wrapper_options(Options, Scope,
         toplevel_actors:toplevel_spawn/2,
-        [name=error:must_be(atom), session=error:must_be(boolean),
+        [name=error:must_be(atom), session=actors:validate_boolean,
          time_limit=toplevel_actors:validate_spawn_limit(time_limit),
          idle_limit=toplevel_actors:validate_spawn_limit(idle_limit)]).
 
@@ -607,7 +607,7 @@ validate_solution_limit(Options) :-
 validate_once_options(Options) :-
     must_be(list, Options),
     forall((member(Option, Options), nonvar(Option), Option = once(Value)),
-           must_be(boolean, Value)).
+           actors:validate_boolean(Value)).
 
 %!  add_pid(+Answer0, +Pid, -Answer) is det.
 %
@@ -720,6 +720,7 @@ synchronous_option_value(target, Target, Self) :- !,
     must_be(nonvar, Target),
     (Target == Self -> true ; domain_error(synchronous_toplevel_target, Target)).
 synchronous_option_value(term, _, _) :- !.
+synchronous_option_value(boolean, Value, _) :- !, actors:validate_boolean(Value).
 synchronous_option_value(Type, Value, _) :- must_be(Type, Value).
 
 synchronous_answer(Pid, MonRef, RequestRef, Answer, Caller, Options) :-

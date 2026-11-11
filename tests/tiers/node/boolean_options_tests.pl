@@ -4,6 +4,7 @@
 :- use_module('../../../prolog/web_prolog/actor_api.pl').
 :- use_module('../../../prolog/web_prolog/rpc.pl', []).
 :- use_module('../../../prolog/web_prolog/statechart_actor.pl').
+:- use_module('../../../prolog/web_prolog/toplevel_actors.pl').
 :- use_module(library(plunit)).
 
 boolean_goal(link,V,spawn(true,_,[link(V)])).
@@ -19,7 +20,8 @@ test(language_substitutes_rejected,
               member(Kind,[link,monitor,session,trace,rpc,promise])))]) :-
     test_boolean_options:boolean_goal(Kind,V,Goal),
     catch(call(Goal),E,true),assertion(nonvar(E)),
-    assertion((E=error(type_error(boolean,V),_);E=error(domain_error(boolean,V),_))).
+    (atom(V) -> Formal=domain_error(boolean,V) ; Formal=type_error(atom,V)),
+    assertion(E=error(Formal,_)).
 
 test(trace_transport_decodes_text_and_json,
      [forall(member(Input-Expected,[true-true,false-false,"true"-true,"false"-false,
@@ -32,4 +34,6 @@ test(trace_transport_rejects_numbers,
      [forall((member(V,[0,1,1.0,"bogus",bogus]),member(Module-Pred,[node_isotope_options-parse_trace_value,node_ws-ws_parse_enabled_atom,node-parse_enabled_atom])))]) :-
     Goal=..[Pred,V,_],catch(call(Module:Goal),E,true),
     assertion(nonvar(E)),assertion(E=error(domain_error(boolean,V),_)).
+test(runtime_validator_not_exported_to_user_api) :-
+    assertion(\+predicate_property(actor_api:validate_boolean(_),exported)).
 :- end_tests(boolean_options).

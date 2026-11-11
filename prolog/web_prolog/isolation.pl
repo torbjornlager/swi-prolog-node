@@ -124,7 +124,7 @@ actors:hook_spawn_option(src_list, public, error:must_be(list)).
 actors:hook_spawn_option(src_uri, public, isolation:spawn_source_uri).
 actors:hook_spawn_option(src_predicates, public, isolation:spawn_predicate_indicators).
 actors:hook_spawn_option(source_module, internal, error:must_be(atom)).
-actors:hook_spawn_option(inherit_goal_module, internal, error:must_be(boolean)).
+actors:hook_spawn_option(inherit_goal_module, internal, actors:validate_boolean).
 actors:hook_spawn_option(isolation_io, internal, isolation:spawn_io_mode).
 
 spawn_source_text(Text) :- text_to_string(Text, _).

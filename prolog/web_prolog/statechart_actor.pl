@@ -129,12 +129,6 @@ statechart_spawn(Pid, OptionsSpec) :-
         [name=error:must_be(atom),trace=statechart_actor:validate_trace_option]),
     exclude(is_statechart_spawn_local_option, Options0, Options1),
     select_option(trace(Trace), Options1, Options2, true),
-    (   option(trace(_), Options2)
-    ->  throw(error(permission_error(duplicate, statechart_option, trace),
-                    context(statechart_actor:statechart_spawn/2,
-                            'trace may be specified only once')))
-    ;   true
-    ),
     validate_statechart_trace(Trace),
     statechart_spawn_source(Options2, SourceGoal0, SpawnOptions0),
     traced_statechart_source_goal(Trace, SourceGoal0, SourceGoal),
@@ -151,12 +145,7 @@ ensure_statechart_source_module(_, Options, Options) :-
     !.
 ensure_statechart_source_module(Module, Options, [source_module(Module)|Options]).
 
-validate_statechart_trace(true) :- !.
-validate_statechart_trace(false) :- !.
-validate_statechart_trace(Trace) :-
-    throw(error(domain_error(boolean, Trace),
-                context(statechart_actor:statechart_spawn/2,
-                        'trace must be true or false'))).
+validate_statechart_trace(Trace) :- actors:validate_boolean(Trace).
 
 traced_statechart_source_goal(Trace, statechart_actor:interpret(Source),
                               statechart_actor:interpret_trace(Trace, Source)) :- !.

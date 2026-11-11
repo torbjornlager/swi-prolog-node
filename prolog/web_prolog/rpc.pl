@@ -37,6 +37,7 @@ client namespaces or stateless HTTP identities; standalone use remains shared.
 */
 
 :- use_module(pid_utils, [localhost_node/1]).
+:- use_module(actors, []).
 :- use_module(isolation, [load_options_text/3, prepared_goal/3]).
 
 :- use_module(library(apply)).
@@ -603,12 +604,8 @@ normalize_timeout(Timeout0, Timeout) :-
     Timeout is max(0, Timeout0).
 
 %!  normalize_once(+Value, -Once:boolean) is det.
-normalize_once(true, true) :- !.
-normalize_once(false, false) :- !.
-normalize_once(Value, _) :-
-    throw(error(domain_error(boolean, Value),
-                context(node:normalize_once/2,
-                        'once must be true or false'))).
+normalize_once(Value, Once) :-
+    actors:validate_boolean(Value), Once = Value.
 
 
 %!  make_reference(-Reference) is det.

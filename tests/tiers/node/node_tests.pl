@@ -8312,7 +8312,7 @@ test(ws_bare_spawn_rejects_framework_metadata,
 
 test(remote_spawn_rejects_invalid_options_before_connection) :-
     catch(spawn(true,Pid,[node('http://127.0.0.1:1'),monitor(ture)]),Error,true),
-    assertion(Error=error(type_error(boolean,ture),context(actors:spawn/3,_))),
+    assertion(Error=error(domain_error(boolean,ture),context(actors:spawn/3,_))),
     assertion(var(Pid)).
 
 test(remote_spawn_source_options_and_monitoring) :-

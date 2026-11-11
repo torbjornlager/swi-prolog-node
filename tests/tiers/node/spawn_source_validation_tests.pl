@@ -49,7 +49,9 @@ test(invalid_options_never_fetch,
        catch(test_spawn_source_validation:checked(spawn(true,Pid,[src_uri(URI),Invalid])),E,true),
        assertion(nonvar(E)),assertion(var(Pid)),
        (Invalid=unknown(_)->assertion(E=error(domain_error(spawn_option,Invalid),_))
-       ;assertion(E=error(type_error(_,_),_))),
+       ;Invalid=link(maybe)->assertion(E=error(domain_error(boolean,maybe),_))
+       ;Invalid=monitor(1)->assertion(E=error(type_error(atom,1),_))
+       ;assertion(E=error(type_error(atom_or_string,42),_))),
        test_spawn_source_validation:zero_fetches(Q)))).
 
 test(invalid_later_duplicate_never_fetches,
@@ -57,7 +59,7 @@ test(invalid_later_duplicate_never_fetches,
     with_mode(Mode,with_source(Base,Q,
       (test_spawn_source_validation:url(Base,'/safe',URI),
        catch(test_spawn_source_validation:checked(spawn(true,_,[src_uri(URI),monitor(true),monitor(maybe)])),E,true),
-       assertion(nonvar(E)),assertion(E=error(type_error(boolean,maybe),_)),
+       assertion(nonvar(E)),assertion(E=error(domain_error(boolean,maybe),_)),
        test_spawn_source_validation:zero_fetches(Q)))).
 
 test(improper_ground_list_never_fetches,

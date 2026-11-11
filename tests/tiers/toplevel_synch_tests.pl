@@ -255,7 +255,8 @@ test(async_once_rejects_substitutes_before_send,
               member(Options,[[once(V)],[once(false),once(V)]])))]) :-
     self(Self),
     catch(toplevel_call(Self,throw(must_not_run),Options),Error,true),
-    assertion(nonvar(Error)),assertion(Error=error(type_error(boolean,V),_)),
+    (atom(V) -> Formal=domain_error(boolean,V) ; Formal=type_error(atom,V)),
+    assertion(nonvar(Error)),assertion(Error=error(Formal,_)),
     receive({'$call'(_,_) -> throw(invalid_call_was_sent)},[timeout(0)]).
 
 test(async_once_variable_is_not_bound) :-
