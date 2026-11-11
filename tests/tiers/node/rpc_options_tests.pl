@@ -96,8 +96,8 @@ test(transport_projection) :-
     rpc:rpc_http_options([limit(1),src_text('p.'),once(true),timeout(2),
         http_timeout(3),request_header(x='one'),request_header(y="two"),
         authorization(bearer(token)),user_agent('agent')], HTTP),
-    assertion(HTTP==[timeout(3),request_header(x='one'),request_header(y="two"),
-                     authorization(bearer(token)),user_agent('agent')]).
+    assertion(HTTP==[timeout(3),request_header(x='one'),request_header(y=two),
+                     request_header(authorization='Bearer token'),user_agent('agent')]).
 test(rpc_http_headers_and_nondeterminism) :-
     with_endpoint(URI,Requests,
         (findall(X,rpc(URI,p(X),[limit(2),once(true),http_timeout(2),
