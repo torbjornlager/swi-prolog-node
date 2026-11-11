@@ -1256,6 +1256,7 @@ reject_supervisor_child_goal(Profile, Module:Goal) :-
 
 
 sandbox:safe_primitive(actors:self(_)).
+sandbox:safe_primitive(actors:make_ref(_)).
 sandbox:safe_primitive(actors:monitor(_, _)).
 sandbox:safe_primitive(actors:demonitor(_)).
 sandbox:safe_primitive(actors:demonitor(_, _)).
