@@ -87,7 +87,7 @@ test(unbound_name_not_bound,
 test(forwarded_options_checked_before_creation,
      [forall(member(Kind,[toplevel,server,supervisor,statechart]))]) :-
     catch(invoke(Kind,[monitor(ture)],Pid),Error,true),
-    assertion(Error=error(type_error(boolean,ture),_)),assertion(var(Pid)).
+    assertion(Error=error(domain_error(boolean,ture),_)),assertion(var(Pid)).
 test(wrapper_names_do_not_leak_into_spawn,
      [forall(member(Option,[name(n),session(true),time_limit(1),idle_limit(1),
                            strategy(one_for_one),intensity(1),period(1),trace(false)]))]) :-
@@ -139,8 +139,8 @@ test(supervisor_invalid_name_does_not_start_children) :-
          assertion(Error=error(type_error(atom,17),_)),assertion(var(Pid)),
          assertion(\+thread_get_message(Q,_,[timeout(0)]))),
         message_queue_destroy(Q)).
-test(statechart_duplicate_trace_preserved,
-     [throws(error(permission_error(duplicate,statechart_option,trace),_))]) :-
+test(statechart_duplicate_trace_does_not_replace_source_validation,
+     [throws(error(existence_error(option,src_uri_or_src_text),_))]) :-
     statechart_spawn(_,[trace(false),trace(true)]).
 test(statechart_missing_source_preserved,
      [throws(error(existence_error(option,src_uri_or_src_text),_))]) :- statechart_spawn(_,[]).

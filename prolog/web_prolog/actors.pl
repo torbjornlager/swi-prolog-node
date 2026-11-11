@@ -420,14 +420,20 @@ spawn_option_spec(Name, Visibility, Validator) :-
     ;   hook_spawn_option(Name, Visibility, Validator)
     ).
 
-core_spawn_option(link, public, error:must_be(boolean)).
-core_spawn_option(monitor, public, error:must_be(boolean)).
+core_spawn_option(link, public, actors:validate_boolean).
+core_spawn_option(monitor, public, actors:validate_boolean).
 core_spawn_option(target, public, error:must_be(nonvar)).
 core_spawn_option(io_target, public, error:must_be(nonvar)).
 core_spawn_option(node, public, actors:spawn_node_value).
 core_spawn_option(monitor_target, internal, error:must_be(nonvar)).
 core_spawn_option(monitor_ref, internal, error:must_be(nonvar)).
 core_spawn_option(name_reservation, internal, error:must_be(nonvar)).
+
+% Private runtime validator: language Booleans have atom type and boolean domain.
+validate_boolean(Value) :-
+    must_be(atom, Value),
+    ( Value == true -> true ; Value == false -> true
+    ; domain_error(boolean, Value) ).
 
 spawn_node_value(Node) :-
     must_be(nonvar, Node),

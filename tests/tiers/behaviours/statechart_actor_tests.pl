@@ -83,12 +83,13 @@ test(example_helper_unset_root_preserves_colocated_path) :-
         restore_example_root(Before)).
 
 
-test(duplicate_trace_rejected_before_source_processing,
-     [forall(member(Options, [[trace(true),trace(true)],
-                              [trace(false),trace(false)],
-                              [trace(true),trace(false)]])),
-      throws(error(permission_error(duplicate, statechart_option, trace), _))]) :-
-    statechart_spawn(_, Options).
+test(duplicate_trace_accepts_first_setting,
+     [forall(member(First-Second,[true-true,false-false,true-false,false-true]))]) :-
+    Text='<statechart version="0.2" initial="a"><state id="a"/></statechart>',
+    setup_call_cleanup(
+        statechart_spawn(Pid,[src_text(Text),trace(First),trace(Second),link(false)]),
+        true,
+        statechart_halt(Pid,_,2)).
 
 test(api_exposes_only_source_aware_spawn) :-
     predicate_property(statechart_actor:statechart_spawn(_, _), exported),
