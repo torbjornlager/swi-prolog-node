@@ -189,6 +189,7 @@ builtin_goal_policy(send(_, _, _), actor_messaging, actor).
 builtin_goal_policy(!(_, _), actor_messaging, actor).
 builtin_goal_policy(receive(_), actor_messaging, actor).
 builtin_goal_policy(receive(_, _), actor_messaging, actor).
+builtin_goal_policy(make_ref(_), actor_messaging, actor).
 builtin_goal_policy(monitor(_, _), actor_messaging, actor).
 builtin_goal_policy(demonitor(_), actor_messaging, actor).
 builtin_goal_policy(demonitor(_, _), actor_messaging, actor).
