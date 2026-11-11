@@ -1274,6 +1274,38 @@ reject_supervisor_child_goal(Profile, Module:Goal) :-
     sandbox_check_goal_in_module(Profile, Module, Goal).
 
 
+% Same head restriction as SWI's clause/2 primitive; the module is installed
+% by the runtime. Direct application calls to private control guards are denied.
+sandbox:safe_primitive(control_guard:'$clause'(Module,Head,_)) :-
+    atom(Module), (var(Head);nonvar(Head),Head \= _:_).
+sandbox:safe_meta(control_guard:Call, Calls) :-
+    nonvar(Call), Call=..['$library_call',Module,Closure|Args],
+    library_callback_calls(Module,Closure,Args,Calls).
+sandbox:safe_meta('$apply':forall(Generate,Test), Context, Calls) :-
+    library_callback_calls(Context,Generate,[],First),
+    ( Generate == fail -> Rest=[]
+    ; library_callback_calls(Context,Test,[],Rest) ), append(First,Rest,Calls).
+sandbox:safe_meta(solution_sequences:call_nth(Goal,_), Context, Calls) :-
+    library_callback_calls(Context,Goal,[],Calls).
+
+library_callback_calls(Context,Closure,Args,Calls) :-
+    strip_module(Context:Closure,Module,Plain),
+    ( var(Plain) -> throw(error(instantiation_error,_))
+    ; callable(Plain) -> copy_term(Plain-Args,Copy-Extra),
+      Copy=..Parts, append(Parts,Extra,Full), Complete=..Full,
+      Calls=[Module:Complete]
+    ; Calls=[] ).
+
+% Expose the completed user closure rather than the library's checked bridge.
+% Invalid scalar callbacks cannot execute; their type error is raised lazily.
+sandbox:safe_meta(standard_library:Goal, Context, Calls) :-
+    nonvar(Goal), functor(Goal,Name,Arity),
+    (Name == maplist, between(2,8,Arity);Name == foldl, between(4,6,Arity);
+     Name == countall, Arity == 2),
+    arg(1,Goal,Closure),
+    ( Name == countall -> Extra=0 ; Extra is Arity-1 ),
+    length(Args,Extra), library_callback_calls(Context,Closure,Args,Calls).
+
 sandbox:safe_primitive(actors:self(_)).
 sandbox:safe_primitive(actors:make_ref(_)).
 sandbox:safe_primitive(actors:monitor(_, _)).

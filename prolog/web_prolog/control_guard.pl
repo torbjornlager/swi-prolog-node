@@ -12,6 +12,9 @@
 % node rejects these private names as user entry points; safe_meta exposes
 % their callbacks rather than treating the bridge as a safe primitive.
 :- public '$receive'/2, '$receive'/3.
+:- public '$clause'/3.
+% Analysis visibility only: node policy still rejects private guard entry goals.
+:- public '$library_call'/3, '$library_call'/4, '$library_call'/5, '$library_call'/6, '$library_call'/7, '$library_call'/8, '$library_call'/9.
 
 
 /** <module> Untrappable Web Prolog control transfers (layer 1)
@@ -101,6 +104,8 @@ rewrite_goal_(Module, Vars^Goal0, Vars^Goal) :-
     rewrite_goal(Module, Goal0, Goal).
 rewrite_goal_(Module, \+ Goal0, \+ Goal) :-
     rewrite_goal(Module, Goal0, Goal).
+% Reflection returns source terms rather than the installed control bridges.
+rewrite_goal_(Module, clause(Head,Body),control_guard:'$clause'(Module,Head,Body)).
 rewrite_goal_(Module, call_nth(Goal0, N), call_nth(Goal, N)) :-
     rewrite_goal(Module, Goal0, Goal).
 rewrite_goal_(Module, once(Goal0), once(Goal)) :-
@@ -170,6 +175,12 @@ rewrite_goal_(Module, assertz(Clause0),
               control_guard:'$assertz'(Module, Clause0)).
 rewrite_goal_(Module, assertz(Clause0, Ref),
               control_guard:'$assertz'(Module, Clause0, Ref)).
+% Library callback errors are callable errors, independent of ISO call/N.
+rewrite_goal_(Module, Goal0, Goal) :-
+    callable(Goal0), functor(Goal0,Name,Arity),
+    (Name == maplist, between(2,8,Arity);Name == foldl, between(4,6,Arity)),
+    Goal0 =.. [Name,Closure|Args],
+    Goal =.. [Name,control_guard:'$library_call'(Module,Closure)|Args].
 rewrite_goal_(Module, Goal0, Goal) :-
     callable(Goal0),
     functor(Goal0, Name, Arity),
@@ -285,6 +296,7 @@ restore_goal_(Module, Vars^Goal0, Vars^Goal) :-
     restore_goal(Module, Goal0, Goal).
 restore_goal_(Module, \+ Goal0, \+ Goal) :-
     restore_goal(Module, Goal0, Goal).
+restore_goal_(_Module,control_guard:'$clause'(_,Head,Body),clause(Head,Body)).
 restore_goal_(Module, call_nth(Goal0, N), call_nth(Goal, N)) :-
     restore_goal(Module, Goal0, Goal).
 restore_goal_(Module, once(Goal0), once(Goal)) :-
@@ -335,7 +347,8 @@ restore_goal_(Module, Goal0, Goal) :-
 
 restore_call_goal(Module, Guarded, Goal) :-
     Guarded = control_guard:Call,
-    Call =.. ['$call', _StoredModule, Closure|ExtraArgs],
+    Call =.. [GuardName, _StoredModule, Closure|ExtraArgs],
+    memberchk(GuardName, ['$call','$library_call']),
     restore_goal(Module, Closure, RestoredClosure),
     Goal =.. [call, RestoredClosure|ExtraArgs].
 
@@ -364,6 +377,9 @@ restore_meta_argument(0, Module, Goal0, Goal) :-
     !,
     restore_goal(Module, Goal0, Goal).
 restore_meta_argument(//, _Module, control_guard:'$dcg'(_, Body), Body) :- !.
+restore_meta_argument(Extra, _Module,
+                      control_guard:'$library_call'(_,Closure), Closure) :-
+    integer(Extra), Extra > 0, !.
 restore_meta_argument(Extra, _Module,
                       control_guard:'$call'(_StoredModule, Closure), Closure) :-
     (   integer(Extra), Extra > 0
@@ -441,6 +457,31 @@ recover_or_rethrow(Module, Error, Catcher, Recover) :-
     ->  call(GuardModule:runtime_execute_goal(Module, Goal))
     ;   runtime_execute(Module, Goal)
     ).
+
+'$clause'(Module,Head,Body) :-
+    clause(Module:Head,Stored), restore_goal(Module,Stored,Body).
+
+'$library_call'(Module,Closure,A1) :-
+    strip_module(Closure,_,Plain), must_be(callable,Plain),
+    '$call'(Module,Closure,A1).
+'$library_call'(Module,Closure,A1,A2) :-
+    strip_module(Closure,_,Plain), must_be(callable,Plain),
+    '$call'(Module,Closure,A1,A2).
+'$library_call'(Module,Closure,A1,A2,A3) :-
+    strip_module(Closure,_,Plain), must_be(callable,Plain),
+    '$call'(Module,Closure,A1,A2,A3).
+'$library_call'(Module,Closure,A1,A2,A3,A4) :-
+    strip_module(Closure,_,Plain), must_be(callable,Plain),
+    '$call'(Module,Closure,A1,A2,A3,A4).
+'$library_call'(Module,Closure,A1,A2,A3,A4,A5) :-
+    strip_module(Closure,_,Plain), must_be(callable,Plain),
+    '$call'(Module,Closure,A1,A2,A3,A4,A5).
+'$library_call'(Module,Closure,A1,A2,A3,A4,A5,A6) :-
+    strip_module(Closure,_,Plain), must_be(callable,Plain),
+    '$call'(Module,Closure,A1,A2,A3,A4,A5,A6).
+'$library_call'(Module,Closure,A1,A2,A3,A4,A5,A6,A7) :-
+    strip_module(Closure,_,Plain), must_be(callable,Plain),
+    '$call'(Module,Closure,A1,A2,A3,A4,A5,A6,A7).
 
 '$call'(Module, Goal0) :-
     runtime_execute(Module, Goal0).

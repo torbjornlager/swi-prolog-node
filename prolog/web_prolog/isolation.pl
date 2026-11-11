@@ -72,6 +72,7 @@ actor-coupled.
 */
 
 :- use_module(integer_relations, []).
+:- use_module(standard_library, []).
 :- use_module(library(modules)).
 :- use_module(library(option)).
 :- use_module(library(memfile)).
@@ -359,6 +360,8 @@ shadowing_empty_dynamic(Module, SharedModule, Name, Arity) :-
 
 
 import_actor_api(Module) :-
+    module_property(standard_library,exports(PIs)),
+    forall(member(PI,PIs), @(import(standard_library:PI), Module)),
     @(import(integer_relations:succ/2), Module),
     ActorModule = actors,
     (   current_module(ActorModule)

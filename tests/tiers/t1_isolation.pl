@@ -137,6 +137,29 @@ test(src_list, Msg == ready) :-
        on_timeout(fail)
    ]).
 
+% Required library behavior belongs below the node/sandbox layer.
+test(required_library_without_node) :-
+    self(Me),
+    spawn(run(Me),P,[monitor(true),src_text(
+      "eq7(X,X,X,X,X,X,X). run(Me):-maplist(eq7,[a],[a],[a],[a],[a],[a],[a]),countall(member(X,[a,b,a]),3),var(X),catch(maplist(7,[a]),error(type_error(callable,7),_),Caught=yes),Caught==yes,maplist(7,[]),send(Me,required_library_ok).")]),
+    receive({required_library_ok -> true},[timeout(2),on_timeout(fail)]),
+    receive({down(P,P,true) -> true},[timeout(2),on_timeout(fail)]).
+
+test(required_library_export_contains_public_source) :-
+    isolation:prepare_actor_module(library_source_export,user,
+      [src_text("eq(X,X). run:-maplist(eq,[a],[a]).")]),
+    isolation:load_options_text(library_source_export,[src_predicates([run/0,eq/2])],Text),
+    assertion(\+sub_string(Text,_,_,_,"control_guard")),
+    assertion(\+sub_string(Text,_,_,_,"library_call")),
+    assertion(sub_string(Text,_,_,_,"maplist")).
+
+test(required_library_copy_restores_source) :-
+    self(Me),
+    spawn(parent(Me),P,[monitor(true),src_text(
+      "eq(X,X). worker(Me):-maplist(eq,[a],[a]),send(Me,library_copied). parent(Me):-spawn(worker(Me),P,[src_predicates([worker/1,eq/2]),monitor(true)]),receive({down(P,P,true)->true},[timeout(2),on_timeout(fail)]).")]),
+    receive({library_copied -> true},[timeout(2),on_timeout(fail)]),
+    receive({down(P,P,true) -> true},[timeout(2),on_timeout(fail)]).
+
 test(src_text, Msg == hello_from_text) :-
    self(Self),
    spawn(run(Self), _Pid, [

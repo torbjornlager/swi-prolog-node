@@ -244,3 +244,14 @@ selects native revision `abbc56f3d5104bd6d40d2ed5f99fe6199d75c4a8` for the
 demonstrator pin and strict commit-pinned local n3 startup. Both reader-mode
 checks and native/integration tiers pass; local n3 explicitly selects chars.
 Package defaults, installed engine and unresolved diagnostics remain separate.
+
+### Native library callbacks
+
+Actor modules provide `maplist/2–8`, `foldl/4–6` and `countall/2` through the
+runtime library. Callback values are checked when invoked, preserving private
+source lookup, prefix arguments, alternatives and exceptions. Empty iteration
+does not inspect unused closures. Library scalar errors retain the original
+culprit and use `type_error(callable, Value)`; ISO `call/N` is unchanged.
+The control and blacklist bridges are restored to public calls during source
+export and sandboxed reflection. Shared native qualification lives in
+`trinity-conformance/cases/native-library-callbacks-0.1.json`.
