@@ -25,7 +25,8 @@
      cancel/1,               % +ID
      input/2,                % +Prompt, ?Answer
      input/3,                % +Prompt, ?Answer, +Options
-     respond/2,              % +Pid, +Answer
+     respond/3,              % +Pid, +PromptRef, +Answer
+     retarget_prompt/3,      % +Pid, +PromptRef, +Target
      output/1,               % +Term
      output/2,               % +Term, +Options
      terminal_output/1,      % +Term
@@ -100,6 +101,7 @@ Takeover-style (semidet; if a clause succeeds the core path is skipped):
   - hook_spawn(:Goal, -Pid, +Options): take over a spawn entirely
     (distribution claims spawns whose node(N) is non-local).
   - hook_send(+Pid, +Message): take over delivery (Id@Node, sockets).
+  - hook_prompt_relay(+Target): target accepts explicitly tagged input prompts.
   - hook_exit(+Pid, +Reason): take over exit delivery.
   - hook_start_body(+Pid, :Goal, +Options, :OnReady, :OnPrepError,
     :Runner, -Start): select a module-qualified closure for the child-side
@@ -175,6 +177,7 @@ Transactional triple (semidet prepare; commit/abort run via forall/2):
     hook_spawn/3,
     hook_local_spawn_node/1,
     hook_send/2,
+    hook_prompt_relay/1,
     hook_exit/2,
     hook_start_body/7,
     hook_spawn_options/3,
@@ -1453,6 +1456,8 @@ send_terminal_output(Target, Self, Term, Options) :-
 %
 %   Send Prompt to the target process and wait for input.  Prompt may
 %   be any term, compound or atomic.  Default target is the parent.
+%   Include a fresh prompt reference and wait
+%   for a response carrying that reference.
 
 input(Prompt, Input) :-
     input(Prompt, Input, []).
@@ -1462,21 +1467,43 @@ input(Prompt, Input, Options) :-
     '$parent'(Parent),
     default_io_target(Parent, DefaultTarget),
     option(target(Target), Options, DefaultTarget),
-    Target ! prompt(Self, Prompt),
-    receive({
-       '$input'(_From, Input) ->
-           true
-    }).
+    correlated_input(Self, Target, Prompt, Input).
+
+correlated_input(Pid, Target, Prompt, Input) :-
+    make_ref(Ref),
+    send_input_prompt(Target, Pid, correlated(Ref), Prompt),
+    receive({ '$input'(_, Ref, Input) -> true
+            ; '$input_retarget'(Ref, Replacement) if ground(Replacement) ->
+                correlated_input(Pid, Replacement, Prompt, Input)
+            }).
+
+send_input_prompt(Target, Pid, Mode, Prompt) :-
+    (   nonvar(Target), hook_prompt_relay(Target)
+    ->  Event = '$input_prompt'(Pid, Mode, Prompt)
+    ;   input_prompt_event(Pid, Mode, Prompt, Event)
+    ),
+    send(Target, Event).
+
+input_prompt_event(Pid, correlated(Ref), Prompt, prompt(Pid, prompt_ref(Ref, Prompt))).
 
 
-%!  respond(+Pid, +Input) is det.
+%!  respond(+Pid, +PromptRef, +Input) is det.
 %
-%   Send a response in the form of Term to an actor Pid that
-%   has prompted its parent process for input.
-
-respond(Pid, Term) :-
+%   Send a response to the input call that issued PromptRef.
+respond(Pid, Ref, Term) :-
+    must_be(ground, Ref),
     self(Self),
-    Pid ! '$input'(Self, Term).
+    Pid ! '$input'(Self, Ref, Term).
+
+%!  retarget_prompt(+Pid, +PromptRef, +Target) is det.
+%
+%   Ask the prompting actor to reissue its current correlated prompt to
+%   Target with a fresh reference. A reply that wins the race completes
+%   the call. Watcher exit alone does not change a pending prompt.
+retarget_prompt(Pid, Ref, Target) :-
+    must_be(ground, Ref),
+    must_be(ground, Target),
+    Pid ! '$input_retarget'(Ref, Target).
 
 
 %!  with_io_target(+Target, :Goal) is semidet.

@@ -36,6 +36,10 @@ respond_with_answer(prolog, Answer) :-
         blobs(portray),
         portray_goal(portray_blob)
     ]).
+respond_with_answer(json, error(Pid, invalid_prompt_ref)) :-
+    !,
+    answer_to_json(error(Pid, invalid_prompt_ref), JSON),
+    reply_json(JSON, [status(400)]).
 respond_with_answer(json, Answer) :-
     !,
     answer_to_json(Answer, JSON),
@@ -63,6 +67,10 @@ answer_to_json(success(Pid, Bindings0, More),
                json{type:success, pid:JsonPid, data:Bindings, more:More}) :-
     json_pid_value(Pid, JsonPid),
     maplist(bindings_to_json_strings, Bindings0, Bindings).
+answer_to_json(error(Pid, invalid_prompt_ref),
+               json{type:error, pid:JsonPid, code:invalid_prompt_ref,
+                    data:"Expected the reference from the current prompt"}) :- !,
+    json_pid_value(Pid, JsonPid).
 answer_to_json(error(Pid, ErrorTerm),
                JSON) :-
     json_pid_value(Pid, JsonPid),
@@ -103,6 +111,10 @@ answer_to_json(terminal_output(Pid, Data), json{type:output, pid:JsonPid, data:D
 answer_to_json(prompt(Pid, Prompt), json{type:prompt, pid:JsonPid, data:PromptString}) :-
     json_pid_value(Pid, JsonPid),
     prompt_to_json_string(Prompt, PromptString).
+answer_to_json(prompt(Pid, Prompt, Token), JSON) :-
+    answer_to_json(prompt(Pid, Prompt), Base),
+    atom_string(Token, Text),
+    JSON = Base.put(prompt_ref, Text).
 answer_to_json(timeout(Pid), json{type:timeout, pid:JsonPid}) :-
     json_pid_value(Pid, JsonPid).
 answer_to_json(spawned(Pid), json{type:spawned, pid:JsonPid}) :-

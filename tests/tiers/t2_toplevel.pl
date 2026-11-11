@@ -690,8 +690,8 @@ test(input, Results == true) :-
        template(.)
    ]),
    receive({
-       prompt(Pid, prompt) ->
-           respond(Pid, hello)
+       prompt(Pid, prompt_ref(Ref, prompt)) ->
+           respond(Pid, Ref, hello)
    }, [ timeout(20), on_timeout(throw(shell_receive_timeout)) ]),
    receive({
        output(Pid, hello) -> true

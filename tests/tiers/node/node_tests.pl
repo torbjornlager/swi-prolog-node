@@ -2765,6 +2765,7 @@ test(private_ws_remote_actor_terminal_input_roundtrip,
                     ws_send_json(WS, json{
                         command:toplevel_respond,
                         pid:PromptPid,
+                        prompt_ref:Prompt.prompt_ref,
                         input:"answer"
                     }),
                     ws_receive_json_until_expected_types(
@@ -3033,20 +3034,19 @@ test(distributed_io_prompt_authorization_is_queue_scoped_and_one_shot) :-
     self(Self),
     setup_call_cleanup(
         assertz(distribution:pending_io_prompt(test_token,
-                                               owning_browser_queue,
-                                               Self)),
-        (
-            assertion(\+ distribution:respond_io_prompt(
-                              other_browser_queue, Self, denied)),
-            assertion(distribution:respond_io_prompt(
-                          owning_browser_queue, Self, accepted)),
-            receive({
-                '$input'(distributed_io, accepted) -> true
-            }, [timeout(1), on_timeout(fail)]),
-            assertion(\+ distribution:respond_io_prompt(
-                              owning_browser_queue, Self, replay))
+                    owning_browser_queue, Self, correlated(42))),
+        ( assertion(\+ distribution:respond_io_prompt(
+                              other_browser_queue, Self, correlated(42), denied)),
+          assertion(\+ distribution:respond_io_prompt(
+                              owning_browser_queue, Self, correlated(43), denied)),
+          assertion(distribution:respond_io_prompt(
+                              owning_browser_queue, Self, correlated(42), accepted)),
+          receive({'$input'(distributed_io, 42, accepted) -> true},
+                  [timeout(1), on_timeout(fail)]),
+          assertion(\+ distribution:respond_io_prompt(
+                              owning_browser_queue, Self, correlated(42), replay))
         ),
-        retractall(distribution:pending_io_prompt(test_token, _, _))
+        retractall(distribution:pending_io_prompt(test_token, _, _, _))
     ).
 
 test(distributed_io_endpoint_cleanup_revokes_prompts_and_delivery) :-
@@ -3056,19 +3056,20 @@ test(distributed_io_endpoint_cleanup_revokes_prompts_and_delivery) :-
                                                      browser_queue)),
             assertz(distribution:pending_io_prompt(test_token,
                                                     browser_queue,
-                                                    remote_pid))
+                                                    remote_pid,
+                                                    correlated(cleanup_ref)))
         ),
         (
             distribution:forget_io_endpoints_for_target(browser_queue),
             assertion(\+ distribution:io_endpoint_target(test_token, _)),
-            assertion(\+ distribution:pending_io_prompt(test_token, _, _)),
+            assertion(\+ distribution:pending_io_prompt(test_token, _, _, _)),
             assertion(\+ distribution:deliver_io_endpoint(
                               test_token,
                               terminal_output(remote_pid, hello)))
         ),
         (
             retractall(distribution:io_endpoint_target(test_token, _)),
-            retractall(distribution:pending_io_prompt(test_token, _, _))
+            retractall(distribution:pending_io_prompt(test_token, _, _, _))
         )
     ).
 
@@ -4215,15 +4216,19 @@ test(profile_check_goal_rejects_input_in_isotope_profile,
      [throws(error(profile_violation(_, _), _))]) :-
     profile_check_goal(isotope, input(prompt, _Answer)).
 
+test(profile_check_goal_rejects_respond_in_isobase_profile,
+     [throws(error(profile_violation(_, _), _))]) :-
+    profile_check_goal(isobase, respond(123, 42, answer)).
+
 test(profile_check_goal_rejects_respond_in_isotope_profile,
      [throws(error(profile_violation(_, _), _))]) :-
-    profile_check_goal(isotope, respond(123, answer)).
+    profile_check_goal(isotope, respond(123, 42, answer)).
 
 test(profile_check_goal_allows_actor_io_in_actor_profile) :-
     profile_check_goal(actor,
                        ( output(hello),
                          input(prompt, _Answer),
-                         respond(123, answer)
+                         respond(123, 42, answer)
                        )).
 
 test(profile_check_goal_rejects_non_exported_actor_parent_predicate,
@@ -6862,7 +6867,7 @@ test(isotope_read_respond_then_pull_success,
                 PromptData = PromptJSON.data,
                 format(atom(RespondURL), '~w/toplevel_respond', [URI]),
                 read_json_form_post(RespondURL,
-                                    [pid=Pid, input='ok.', format=json],
+                                    [pid=Pid, input='ok.', prompt_ref=PromptJSON.prompt_ref, format=json],
                                     RespondJSON),
                 RespondType = RespondJSON.type,
                 format(atom(PullURL), '~w/toplevel_poll', [URI]),
@@ -6895,10 +6900,10 @@ test(isotope_read_response_requires_period,
                 read_json_answer(CallURL, PromptJSON),
                 PromptType = PromptJSON.type,
                 PromptData = PromptJSON.data,
-                format(atom(RespondURL),
-                       '~w/toplevel_respond?pid=~w&input=ok&format=json',
-                       [URI, Pid]),
-                read_json_answer(RespondURL, RespondJSON),
+                format(atom(RespondURL), '~w/toplevel_respond', [URI]),
+                read_json_form_post(RespondURL,
+                                    [pid=Pid, input=ok, prompt_ref=PromptJSON.prompt_ref, format=json],
+                                    RespondJSON),
                 RespondType = RespondJSON.type,
                 RespondData = RespondJSON.data
             ),
@@ -7132,10 +7137,10 @@ test(isotope_loaded_program_read_prompt_then_success,
                 Type2 = JSON2.type,
                 PID2 = JSON2.pid,
                 Data2 = JSON2.data,
-                format(atom(RespondURL),
-                       '~w/toplevel_respond?pid=~w&input=ok.&format=json',
-                       [URI, Pid]),
-                read_json_answer(RespondURL, JSON3),
+                format(atom(RespondURL), '~w/toplevel_respond', [URI]),
+                read_json_form_post(RespondURL,
+                                    [pid=Pid, input='ok.', prompt_ref=JSON2.prompt_ref, format=json],
+                                    JSON3),
                 Type3 = JSON3.type,
                 read_json_answer(PullURL, JSON4),
                 Type4 = JSON4.type,

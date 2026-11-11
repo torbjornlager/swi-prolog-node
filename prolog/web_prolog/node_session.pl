@@ -15,7 +15,10 @@
     require_isotope_session_owner/2,
     ensure_isotope_ready/3,
     wait_for_session_event/4,
-    read_response_input/3,
+    wait_for_session_event/5,
+    abort_isotope_session/4,
+    read_response_input/5,
+    clear_isotope_prompt/1,
     load_text_into_session/2,
     current_isotope_session_infos/1,
     admin_terminate_isotope_session/1,
@@ -30,7 +33,7 @@ Session lifecycle and queue/message normalization for node ISOTOPE endpoints.
 */
 
 :- use_module(actor_api, [actor_module/2, exit/2]).
-:- use_module(toplevel_actors, [toplevel_call/3]).
+:- use_module(toplevel_actors, [toplevel_call/3, toplevel_abort/2]).
 :- use_module(rpc, [text_to_string/2]).
 :- use_module(pid_utils, [canonical_pid/2, local_node_url/1]).
 :- use_module(isolation, [load_source_text/3]).
@@ -55,10 +58,45 @@ Session lifecycle and queue/message normalization for node ISOTOPE endpoints.
 :- dynamic isotope_session_trace/1.
 :- dynamic isotope_ready/1.
 :- dynamic isotope_pending_prompt/2.
+:- dynamic isotope_event_waiter/2.
+:- dynamic isotope_abort_waiter/2.
 
 :- meta_predicate with_isotope_session_public_execution_profile(+, 0).
+:- meta_predicate wait_for_session_event(+, +, +, 0, -).
 
 :- multifile actors:hook_stop/1.
+:- multifile actors:hook_prompt_relay/1.
+:- multifile actors:hook_send/2.
+
+actors:hook_prompt_relay(Queue) :- node_session:isotope_session(_, Queue).
+
+% Update the pending slot when the actor publishes the event. A concurrent
+% poll must not restore a reference from an event dequeued before Abort.
+actors:hook_send(Queue, Event) :-
+    nonvar(Event), Event = '$input_prompt'(Pid, Mode, Prompt),
+    node_session:isotope_session(Pid, Queue),
+    !,
+    node_session:publish_session_prompt(Pid, Queue, Mode, Prompt).
+actors:hook_send(Queue, Event) :-
+    nonvar(Event), Event = abort(Pid),
+    node_session:isotope_session(Pid, Queue),
+    !,
+    node_session:clear_isotope_prompt(Pid),
+    thread_send_message(Queue, abort(Pid)).
+actors:hook_send('$isotope_abort_ack'(Queue, AckQueue), Event) :-
+    nonvar(Event), Event = abort(Pid),
+    !,
+    node_session:publish_isotope_abort(Pid, Queue, AckQueue).
+
+publish_session_prompt(Pid, Queue, correlated(Ref), Prompt) :-
+    term_to_atom(Ref, Token),
+    remember_pending_prompt(Pid, correlated(Ref, Token), Prompt),
+    thread_send_message(Queue, prompt(Pid, Prompt, Token)).
+
+
+clear_isotope_prompt(Pid0) :-
+    session_pid_key(Pid0, Pid),
+    with_mutex(isotope_prompts, retractall(isotope_pending_prompt(Pid, _))).
 
 
 %  Notify an HTTP ISOTOPE queue when a session ends by itself (notably after
@@ -69,11 +107,13 @@ Session lifecycle and queue/message normalization for node ISOTOPE endpoints.
 actors:hook_stop(Pid0) :-
     session_pid_key(Pid0, Pid),
     isotope_session(Pid, Queue),
+    clear_isotope_prompt(Pid),
     (   actors:exit_reason(Pid0, Reason0)
     ->  Reason = Reason0
     ;   Reason = true
     ),
     catch(thread_send_message(Queue, down(Pid, Pid, Reason)), _, true),
+    notify_isotope_abort_waiters(Pid, down(Pid, Pid, Reason)),
     ignore(catch(finish_activity(isotope_session, Pid, Reason), _, true)),
     forget_isotope_session_owner(Pid).
 
@@ -239,20 +279,28 @@ cleanup_isotope_session(Pid) :-
 reset_isotope_session(SessionPid) :-
     ignore(catch(finish_activity(isotope_session, SessionPid, cleanup),
                  _, true)),
-    (   retract(isotope_session(SessionPid, Queue))
-    ->  catch(message_queue_destroy(Queue), _, true)
-    ;   true
-    ),
+    with_mutex(isotope_event_waiters, retire_isotope_queue(SessionPid)),
     retractall(isotope_loaded_text(SessionPid, _)),
     retractall(isotope_session_profile(SessionPid, _)),
-    forall(retract(isotope_session_owner(SessionPid, OwnerId)),
-           remember_ended_session(SessionPid, OwnerId)),
+    % A former owner must see either the live session or its retirement record.
+    with_mutex(isotope_session_ownership,
+        forall(retract(isotope_session_owner(SessionPid, OwnerId)),
+               remember_ended_session(SessionPid, OwnerId))),
     retractall(isotope_session_trace(SessionPid)),
     retractall(isotope_ready(SessionPid)),
-    retractall(isotope_pending_prompt(SessionPid, _)),
+    clear_isotope_prompt(SessionPid),
     forget_isotope_session_owner(SessionPid),
     clear_session_bindings(SessionPid),
     forall(hook_session_cleanup(SessionPid), true).
+
+retire_isotope_queue(Pid) :-
+    (   retract(isotope_session(Pid, Queue))
+    ->  catch(message_queue_destroy(Queue), _, true),
+        Error = error(existence_error(isotope_session, Pid),
+                      context(node_session:abort_isotope_session/4, 'session ended during Abort')),
+        notify_isotope_abort_waiters(Pid, error(Pid, Error))
+    ;   true
+    ).
 
 
 % Local retirement and remembering a newly spawned session serialize here,
@@ -291,6 +339,10 @@ isotope_session_queue(Pid, _) :-
 %   as queue and cleanup bookkeeping.
 require_isotope_session_owner(PrincipalId, Pid) :-
     session_pid_key(Pid, SessionPid),
+    with_mutex(isotope_session_ownership,
+        check_isotope_session_owner(PrincipalId, SessionPid)).
+
+check_isotope_session_owner(PrincipalId, SessionPid) :-
     (   isotope_session_owner(SessionPid, PrincipalId)
     ->  true
     ;   isotope_session_ended(SessionPid, PrincipalId, _)
@@ -338,10 +390,82 @@ ensure_isotope_ready(Pid, Queue, Timeout) :-
 %   return `timeout(Pid)` and leave PTCP execution/lifecycle enforcement to
 %   the actor's separate `time_limit` and `idle_limit`.
 wait_for_session_event(Pid, Queue, Timeout, Event) :-
+    wait_for_session_event(Pid, Queue, Timeout, true, Event).
+
+wait_for_session_event(Pid, Queue, Timeout, Start, Event) :-
     session_pid_key(Pid, SessionPid),
-    (   thread_get_message(Queue, Message, [timeout(Timeout)])
-    ->  session_message_event(SessionPid, Message, Event)
+    flag(isotope_event_wait, Token, Token+1),
+    setup_call_cleanup(register_isotope_waiter(SessionPid, Token),
+        ( call(Start),
+          get_time(Now), Deadline is Now+Timeout,
+          wait_for_isotope_message(SessionPid, Queue, Token, Deadline, Event)
+        ),
+        with_mutex(isotope_event_waiters, retractall(isotope_event_waiter(SessionPid, Token)))).
+
+register_isotope_waiter(Pid, Token) :-
+    with_mutex(isotope_event_waiters,
+        ( isotope_event_waiter(Pid, _) ->
+            throw(error(permission_error(wait, busy_isotope_session, Pid), _))
+        ; assertz(isotope_event_waiter(Pid, Token))
+        )).
+
+wait_for_isotope_message(SessionPid, Queue, Token, Deadline, Event) :-
+    (   catch(thread_get_message(Queue, Message, [deadline(Deadline)]),
+              error(existence_error(message_queue, Queue), _),
+              throw(error(existence_error(isotope_session, SessionPid),
+                          context(node:wait_for_session_event/4, 'session ended while waiting'))))
+    ->  ( Message = '$isotope_interrupted'(Interrupted) ->
+            ( Interrupted == Token -> Event = abort(SessionPid)
+            ; wait_for_isotope_message(SessionPid, Queue, Token, Deadline, Event)
+            )
+        ; session_message_event(SessionPid, Message, Event)
+        )
     ;   Event = timeout(SessionPid)
+    ).
+
+abort_isotope_session(Pid0, Queue, Timeout, Event) :-
+    session_pid_key(Pid0, Pid),
+    setup_call_cleanup(message_queue_create(AckQueue),
+        setup_call_cleanup(register_isotope_abort_waiter(Pid, Queue, AckQueue),
+            ( clear_isotope_prompt(Pid),
+              toplevel_abort(Pid, '$isotope_abort_ack'(Queue, AckQueue)),
+              ( thread_get_message(AckQueue, Message, [timeout(Timeout)]) ->
+                  session_message_event(Pid, Message, Event)
+              ; Event = timeout(Pid)
+              )
+            ),
+            retractall(isotope_abort_waiter(Pid, AckQueue))),
+        message_queue_destroy(AckQueue)).
+
+register_isotope_abort_waiter(Pid, Queue, AckQueue) :-
+    % Register against the live queue before Halt can retire it.
+    with_mutex(isotope_event_waiters,
+        ( isotope_session_queue(Pid, Queue),
+          assertz(isotope_abort_waiter(Pid, AckQueue))
+        )).
+
+notify_isotope_abort_waiters(Pid, Message) :-
+    forall(isotope_abort_waiter(Pid, AckQueue),
+           catch(thread_send_message(AckQueue, Message), _, true)).
+
+% The PTCP sends its acknowledgement after unwinding the old goal and
+% before running another one. Discard buffered output at that boundary and
+% notify the active reader separately from the Abort request itself.
+publish_isotope_abort(Pid, Queue, AckQueue) :-
+    clear_isotope_prompt(Pid),
+    with_mutex(isotope_event_waiters,
+        ( discard_isotope_messages(Queue),
+          ( isotope_event_waiter(Pid, Token) ->
+              catch(thread_send_message(Queue, '$isotope_interrupted'(Token)), _, true)
+          ; true
+          )
+        )),
+    catch(thread_send_message(AckQueue, abort(Pid)), _, true).
+
+discard_isotope_messages(Queue) :-
+    ( catch(thread_get_message(Queue, _, [timeout(0)]), _, fail) ->
+        discard_isotope_messages(Queue)
+    ; true
     ).
 
 
@@ -354,8 +478,8 @@ session_message_event(Pid, error(Pid, Error), error(Pid, Error)).
 session_message_event(Pid, output(Pid, Data), output(Pid, Data)).
 session_message_event(Pid, terminal_io_output(Pid, Data), terminal_io_output(Pid, Data)).
 session_message_event(Pid, terminal_output(Pid, Data), terminal_output(Pid, Data)).
-session_message_event(Pid, prompt(Pid, Prompt), prompt(Pid, Prompt)) :-
-    remember_pending_prompt(Pid, Prompt).
+session_message_event(Pid, prompt(Pid, Prompt), prompt(Pid, Prompt)).
+session_message_event(Pid, prompt(Pid, Prompt, Token), prompt(Pid, Prompt, Token)).
 session_message_event(Pid, '$abort_goal', abort(Pid)).
 session_message_event(Pid, abort(_), abort(Pid)).
 session_message_event(Pid, down(Pid, Ref, Reason), down(Pid, Ref, Reason)) :-
@@ -366,26 +490,35 @@ session_message_event(Pid, Message, error(Pid, Unexpected)) :-
                                'unexpected session event')).
 
 
-%!  read_response_input(+Pid, +InputAtom, -Input) is det.
+%!  read_response_input(+Pid, +SubmittedRef, +InputAtom, -Ref, -Input) is semidet.
 %
 %   Parse one browser response for a pending prompt. Responses to `read/1`
 %   prompts must be full Prolog terms terminated by a period, matching stream
 %   `read/1` semantics. Other prompts keep the historical URL-parameter
 %   convenience and may omit the final period.
-read_response_input(Pid0, InputAtom, Input) :-
-    text_double_quotes(TextMode),
+read_response_input(Pid0, Submitted, InputAtom, Ref, Input) :-
     session_pid_key(Pid0, Pid),
-    (   retract(isotope_pending_prompt(Pid, '|:'))
-    ->  read_period_terminated_term(InputAtom, Input)
-    ;   retractall(isotope_pending_prompt(Pid, _)),
-        read_term_from_atom(InputAtom, Input, [double_quotes(TextMode)])
+    with_mutex(isotope_prompts,
+        ( % Halt may retire the session after the HTTP ownership check.
+          isotope_session_queue(Pid, _),
+          isotope_pending_prompt(Pid, pending(correlated(Ref, Token), Prompt)),
+          Submitted == Token,
+          parse_response_input(Prompt, InputAtom, Input),
+          retractall(isotope_pending_prompt(Pid, _))
+        )).
+
+parse_response_input(Prompt, Text, Input) :-
+    ( Prompt == '|:' -> read_period_terminated_term(Text, Input)
+    ; text_double_quotes(TextMode), read_term_from_atom(Text, Input, [double_quotes(TextMode)])
     ).
 
-
-remember_pending_prompt(Pid0, Prompt) :-
-    session_pid_key(Pid0, Pid),
-    retractall(isotope_pending_prompt(Pid, _)),
-    assertz(isotope_pending_prompt(Pid, Prompt)).
+remember_pending_prompt(Pid, Mode, Prompt) :-
+    with_mutex(isotope_prompts,
+        ( isotope_session(Pid, _) ->
+            retractall(isotope_pending_prompt(Pid, _)),
+            assertz(isotope_pending_prompt(Pid, pending(Mode, Prompt)))
+        ; true
+        )).
 
 
 read_period_terminated_term(InputAtom, Input) :-
@@ -404,7 +537,7 @@ read_period_terminated_stream(Stream, Input) :-
         forall(member(Code, Codes), code_type(Code, space))
     ->  true
     ;   throw(error(syntax_error(unexpected_input_after_full_stop),
-                    context(node_session:read_response_input/3,
+                    context(node_session:read_response_input/5,
                             'read/1 response must contain exactly one period-terminated term')))
     ).
 
