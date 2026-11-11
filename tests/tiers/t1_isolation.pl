@@ -94,6 +94,16 @@ actor_test_p(a). actor_test_p(b). actor_test_p(c).
    cleanup(ensure_mailbox_empty)
 ]).
 
+% Explicit imports keep later actor API imports from finding the host builtin.
+test(successor_validates_both_supplied_arguments) :-
+    isolation:prepare_actor_module(succ_validation_module,user,[]),
+    catch(succ_validation_module:succ(1,1.5),E,true),
+    assertion(nonvar(E)), assertion(E=error(type_error(integer,1.5),_)),
+    catch(succ_validation_module:succ(1.5,V),E2,true),
+    assertion(E2=error(type_error(integer,1.5),_)), assertion(var(V)),
+    assertion(succ_validation_module:succ(2,3)),
+    assertion(\+succ_validation_module:succ(_,0)).
+
 % Goal failure must not be mistaken for an unclaimed startup hook. Wait
 % for termination before checking the mailbox so both duplicate readiness
 % notifications and repeated application effects are observable.

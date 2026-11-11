@@ -1281,6 +1281,7 @@ sandbox:safe_primitive(actors:flush).
 sandbox:safe_primitive(isolation:listing_private).
 sandbox:safe_primitive(isolation:listing_private(_)).
 sandbox:safe_primitive(actor_api:node_setting(_, _)).
+sandbox:safe_primitive(integer_relations:succ(_, _)).
 
 %  Web Prolog distribution API.  rpc/2,3, promise/3,4, and yield/2,3 marshal
 %  the goal to a REMOTE node, which validates and executes it under its own
