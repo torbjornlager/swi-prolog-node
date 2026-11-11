@@ -67,6 +67,13 @@ if [ -n "$SELECT" ]; then
     run_tier T4_LEGACY_LAYOUT tests/tiers/t4_node.pl run_legacy_layout
 fi
 
+if selected T4_NATIVE || selected ORIGINS; then
+    echo "=== WebSocket Origin handshakes ==="
+    if ! SWIPL="$SWIPL" python3 tests/ws_origin_handshake.py; then
+        FAILED=1
+    fi
+fi
+
 run_wasm () {
     selected WASM || return 0
 

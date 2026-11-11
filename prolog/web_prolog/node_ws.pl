@@ -383,7 +383,10 @@ ws_request_scheme(_, "http").
 normalize_origin_text(Value0, Norm) :-
     text_to_string(Value0, S1),
     normalize_space(string(S2), S1),
-    (   catch(normalize_load_uri_allowed_origins([S2], [Normalized]), _, fail)
+    % The URI normalizer accepts atoms. Handshake headers and runtime
+    % snapshots can be strings; convert before comparing canonical ports.
+    atom_string(OriginAtom, S2),
+    (   catch(normalize_load_uri_allowed_origins([OriginAtom], [Normalized]), _, fail)
     ->  text_to_string(Normalized, Norm)
     ;   string_lower(S2, S3),
         %  Strip a trailing slash so "https://host" == "https://host/".
