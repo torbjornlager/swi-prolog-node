@@ -29,9 +29,9 @@ test(malformed_spec,
      [forall(member(Spec,[wrong(a,[]),child(a),child(a,[],extra),17]))]) :-
     catch(supervisor_spawn([Spec],Pid),Error,true),
     assertion(Error=error(type_error(supervisor_child_spec,Spec),_)),assertion(var(Pid)).
-test(non_ground_id) :-
+test(non_atom_id_preserves_nested_variables) :-
     catch(supervisor_spawn([child(worker(X),[start(true)])],Pid),Error,true),
-    assertion(Error=error(instantiation_error,_)),assertion(var(X)),assertion(var(Pid)).
+    assertion(Error=error(type_error(atom,worker(X)),_)),assertion(var(X)),assertion(var(Pid)).
 test(unknown_child_options,
      [forall(member(Option,[restarts(permanent),limit(1),start,start(true,false)]))]) :-
     catch(supervisor_spawn([child(a,[start(true),Option])],Pid),Error,true),
@@ -76,9 +76,9 @@ test(goal_availability_not_checked_and_variables_shared) :-
 test(duplicates_rejected_before_any_child_starts) :-
     setup_call_cleanup(message_queue_create(Q),
         (catch(supervisor_spawn(
-            [child(worker(1),[start(thread_send_message(Q,ran))]),
-             child(worker(1),[start(true)])],Pid),Error,true),
-         assertion(Error=error(permission_error(duplicate,supervisor_child_id,worker(1)),_)),
+            [child(worker_1,[start(thread_send_message(Q,ran))]),
+             child(worker_1,[start(true)])],Pid),Error,true),
+         assertion(Error=error(permission_error(duplicate,supervisor_child_id,worker_1),_)),
          assertion(var(Pid)),assertion(\+thread_get_message(Q,_,[timeout(0)]))),
         message_queue_destroy(Q)).
 test(malformed_later_child_before_any_child_starts) :-
@@ -121,18 +121,18 @@ test(cyclic_specification_rejected, [throws(error(representation_error(cyclic_te
     Spec=child(nested,[start(start_sub_supervisor([Spec],[]))]),supervisor_spawn([Spec],_).
 test(dynamic_invalid_spec_does_not_change_supervisor) :-
     with_supervisor([],Sup,
-        (catch(supervisor_spawn_child(Sup,child(worker(1),[start(forever),restart(bad)]),_),Error,true),
+        (catch(supervisor_spawn_child(Sup,child(worker_1,[start(forever),restart(bad)]),_),Error,true),
          assertion(nonvar(Error)),supervisor_which_children(Sup,Children),assertion(Children==[]),
-         supervisor_spawn_child(Sup,child(worker(1),[start(forever)]),Reply),assertion(Reply==ok),
-         supervisor_spawn_child(Sup,child(worker(1),[start(forever)]),Duplicate),
+         supervisor_spawn_child(Sup,child(worker_1,[start(forever)]),Reply),assertion(Reply==ok),
+         supervisor_spawn_child(Sup,child(worker_1,[start(forever)]),Duplicate),
          assertion(Duplicate==error(already_present)),
-         supervisor_which_children(Sup,[info(worker(1),_,worker,permanent)]))).
+         supervisor_which_children(Sup,[info(worker_1,_,worker,permanent)]))).
 test(dynamic_rejected_before_contact,
      [throws(error(domain_error(supervisor_child_option,typo(1)),_))]) :-
     supervisor_spawn_child(nonexistent,child(a,[start(true),typo(1)]),_).
-test(compound_ids_and_initial_order_preserved) :-
-    with_supervisor([child(worker(2),[start(forever)]),child(worker(1),[start(forever)])],Sup,
+test(atom_ids_and_initial_order_preserved) :-
+    with_supervisor([child(worker_2,[start(forever)]),child(worker_1,[start(forever)])],Sup,
         (supervisor_which_children(Sup,Children),
-         assertion(Children=[info(worker(2),_,worker,permanent),info(worker(1),_,worker,permanent)]))).
+         assertion(Children=[info(worker_2,_,worker,permanent),info(worker_1,_,worker,permanent)]))).
 
 :- end_tests(supervisor_child_specs).
