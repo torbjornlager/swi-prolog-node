@@ -968,7 +968,9 @@ ws_action_toplevel_respond(Dict, Queue, Principal) :-
             ws_pending_prompt(Queue, Key, Ref),
             ws_require_owned_session(Queue, Principal, Pid),
             with_isotope_session_public_execution_profile(Pid, respond(Pid, Ref, Input))
-        )
+        ),
+        ws_pid_key(Pid, PromptKey),
+        retractall(ws_pending_prompt(Queue, PromptKey, Ref))
     ->  thread_send_message(Queue, responded(Pid))
     ;   thread_send_message(Queue, error(Pid, invalid_prompt_ref))
     ).

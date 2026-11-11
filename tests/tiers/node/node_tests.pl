@@ -3033,20 +3033,19 @@ test(distributed_io_prompt_authorization_is_queue_scoped_and_one_shot) :-
     self(Self),
     setup_call_cleanup(
         assertz(distribution:pending_io_prompt(test_token,
-                                               owning_browser_queue,
-                                               Self)),
-        (
-            assertion(\+ distribution:respond_io_prompt(
-                              other_browser_queue, Self, denied)),
-            assertion(distribution:respond_io_prompt(
-                          owning_browser_queue, Self, accepted)),
-            receive({
-                '$input'(distributed_io, accepted) -> true
-            }, [timeout(1), on_timeout(fail)]),
-            assertion(\+ distribution:respond_io_prompt(
-                              owning_browser_queue, Self, replay))
+                    owning_browser_queue, Self, correlated(42))),
+        ( assertion(\+ distribution:respond_io_prompt(
+                              other_browser_queue, Self, correlated(42), denied)),
+          assertion(\+ distribution:respond_io_prompt(
+                              owning_browser_queue, Self, correlated(43), denied)),
+          assertion(distribution:respond_io_prompt(
+                              owning_browser_queue, Self, correlated(42), accepted)),
+          receive({'$input'(distributed_io, 42, accepted) -> true},
+                  [timeout(1), on_timeout(fail)]),
+          assertion(\+ distribution:respond_io_prompt(
+                              owning_browser_queue, Self, correlated(42), replay))
         ),
-        retractall(distribution:pending_io_prompt(test_token, _, _))
+        retractall(distribution:pending_io_prompt(test_token, _, _, _))
     ).
 
 test(distributed_io_endpoint_cleanup_revokes_prompts_and_delivery) :-
@@ -4215,15 +4214,19 @@ test(profile_check_goal_rejects_input_in_isotope_profile,
      [throws(error(profile_violation(_, _), _))]) :-
     profile_check_goal(isotope, input(prompt, _Answer)).
 
+test(profile_check_goal_rejects_respond_in_isobase_profile,
+     [throws(error(profile_violation(_, _), _))]) :-
+    profile_check_goal(isobase, respond(123, 42, answer)).
+
 test(profile_check_goal_rejects_respond_in_isotope_profile,
      [throws(error(profile_violation(_, _), _))]) :-
-    profile_check_goal(isotope, respond(123, answer)).
+    profile_check_goal(isotope, respond(123, 42, answer)).
 
 test(profile_check_goal_allows_actor_io_in_actor_profile) :-
     profile_check_goal(actor,
                        ( output(hello),
                          input(prompt, _Answer),
-                         respond(123, answer)
+                         respond(123, 42, answer)
                        )).
 
 test(profile_check_goal_rejects_non_exported_actor_parent_predicate,

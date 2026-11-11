@@ -555,12 +555,13 @@ terminal_prompt_queue(Queue, Queue) :-
 
 respond_io_prompt(Queue, Pid, Mode, Input) :-
     with_mutex(distributed_io_prompts,
-        authorize_io_prompt_reply(Queue, Pid, Mode)),
-    !,
-    send_io_prompt_reply(Mode, Pid, Input).
+        ( authorize_io_prompt_reply(Queue, Pid, Mode),
+          send_io_prompt_reply(Mode, Pid, Input),
+          retractall(pending_io_prompt(_, Queue, Pid, Mode)) )),
+    !.
 
-% The actor applies the reply pattern. Keep the current reference available
-% for retries until another prompt replaces it or the route is retired.
+% Parsing happens before dispatch. A successfully routed reply consumes its
+% authorization even if the actor's input pattern later rejects the value.
 authorize_io_prompt_reply(Queue, Pid, correlated(Ref)) :-
     ground(Ref),
     pending_io_prompt(_, Queue, Pid, correlated(Ref)).
