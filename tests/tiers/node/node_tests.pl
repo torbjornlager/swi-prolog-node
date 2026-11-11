@@ -4901,7 +4901,7 @@ test(ws_relay_keeps_canonical_io_output_for_browser) :-
                   terminal_io_output(42, "hello")
               )).
 
-test(ws_browser_io_output_uses_book_shape) :-
+test(ws_browser_io_output_preserves_stream_and_book_fields) :-
     with_node_server_options([auth(open), profile(actor), sandbox(off)], URI,
         setup_call_cleanup(
             ws_open(URI, WS),
@@ -4923,6 +4923,7 @@ test(ws_browser_io_output_uses_book_shape) :-
                 assertion(OutputPairs == [
                     data-"hello",
                     pid-ToplevelPid,
+                    stdout-"hello\n",
                     type-"output"
                 ])
             ),
