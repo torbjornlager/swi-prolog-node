@@ -259,12 +259,17 @@ sandbox_prepare_public_spawn(Profile, GoalModule, Goal, Options0, Options) :-
                 prepare_source_options(Profile, Module, SourceModule,
                                        Options0, Options),
                 (   public_runtime_support_goal(GoalModule, Goal)
-                ->  true
+                ->  check_framework_spawn(Profile,Module,GoalModule,Goal)
                 ;   sandbox_check_goal_in_module(Profile, Module, Goal)
                 )
             )
         )
     ).
+
+% The runtime checks client code separately from the supervisor/server loops.
+public_runtime_support_goal(supervisor_actor,sup_init(_,_)).
+public_runtime_support_goal(supervisor_actor,start_sub_supervisor(_,_)).
+public_runtime_support_goal(server_actor,server_loop(_,_)).
 
 public_runtime_support_goal(actor, Goal) :-
     callable(Goal),
@@ -295,6 +300,15 @@ public_runtime_support_goal(parallel, Goal) :-
 public_runtime_support_goal(first_solution, Goal) :-
     callable(Goal),
     functor(Goal, first_worker, 4).
+
+check_framework_spawn(_Profile,_,supervisor_actor,sup_init(Specs,_)) :- !,
+    supervisor_actor:check_child_spec_guards(supervisor_actor,Specs).
+check_framework_spawn(Profile,Module,server_actor,server_loop(Pred,_)) :- !,
+    strip_module(Pred,Fallback,Closure),
+    Closure=..Parts, append(Parts,[_,_,_,_],Full), Goal=..Full,
+    (predicate_property(Module:Goal,defined)->Context=Module;Context=Fallback),
+    sandbox_check_goal_in_module(Profile,Context,Goal).
+check_framework_spawn(_,_,_,_).
 
 public_runtime_support_goal_pi(remote_actor_proxy/3).
 public_runtime_support_goal_pi(send_with_delay/3).
@@ -685,11 +699,11 @@ sandbox_check_actor_(spawn(Goal, _Pid), Profile, Module) :-
 sandbox_check_actor_(spawn(Goal, _Pid, Options), Profile, Module) :-
     reject_nested_spawn_goal(Profile, Module, Goal, Options).
 sandbox_check_actor_(supervisor_spawn(ChildSpecs, _Pid), Profile, Module) :-
-    reject_supervisor_child_specs(Profile, Module, ChildSpecs).
+    precheck_supervisor_child_specs(Profile, Module, ChildSpecs).
 sandbox_check_actor_(supervisor_spawn(ChildSpecs, _Pid, _Options), Profile, Module) :-
-    reject_supervisor_child_specs(Profile, Module, ChildSpecs).
+    precheck_supervisor_child_specs(Profile, Module, ChildSpecs).
 sandbox_check_actor_(supervisor_spawn_child(_Sup, ChildSpec, _Reply), Profile, Module) :-
-    reject_supervisor_child_specs(Profile, Module, [ChildSpec]).
+    precheck_supervisor_child_specs(Profile, Module, [ChildSpec]).
 sandbox_check_actor_(with_io_target(_Target, Goal), Profile, Module) :-
     reject_forbidden_goal(Profile, Module, Goal).
 
@@ -730,11 +744,11 @@ sandbox_check_unqualified_(_, spawn(Goal, _Pid), Profile, Module) :-
 sandbox_check_unqualified_(_, spawn(Goal, _Pid, Options), Profile, Module) :-
     reject_nested_spawn_goal(Profile, Module, Goal, Options).
 sandbox_check_unqualified_(_, supervisor_spawn(ChildSpecs, _Pid), Profile, Module) :-
-    reject_supervisor_child_specs(Profile, Module, ChildSpecs).
+    precheck_supervisor_child_specs(Profile, Module, ChildSpecs).
 sandbox_check_unqualified_(_, supervisor_spawn(ChildSpecs, _Pid, _Options), Profile, Module) :-
-    reject_supervisor_child_specs(Profile, Module, ChildSpecs).
+    precheck_supervisor_child_specs(Profile, Module, ChildSpecs).
 sandbox_check_unqualified_(_, supervisor_spawn_child(_Sup, ChildSpec, _Reply), Profile, Module) :-
-    reject_supervisor_child_specs(Profile, Module, [ChildSpec]).
+    precheck_supervisor_child_specs(Profile, Module, [ChildSpec]).
 sandbox_check_unqualified_(_, toplevel_call(_Pid, Goal), Profile, Module) :-
     reject_forbidden_goal(Profile, Module, Goal).
 sandbox_check_unqualified_(_, toplevel_call(_Pid, Goal, Options), Profile, Module) :-
@@ -1038,6 +1052,14 @@ reject_forbidden_qualified_goal(_,node,Goal) :-
 reject_forbidden_qualified_goal(_,node,Goal) :- !,
     throw(error(permission_error(call,sandboxed,node:Goal),
                 context(node_sandbox:reject_forbidden_goal/2,'private controller predicate'))).
+reject_forbidden_qualified_goal(_,supervisor_actor,Goal) :-
+    callable(Goal),functor(Goal,Name,Arity),
+    \+memberchk(Name/Arity,[supervisor_spawn/2,supervisor_spawn/3,supervisor_spawn_child/3,
+       supervisor_terminate_child/3,supervisor_delete_child/3,supervisor_respawn_child/3,
+       supervisor_which_children/2,supervisor_count_children/2,supervisor_halt/1,supervisor_stop/1]), !,
+    throw(error(permission_error(call,sandboxed,supervisor_actor:Goal),private_framework_entry)).
+reject_forbidden_qualified_goal(_,server_actor,server_loop(Pred,State)) :- !,
+    throw(error(permission_error(call,sandboxed,server_actor:server_loop(Pred,State)),private_framework_entry)).
 reject_forbidden_qualified_goal(_,control_guard,Goal) :- !,
     throw(error(permission_error(call,sandboxed,control_guard:Goal),
                 context(node_sandbox:reject_forbidden_goal/3,
@@ -1266,6 +1288,20 @@ sandbox_check_supervisor_child_specs(Profile, Module, ChildSpecs) :-
     must_be(atom, Module),
     reject_supervisor_child_specs(Profile, Module, ChildSpecs).
 
+% Source prechecking happens before all private definitions have been loaded.
+% Inspect forbidden operations now; full callback admission is repeated by the
+% mandatory runtime guard after normalization and source preparation.
+precheck_supervisor_child_specs(Profile,Module,Specs) :-
+    supervisor_child_meta_calls(Module,Specs,Calls),
+    forall(member(Context:Goal,Calls),
+      catch(sandbox_check_goal_in_module(Profile,Context,Goal),Error,
+            defer_unknown_supervisor_helper(Error))).
+
+% Only unresolved source definitions are deferred. Known forbidden operations
+% still fail at admission; the runtime guard never uses this exception path.
+defer_unknown_supervisor_helper(error(existence_error(procedure,_),_)) :- !.
+defer_unknown_supervisor_helper(Error) :- throw(Error).
+
 reject_supervisor_child_specs(Profile, Module, ChildSpecs) :-
     supervisor_child_meta_calls(Module, ChildSpecs, Calls),
     maplist(reject_supervisor_child_goal(Profile), Calls).
@@ -1409,12 +1445,12 @@ sandbox:safe_meta(first_solution:first_solution(_, QualifiedGoals, _), Calls) :-
 %  Supervisor child start goals are embedded in list data, so describe them
 %  explicitly to library(sandbox).  Runtime spawn hooks still validate child
 %  source options and the internal supervisor/child entry loops.
-sandbox:safe_meta(supervisor_actor:supervisor_spawn(ChildSpecs, _Pid), Calls) :-
-    supervisor_child_meta_calls(actor, ChildSpecs, Calls).
-sandbox:safe_meta(supervisor_actor:supervisor_spawn(ChildSpecs, _Pid, _Options), Calls) :-
-    supervisor_child_meta_calls(actor, ChildSpecs, Calls).
-sandbox:safe_meta(supervisor_actor:supervisor_spawn_child(_Sup, ChildSpec, _Reply), Calls) :-
-    supervisor_child_meta_calls(actor, [ChildSpec], Calls).
+sandbox:safe_meta(supervisor_actor:supervisor_spawn(ChildSpecs, _Pid), Context, Calls) :-
+    supervisor_child_meta_calls(Context, ChildSpecs, Calls).
+sandbox:safe_meta(supervisor_actor:supervisor_spawn(ChildSpecs, _Pid, _Options), Context, Calls) :-
+    supervisor_child_meta_calls(Context, ChildSpecs, Calls).
+sandbox:safe_meta(supervisor_actor:supervisor_spawn_child(_Sup, ChildSpec, _Reply), Context, Calls) :-
+    supervisor_child_meta_calls(Context, [ChildSpec], Calls).
 
 sandbox_goal_list_calls(QualifiedGoals, Calls) :-
     strip_module(QualifiedGoals, Module, Goals),

@@ -4,7 +4,7 @@
 :- use_module('../../../prolog/web_prolog/supervisor_actor.pl').
 run :-
     ordered(reply_first),ordered(down_first),delayed_ack,
-    absent(normal_down),absent(pending),abnormal,
+    absent(normal_down),absent(pending),abnormal,queued_abnormal_ack,
     original_deadline,public_monitor_cleanup,
     writeln('Supervisor halt ordering, original deadline and private monitor cleanup: ok').
 
@@ -19,7 +19,7 @@ ordered(Order) :-
     supervisor_actor:sup_halt_wait(fake,Ref,Mon,Deadline,pending),
     receive({down(unrelated,Other,unrelated_reason) -> true},[timeout(0),on_timeout(fail)]),
     receive({unrelated_message(Ref) -> true},[timeout(0),on_timeout(fail)]),
-    (Order==reply_first -> receive({down(fake,Mon,true) -> true},[timeout(0),on_timeout(fail)]) ; true).
+    receive({down(fake,Mon,true) -> true},[timeout(0),on_timeout(fail)]).
 delayed_ack :-
     refs(Self,Ref,Mon,Deadline),
     setup_call_cleanup(
@@ -36,6 +36,11 @@ abnormal :-
     refs(Self,Ref,Mon,Deadline),send(Self,down(fake,Mon,crashed)),
     catch(supervisor_actor:sup_halt_wait(fake,Ref,Mon,Deadline,pending),Error,true),
     Error==supervisor_down(crashed).
+queued_abnormal_ack :-
+    refs(Self,Ref,Mon,Deadline),
+    send(Self,down(fake,Mon,crashed)),send(Self,Ref-ok),
+    supervisor_actor:sup_halt_wait(fake,Ref,Mon,Deadline,pending),
+    receive({down(fake,Mon,crashed)->true},[timeout(0),on_timeout(fail)]).
 original_deadline :-
     self(Self),make_ref(Ref),make_ref(Mon),get_time(Start),Deadline is Start+0.3,
     % Simulate an event arriving late in the original wait.

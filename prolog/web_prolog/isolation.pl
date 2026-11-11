@@ -46,6 +46,9 @@ actor-coupled.
     the source may have shadowed.  Source-free actors need no repair
     pass.  The behaviours layer adds its statechart API import here;
     the distribution layer adds the `@`/2 operator.
+  - prepare_activation_goal(+Pid, +GoalModule, +Module, +Goal, -Continuation):
+    prepare a trusted framework before readiness/name publication. Ordinary
+    application entries still cross prepare_goal/3 and the control guards.
   - prepare_goal(+Module, +Goal0, -Goal): rewrite the start goal just
     before execution (the node layer's public-profile guard).  First
     solution wins; default identity.  The result then passes through
@@ -103,6 +106,7 @@ actor-coupled.
 
 :- multifile
     prepare_module/3,
+    prepare_activation_goal/5,
     prepare_goal/3,
     prepare_source_options/3,
     extra_prelude_text/2,
@@ -183,12 +187,15 @@ spawn_body(Pid, Goal, Options, OnReady, OnPrepError, Runner) :-
     pid_module(LocalPid, Module),
     in_temporary_module(
         Module,
-        prepare_and_signal(Module, GoalModule, Options, OnReady, OnPrepError),
-        execute_in_module(Module, Plain, Runner)).
+        prepare_and_signal(Pid, Module, GoalModule, Plain, Options, Prepared, OnReady, OnPrepError),
+        execute_prepared(Module, Prepared, Runner)).
 
-prepare_and_signal(Module, GoalModule, Options, OnReady, OnPrepError) :-
+prepare_and_signal(Pid, Module, GoalModule, Plain, Options, Prepared, OnReady, OnPrepError) :-
     catch(
-        prepare_actor_module(Module, GoalModule, Options),
+        ( prepare_actor_module(Module, GoalModule, Options),
+          ( prepare_activation_goal(Pid, GoalModule, Module, Plain, Continuation)
+          -> Prepared = framework(Continuation)
+          ;  Prepared = application(Plain) ) ),
         PrepError,
         (   call(OnPrepError, PrepError),
             call(OnReady),
@@ -196,6 +203,13 @@ prepare_and_signal(Module, GoalModule, Options, OnReady, OnPrepError) :-
         )
     ),
     call(OnReady).
+
+% Registered framework hooks own their continuation; application goals still
+% cross the ordinary preparation/guard boundary. Both keep the actor runner.
+execute_prepared(_, framework(Continuation), Runner) :- !,
+    call(Runner, Continuation).
+execute_prepared(Module, application(Plain), Runner) :-
+    execute_in_module(Module, Plain, Runner).
 
 execute_in_module(Module, Plain, Runner) :-
     prepared_goal(Module, Plain, Rewritten),
