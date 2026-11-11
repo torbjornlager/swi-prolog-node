@@ -44,6 +44,7 @@ http_status(URL, Status) :-
 :- use_module('node/boolean_options_tests.pl', []).
 :- use_module('node/uri_options_tests.pl', []).
 :- use_module('node/node_assets_tests.pl', []).
+:- use_module('node/chart_startup_import_tests.pl', []).
 :- use_module('node/sandbox_source_names_tests.pl', []).
 :- use_module('node/promise_yield_tests.pl', []).
 :- use_module('node/promise_lifecycle_tests.pl', []).
