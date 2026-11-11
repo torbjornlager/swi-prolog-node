@@ -980,9 +980,10 @@ destroys that engine's local references. Lifecycle regressions use shortened,
 controlled deadlines; UI checks exercise public retry/callback/disposal behavior.
 
 `runtime_property/1` reports host capabilities rather than changing language
-semantics. Its properties are `implementation/1`, `persistent/1`,
+semantics. Its properties are `persistent/1`,
 `inbound_addressable/1`, `dom/1`, `actor_isolation/1`, and
-`hard_termination/1`.
+`hard_termination/1`. Isolation is `independent` or `cooperative`; implementation
+identity belongs to diagnostic tools and deployment metadata.
 
 Actor application messages use the portable wire-term subset: acyclic ordinary
 Prolog terms without attributed variables, streams, or other non-text blob

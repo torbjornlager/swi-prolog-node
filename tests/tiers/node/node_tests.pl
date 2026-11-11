@@ -7158,19 +7158,17 @@ test(rpc_3_once_true_returns_first_slice_only, set(X == [a])) :-
 
 test(runtime_properties_describe_native_host, true(Properties == Expected)) :-
     findall(Property, runtime_property(Property), Properties),
-    Expected = [ implementation(swi_native),
-                 persistent(true),
+    Expected = [ persistent(true),
                  inbound_addressable(true),
                  dom(false),
-                 actor_isolation(native_thread),
+                 actor_isolation(independent),
                  hard_termination(true)
                ].
 
 test(runtime_property_is_available_through_isobase,
-     set(Property == [ actor_isolation(native_thread),
+     set(Property == [ actor_isolation(independent),
                        dom(false),
                        hard_termination(true),
-                       implementation(swi_native),
                        inbound_addressable(true),
                        persistent(true)
                      ])) :-
