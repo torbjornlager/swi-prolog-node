@@ -254,7 +254,7 @@ sandbox_prepare_public_spawn(Profile, GoalModule, Goal, Options0, Options) :-
     ->  Options = Options0
     ;   in_temporary_module(
             Module,
-            sandbox_prepare_module(Module, GoalModule),
+            sandbox_prepare_public_module(Module, GoalModule),
             (
                 prepare_source_options(Profile, Module, SourceModule,
                                        Options0, Options),
@@ -341,6 +341,13 @@ sandbox_check_goal_with_options(Profile, GoalModule, Goal, Options) :-
                             ))
     ).
 
+
+% Match actual public children: copied source and shared DB, without inheriting
+% the parent's private predicate implementations during temporary validation.
+sandbox_prepare_public_module(Module, GoalModule) :-
+    without_public_execution_context(
+        isolation:prepare_actor_module(Module, GoalModule,
+             [isolation_io(generated),inherit_goal_module(false)])).
 
 sandbox_prepare_module(Module) :-
     sandbox_prepare_module(Module, actor).
@@ -1031,6 +1038,10 @@ reject_forbidden_qualified_goal(_,node,Goal) :-
 reject_forbidden_qualified_goal(_,node,Goal) :- !,
     throw(error(permission_error(call,sandboxed,node:Goal),
                 context(node_sandbox:reject_forbidden_goal/2,'private controller predicate'))).
+reject_forbidden_qualified_goal(_,control_guard,Goal) :- !,
+    throw(error(permission_error(call,sandboxed,control_guard:Goal),
+                context(node_sandbox:reject_forbidden_goal/3,
+                        'private runtime control bridge'))).
 reject_forbidden_qualified_goal(_, _, _).
 
 reject_nested_spawn_goal(Profile, GoalModule, Goal, Options) :-
@@ -1046,12 +1057,20 @@ reject_nested_spawn_goal(Profile, GoalModule, Goal, Options) :-
               error(existence_error(procedure,_),_), true)
     ;   has_deferred_nested_source_option(Options)
     ->  reject_deferred_nested_spawn_options(Profile, Options),
-        sandbox_check_goal_in_module(Profile, GoalModule, Goal)
+        % Inspect every known leaf even when a copied helper is unavailable.
+        % The runtime hook validates the actual loaded source before spawning.
+        reject_forbidden_goal(Profile, GoalModule, Goal),
+        sandbox_mode(Mode),
+        walk_goal(check_deferred_source_leaf(Mode,GoalModule), Goal)
     ;   has_source_like_option(Options)
     ->  sandbox_check_goal_with_options(Profile, GoalModule, Goal, Options)
     ;   sandbox_check_spawn_options(Profile, Options),
         sandbox_check_goal_in_module(Profile, GoalModule, Goal)
     ).
+
+check_deferred_source_leaf(Mode, Module, Goal) :-
+    catch(sandbox_enforce_goal(Mode, Module, Goal),
+          error(existence_error(procedure,_),_), true).
 
 has_source_like_option(Options) :-
     is_list(Options),
@@ -1376,6 +1395,19 @@ qualify_sandbox_goal(Module, Goal, Module:Goal).
 
 sandbox:safe_meta(call_cleanup(Goal, Cleanup), [Goal, Cleanup]).
 sandbox:safe_meta(setup_call_cleanup(Setup, Goal, Cleanup), [Setup, Goal, Cleanup]).
+
+% Generated receive guards retain their actor's source module. Expose every
+% executable callback to whitelist analysis; never mark the bridge primitive.
+sandbox:safe_meta(control_guard:'$receive'(Module, Clauses), Calls) :-
+    guarded_receive_meta_calls(Module, Clauses, [], Calls).
+sandbox:safe_meta(control_guard:'$receive'(Module, Clauses, Options), Calls) :-
+    guarded_receive_meta_calls(Module, Clauses, Options, Calls).
+
+guarded_receive_meta_calls(Module, Clauses0, Options, Calls) :-
+    atom(Module),
+    control_guard:receive_module(Module, Clauses0, Source, Clauses),
+    receive_meta_calls(Source:{Clauses}, Options, Raw),
+    maplist(qualify_sandbox_goal(Source), Raw, Calls).
 
 sandbox:safe_meta(actors:receive(Clauses), Calls) :-
     receive_meta_calls(Clauses, [], Calls).

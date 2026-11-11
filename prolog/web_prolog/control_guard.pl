@@ -8,6 +8,11 @@
 ]).
 
 :- use_module(text_config, [text_double_quotes/1]).
+% Permit cross-module whitelist analysis of generated receive bridges. The
+% node rejects these private names as user entry points; safe_meta exposes
+% their callbacks rather than treating the bridge as a safe primitive.
+:- public '$receive'/2, '$receive'/3.
+
 
 /** <module> Untrappable Web Prolog control transfers (layer 1)
 
