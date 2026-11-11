@@ -874,7 +874,13 @@ self_local(Self) :-
 
 monitor(Target, Ref) :-
     must_be(nonvar, Target),
+    validate_monitor_node(Target),
     monitor_target(Target, Ref).
+
+% Validate the public node component before canonicalization can coerce text
+% or hooks can allocate an observation. Other URI entry points are unchanged.
+validate_monitor_node(Target) :-
+    ( Target = '@'(_,Node) -> must_be(atom, Node) ; true ).
 
 monitor_target(Name, Ref) :-
     current_registered(Name, Pid),
