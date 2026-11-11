@@ -20,7 +20,6 @@ with_assets(Root, Wasm, Goal) :-
         Goal,
         (set_setting(node_assets:root, OldRoot), set_setting(node_assets:wasm_directory, OldWasm))).
 
-page('/portal', 'web/demonstrator.html').
 page('/demonstrator', 'web/demonstrator.html').
 page('/discovery-hub', 'web/discovery-hub.html').
 page('/tutorial', 'web/tutorial.html').
@@ -81,6 +80,10 @@ fetch(Port, Path, Status, Type, Cache, Body) :-
         read_string(S, _, Body), close(S)).
 
 relocated_pages(Port) :-
+    format(atom(Legacy), 'http://localhost:~w/portal?goal=hello', [Port]),
+    setup_call_cleanup(http_open(Legacy, Stream, [redirect(false),status_code(Code),header(location,Target)]),
+                       read_string(Stream,_,_), close(Stream)),
+    assertion(Code==301), assertion(Target=='/demonstrator?goal=hello'),
     forall(page(Path, Rel),
            (fetch(Port, Path, Status, _, _, Body),
             assertion(Status == 200),

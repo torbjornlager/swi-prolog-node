@@ -516,6 +516,15 @@ t4_rotation_cleanup :-
     retractall(t4_saved_log_path(_)),
     retractall(t4_rotation_logfile(_)).
 
+test(retired_portal_redirect_preserves_query) :-
+    catch(node:node_legacy_portal_redirect([path('/portal'),search([goal='member(X,[a,b])'])]),
+          http_reply(moved(Target)), true),
+    assertion(nonvar(Target)),
+    uri_components(Target, Components),
+    uri_data(path, Components, '/demonstrator'),
+    uri_data(search, Components, Query),
+    uri_query_components(Query, [goal='member(X,[a,b])']).
+
 test(interaction_log_rotates_and_caps_backups, [
         setup(t4_rotation_setup(LogFile)),
         cleanup(t4_rotation_cleanup)
