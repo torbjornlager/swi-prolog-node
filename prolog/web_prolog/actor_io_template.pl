@@ -46,7 +46,8 @@ option as a compatibility and benchmarking path.
 :- meta_predicate time(0).
 
 nl :-
-    actors:terminal_output("\n", [source(io)]).
+    atom_codes(Newline, [10]),
+    actors:terminal_output(Newline, [source(io)]).
 
 write(Term) :-
     actor_term_output(Term, io).

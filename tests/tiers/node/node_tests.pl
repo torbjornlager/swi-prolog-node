@@ -4886,6 +4886,7 @@ test(distributed_terminal_wire_retains_text_and_newlines) :-
                    '$terminal_stream'(io, "\n")-'\n',
                    '$terminal_stream'(io, "å'quoted")-'å\'quoted',
                    '$terminal_stream'(io, pair(1,2))-'pair(1,2)',
+                   '$terminal_stream'(io, [a,b])-'[a,b]',
                    "legacy\n"-'legacy\n']),
            ( distribution:io_wire_command(terminal_io_output(42, Value), json{}, JSON),
              % Emulate a peer whose double-quoted terms are character lists.
