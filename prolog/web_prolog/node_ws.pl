@@ -55,7 +55,7 @@ Architecture per connection:
     toplevel_abort/1,
     toplevel_abort/2
 ]).
-:- use_module(node_response, [answer_to_json/2]).
+:- use_module(node_response, [answer_to_json/2, portable_answer/2]).
 :- use_module(actors, [transportable_term/1]).
 :- use_module(wire_text, [term_to_wire_text/2]).
 :- use_module(remote_protocol, [prompt_reference_from_wire/2]).
@@ -543,6 +543,11 @@ answer_term_text(error(_Pid, Error), Text) :-
 
 % Queue-targeted correlated answers use additive metadata. Native actor
 % targets receive the same envelope through the ordinary actor-term transport.
+ws_relay_message(WebSocket, Queue, Message0) :-
+    portable_answer(Message0, Message),
+    Message0 \== Message,
+    !,
+    ws_relay_message(WebSocket, Queue, Message).
 ws_relay_message(WebSocket, Queue, prompt(Pid, Ref, Prompt)) :- !,
     ws_relay_message(WebSocket, Queue, '$input_prompt'(Pid, correlated(Ref), Prompt)).
 ws_relay_message(WebSocket, Queue, '$input_prompt'(Pid, correlated(Ref), Prompt)) :- !,

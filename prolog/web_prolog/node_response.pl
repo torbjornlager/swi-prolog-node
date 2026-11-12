@@ -1,6 +1,7 @@
 :- module(node_response, [
     respond_with_answer/2,
-    answer_to_json/2
+    answer_to_json/2,
+    portable_answer/2
 ]).
 
 /** <module> Node Response Serialization
@@ -16,6 +17,7 @@ Response writers and JSON/error encoding helpers used by `node.pl`.
 :- use_module(rpc, [text_to_string/2]).
 :- use_module(node_runtime_state, [current_node_url/1]).
 :- use_module(term_display, [term_to_display_string/3]).
+:- use_module(wire_text, [check_portable_wire_term/1]).
 :- use_module(pid_utils, [
     canonical_pid/2,
     normalize_node_url/2,
@@ -24,7 +26,11 @@ Response writers and JSON/error encoding helpers used by `node.pl`.
 
 
 %!  respond_with_answer(+Format, +Answer) is det.
-respond_with_answer(prolog, Answer) :-
+respond_with_answer(Format, Answer0) :-
+    portable_answer(Answer0, Answer),
+    respond_with_portable_answer(Format, Answer).
+
+respond_with_portable_answer(prolog, Answer) :-
     !,
     format('Content-type: text/plain; charset=UTF-8~n~n'),
     write_term(Answer, [
@@ -36,15 +42,15 @@ respond_with_answer(prolog, Answer) :-
         blobs(portray),
         portray_goal(portray_blob)
     ]).
-respond_with_answer(json, error(Pid, invalid_prompt_ref)) :-
+respond_with_portable_answer(json, error(Pid, invalid_prompt_ref)) :-
     !,
     answer_to_json(error(Pid, invalid_prompt_ref), JSON),
     reply_json(JSON, [status(400)]).
-respond_with_answer(json, Answer) :-
+respond_with_portable_answer(json, Answer) :-
     !,
     answer_to_json(Answer, JSON),
     reply_json(JSON).
-respond_with_answer(Format, _Answer) :-
+respond_with_portable_answer(Format, _Answer) :-
     throw(error(domain_error(response_format, Format),
                 context(node:respond_with_answer/2,
                         'format must be prolog or json'))).
@@ -59,45 +65,72 @@ portray_blob(_, _) :-
     fail.
 
 
+% Validate semantic payloads before either display-text JSON or typed wire
+% encoding. Keep pid and correlation envelopes when reporting a rejection.
+portable_answer('$toplevel_reply'(Ref, Answer0), '$toplevel_reply'(Ref, Answer)) :- !,
+    portable_answer(Answer0, Answer).
+portable_answer(success(Pid, Rows, More), Answer) :- !,
+    catch((check_portable_wire_term(Rows), Answer = success(Pid, Rows, More)),
+          error(representation_error(portable_term), Context),
+          Answer = error(Pid, error(representation_error(portable_term), Context))).
+portable_answer(success(Rows, More), Answer) :- !,
+    catch((check_portable_wire_term(Rows), Answer = success(Rows, More)),
+          error(representation_error(portable_term), Context),
+          Answer = error(error(representation_error(portable_term), Context))).
+portable_answer(error(Pid, Error0), error(Pid, Error)) :- !,
+    portable_error(Error0, Error).
+portable_answer(error(Error0), error(Error)) :- !,
+    portable_error(Error0, Error).
+portable_answer(Answer, Answer).
+
+portable_error(Error0, Error) :-
+    catch((check_portable_wire_term(Error0), Error = Error0),
+          error(representation_error(portable_term), Context),
+          Error = error(representation_error(portable_term), Context)).
+
+answer_to_json(Answer0, JSON) :-
+    portable_answer(Answer0, Answer),
+    answer_to_json_(Answer, JSON).
+
 %!  answer_to_json(+Answer, -JSON:dict) is det.
-answer_to_json(success(Bindings0, More),
+answer_to_json_(success(Bindings0, More),
                json{type:success, data:Bindings, more:More}) :-
     maplist(bindings_to_json_strings, Bindings0, Bindings).
-answer_to_json(success(Pid, Bindings0, More),
+answer_to_json_(success(Pid, Bindings0, More),
                json{type:success, pid:JsonPid, data:Bindings, more:More}) :-
     json_pid_value(Pid, JsonPid),
     maplist(bindings_to_json_strings, Bindings0, Bindings).
-answer_to_json(error(Pid, invalid_prompt_ref),
+answer_to_json_(error(Pid, invalid_prompt_ref),
                json{type:error, pid:JsonPid, code:invalid_prompt_ref,
                     data:"Expected the reference from the current prompt"}) :- !,
     json_pid_value(Pid, JsonPid).
-answer_to_json(error(Pid, ErrorTerm),
+answer_to_json_(error(Pid, ErrorTerm),
                JSON) :-
     json_pid_value(Pid, JsonPid),
     error_to_json_dict(ErrorTerm,
                        json{type:error, pid:JsonPid},
                        JSON).
-answer_to_json(error(ErrorTerm), JSON) :-
+answer_to_json_(error(ErrorTerm), JSON) :-
     error_to_json_dict(ErrorTerm, json{type:error}, JSON).
-answer_to_json(failure, json{type:failure}).
-answer_to_json(failure(Pid), json{type:failure, pid:JsonPid}) :-
+answer_to_json_(failure, json{type:failure}).
+answer_to_json_(failure(Pid), json{type:failure, pid:JsonPid}) :-
     json_pid_value(Pid, JsonPid).
-answer_to_json(output(Pid, timing_report(Data)),
+answer_to_json_(output(Pid, timing_report(Data)),
                json{type:output, pid:JsonPid, data:DataString, kind:"timing"}) :-
     json_pid_value(Pid, JsonPid),
     prompt_to_json_string(Data, DataString).
-answer_to_json(output(Pid, Data), json{type:output, pid:JsonPid, data:DataString}) :-
+answer_to_json_(output(Pid, Data), json{type:output, pid:JsonPid, data:DataString}) :-
     json_pid_value(Pid, JsonPid),
     output_to_json_string(Data, DataString).
-answer_to_json(terminal_output(Pid, statechart_trace(Data)),
+answer_to_json_(terminal_output(Pid, statechart_trace(Data)),
                json{type:statechart_trace, pid:JsonPid, data:DataString}) :-
     json_pid_value(Pid, JsonPid),
     trace_term_to_json_string(Data, DataString).
-answer_to_json(terminal_io_output(Pid, timing_report(Data)),
+answer_to_json_(terminal_io_output(Pid, timing_report(Data)),
                json{type:output, pid:JsonPid, data:DataString, kind:"timing"}) :-
     json_pid_value(Pid, JsonPid),
     prompt_to_json_string(Data, DataString).
-answer_to_json(terminal_io_output(Pid, Data),
+answer_to_json_(terminal_io_output(Pid, Data),
                json{type:output, pid:JsonPid, data:DataString, stdout:Text}) :-
     json_pid_value(Pid, JsonPid),
     (   nonvar(Data), Data = '$terminal_stream'(Source, Term)
@@ -107,37 +140,37 @@ answer_to_json(terminal_io_output(Pid, Data),
     output_to_json_string(Term, Raw),
     ( Source == io_line -> string_concat(Raw, "\n", Text) ; Text = Raw ),
     terminal_output_to_json_string(Term, DataString).
-answer_to_json(terminal_output(Pid, timing_report(Data)),
+answer_to_json_(terminal_output(Pid, timing_report(Data)),
                json{type:output, pid:JsonPid, data:DataString, kind:"timing"}) :-
     json_pid_value(Pid, JsonPid),
     prompt_to_json_string(Data, DataString).
-answer_to_json(terminal_output(Pid, Data), json{type:output, pid:JsonPid, data:DataString}) :-
+answer_to_json_(terminal_output(Pid, Data), json{type:output, pid:JsonPid, data:DataString}) :-
     json_pid_value(Pid, JsonPid),
     terminal_output_to_json_string(Data, DataString).
-answer_to_json(prompt(Pid, Prompt), json{type:prompt, pid:JsonPid, data:PromptString}) :-
+answer_to_json_(prompt(Pid, Prompt), json{type:prompt, pid:JsonPid, data:PromptString}) :-
     json_pid_value(Pid, JsonPid),
     prompt_to_json_string(Prompt, PromptString).
-answer_to_json(prompt(Pid, Token, Prompt), JSON) :-
+answer_to_json_(prompt(Pid, Token, Prompt), JSON) :-
     answer_to_json(prompt(Pid, Prompt), Base),
     atom_string(Token, Text),
     JSON = Base.put(prompt_ref, Text).
-answer_to_json(timeout(Pid), json{type:timeout, pid:JsonPid}) :-
+answer_to_json_(timeout(Pid), json{type:timeout, pid:JsonPid}) :-
     json_pid_value(Pid, JsonPid).
-answer_to_json(spawned(Pid), json{type:spawned, pid:JsonPid}) :-
+answer_to_json_(spawned(Pid), json{type:spawned, pid:JsonPid}) :-
     json_pid_value(Pid, JsonPid).
-answer_to_json(stop(Pid), json{type:stop, pid:JsonPid}) :-
+answer_to_json_(stop(Pid), json{type:stop, pid:JsonPid}) :-
     json_pid_value(Pid, JsonPid).
-answer_to_json(abort(Pid), json{type:abort, pid:JsonPid}) :-
+answer_to_json_(abort(Pid), json{type:abort, pid:JsonPid}) :-
     json_pid_value(Pid, JsonPid).
-answer_to_json(responded(Pid), json{type:responded, pid:JsonPid}) :-
+answer_to_json_(responded(Pid), json{type:responded, pid:JsonPid}) :-
     json_pid_value(Pid, JsonPid).
-answer_to_json(halted(Pid, Reply),
+answer_to_json_(halted(Pid, Reply),
                json{type:halted, pid:JsonPid, reply:ReplyString}) :-
     json_pid_value(Pid, JsonPid),
     term_to_json_string(Reply, ReplyString).
 %  Standard 3-arity down/3 (per manual.html:210/231).  Ref is serialized
 %  so the browser can correlate with the monitor it installed.
-answer_to_json(down(Pid, Ref, Reason),
+answer_to_json_(down(Pid, Ref, Reason),
                json{type:down, pid:JsonPid, ref:JsonRef, reason:ReasonString}) :-
     json_pid_value(Pid, JsonPid),
     json_monitor_reference(Ref, JsonRef),
@@ -145,7 +178,7 @@ answer_to_json(down(Pid, Ref, Reason),
 %  Legacy 2-arity form: kept as a fallback during transition.  Any new
 %  producer should emit down/3 with a sentinel Ref (e.g. Ref = Pid, the
 %  same convention monitor(true) uses -- see manual.html:210 / actor.pl).
-answer_to_json(down(Pid, Reason), json{type:down, pid:JsonPid, reason:ReasonString}) :-
+answer_to_json_(down(Pid, Reason), json{type:down, pid:JsonPid, reason:ReasonString}) :-
     json_pid_value(Pid, JsonPid),
     down_reason_to_json_string(Reason, ReasonString).
 
