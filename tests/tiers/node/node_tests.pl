@@ -4879,6 +4879,23 @@ test(answer_to_json_preserves_stdout_alongside_legacy_display) :-
     once(answer_to_json(terminal_io_output(42, '$terminal_stream'(io_line, a)), Line)),
     Line = json{type:output, pid:42, data:"a", stdout:"a\n"}.
 
+test(distributed_terminal_wire_retains_text_and_newlines) :-
+    forall(member(Value-Expected,
+                  ['$terminal_stream'(io, a)-a,
+                   '$terminal_stream'(io_line, done)-'done\n',
+                   '$terminal_stream'(io, "\n")-'\n',
+                   '$terminal_stream'(io, "å'quoted")-'å\'quoted',
+                   '$terminal_stream'(io, pair(1,2))-'pair(1,2)',
+                   "legacy\n"-'legacy\n']),
+           ( distribution:io_wire_command(terminal_io_output(42, Value), json{}, JSON),
+             % Emulate a peer whose double-quoted terms are character lists.
+             read_term_from_atom(JSON.message, terminal_io_output(42, Data),
+                                 [double_quotes(chars)]),
+             assertion(atom(Data)), assertion(Data == Expected) )).
+
+test(distributed_terminal_endpoint_is_stream_target) :-
+    assertion(actors:hook_terminal_stream('$io_endpoint'(test)@'http://peer.test')).
+
 test(isotope_goal_rewrite_preserves_variable_colon_data) :-
     Goal = (between(1, 20, N), writeln(N:Pid)),
     node_session:rewrite_isotope_goal(Goal, Rewritten),

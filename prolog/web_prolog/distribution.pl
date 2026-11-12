@@ -440,6 +440,10 @@ actors:hook_send('$io_sink'(distributed), _Message) :-
 
 actors:hook_prompt_relay(Endpoint) :- is_io_endpoint(Endpoint).
 
+% The endpoint ultimately feeds a terminal stream, just like a local browser
+% queue. Retain write/writeln metadata until serializing the wire payload.
+actors:hook_terminal_stream(Endpoint) :- is_io_endpoint(Endpoint).
+
 route_io_endpoint(Token, HomeNode, Message) :-
     io_protocol_message(Message),
     !,
@@ -456,9 +460,22 @@ route_io_endpoint(_, _, _).
 io_wire_command('$input_prompt'(Pid, correlated(Ref), Prompt), Base, Command) :- !,
     actors:input_prompt_event(Pid, correlated(Ref), Prompt, Event),
     io_wire_command(Event, Base.put(prompt_mode, "correlated"), Command).
+io_wire_command(terminal_io_output(Pid, Value), Base, Command) :- !,
+    terminal_wire_payload(Value, Data),
+    term_to_wire_atom(terminal_io_output(Pid, Data), Text),
+    Command = Base.put(message, Text).
 io_wire_command(Message, Base, Command) :-
     term_to_wire_atom(Message, Text),
     Command = Base.put(message, Text).
+
+% Send ordinary quoted text atoms, understood by all peers. In particular,
+% SWI strings otherwise become character lists in Trealla, and io_line would
+% lose its newline when the private stream marker is discarded.
+terminal_wire_payload('$terminal_stream'(Source, Term), Text) :- !,
+    with_output_to(atom(Raw), write(Term)),
+    (Source == io_line -> atom_concat(Raw, '\n', Text) ; Text = Raw).
+terminal_wire_payload(Value, Text) :- string(Value), !, atom_string(Text, Value).
+terminal_wire_payload(Value, Value).
 
 % An I/O operation completes at the shared terminal queue, not at the
 % sender's socket. A reply after enqueueing establishes happens-before
