@@ -16,7 +16,7 @@
 
 :- dynamic promise_state/7. % Key, WakeQueue, Worker, ExpiryThread, Collector, Result, Owner
 :- multifile hook_validate_transport_options/1, prepare_timeout_callback/3, hook_promise_owner/1,
-             hook_check_promise_owner/1.
+             hook_check_promise_owner/1, hook_rpc_endpoint/2.
 
 /** <module> Web Prolog RPC Client (layer 3, HTTP-only)
 
@@ -83,7 +83,8 @@ rpc(URI, Goal) :-
 
 rpc(URI, Goal0, Options0) :-
     validate_client_options(rpc, Options0),
-    resolve_rpc_uri(URI, RPCURI),
+    resolve_rpc_uri(URI, LogicalURI),
+    rpc_endpoint(LogicalURI, RPCURI),
     strip_module(Goal0, GoalModule, Goal),
     parse_url(RPCURI, Parts),
     term_variables(Goal, Vars),
@@ -100,6 +101,13 @@ rpc(URI, Goal0, Options0) :-
     query_owner_options(TransportOptions,HTTPOptions),
     rpc(Template, 0, Limit, GoalAtom, TemplateAtom, Parts,
         HTTPOptions, LoadText, RemoteTimeout, Once).
+
+% The node owner may select a private connection endpoint for a known peer.
+% Resolve once in the caller's node context, before a promise starts its worker.
+% Client options cannot install or override this mapping. Standalone RPC and
+% unconfigured nodes retain their original URI and error/timeout semantics.
+rpc_endpoint(LogicalURI, URI) :-
+    (hook_rpc_endpoint(LogicalURI, Endpoint) -> URI=Endpoint;URI=LogicalURI).
 
 %!  resolve_rpc_uri(+URI0, -URI) is det.
 resolve_rpc_uri(Input, URI) :-
@@ -452,7 +460,8 @@ promise(URI, Goal, Reference) :-
 
 promise(URI, Goal0, Reference, Options) :-
     validate_client_options(promise, Options),
-    resolve_rpc_uri(URI, RPCURI),
+    resolve_rpc_uri(URI, LogicalURI),
+    rpc_endpoint(LogicalURI, RPCURI),
     strip_module(Goal0, GoalModule, Goal),
     option(template(Template), Options, Goal),
     option(offset(Offset), Options, 0),

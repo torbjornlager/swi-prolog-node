@@ -88,7 +88,9 @@ with_node_port_context(Port, Goal) :-
 
 %!  current_node_port(-Port) is semidet.
 current_node_port(Port) :-
-    current_node_port_local(Port).
+    % Nested contexts shadow older contexts even when a setting is absent.
+    % Backtracking into an older port would borrow another node's policy.
+    once(current_node_port_local(Port)).
 
 
 %!  current_node_value(+Key, -Value) is semidet.

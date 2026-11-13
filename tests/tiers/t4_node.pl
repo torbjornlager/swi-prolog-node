@@ -51,6 +51,7 @@ http_status(URL, Status) :-
 :- use_module('node/promise_lifecycle_tests.pl', []).
 :- use_module('node/promise_ownership_tests.pl', []).
 :- use_module('node/rpc_options_tests.pl', []).
+:- use_module('node/rpc_endpoint_tests.pl', []).
 :- use_module('node/native_paging_tests.pl', []).
 :- use_module('node/http_identity_tests.pl', []).
 :- use_module('toplevel_synch_tests.pl', []).
@@ -84,7 +85,7 @@ http_status(URL, Status) :-
 
 :- use_module(test_partition).
 
-tier_test_units([ http_identity, lifetime_authority, node, public_goal_guard, supervisor_admission, spawn_source_validation, copied_receive_admission, boolean_options, uri_options, sandbox_source_names, promise_yield, promise_lifecycle, promise_ownership, rpc_options, native_paging,
+tier_test_units([ http_identity, lifetime_authority, node, public_goal_guard, supervisor_admission, spawn_source_validation, copied_receive_admission, boolean_options, uri_options, sandbox_source_names, promise_yield, promise_lifecycle, promise_ownership, rpc_options, rpc_endpoints, native_paging,
                 toplevel_synch, toplevel_correlation_transport,
                 spawn_options, spawn_source_options,
                 wrapper_options,
