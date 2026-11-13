@@ -391,6 +391,13 @@ distribution:hook_ws_endpoint_override(NodeURL, WsURL) :-
     current_node_value(ws_endpoint_overrides, Overrides),
     memberchk(NodeURL-WsURL, Overrides).
 
+% Trusted per-node topology, parallel to the WebSocket overrides above.
+% Exact URI matching prevents a peer prefix from selecting another authority.
+:- multifile rpc:hook_rpc_endpoint/2.
+rpc:hook_rpc_endpoint(LogicalURI, Endpoint) :-
+    current_node_value(rpc_endpoint_overrides, Overrides),
+    memberchk(LogicalURI-Endpoint, Overrides).
+
 % D7-D8: node policy stays above the stand-alone actor layer.
 :- multifile actors:hook_check_spawn/1, actors:hook_check_exit/1,
              actors:hook_check_monitor/1, actors:hook_admit_spawn/3,

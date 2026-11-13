@@ -1378,3 +1378,18 @@ monitor notifications. These messages still consume accounting space until
 received or flushed. Term depth measures nesting, with an entire flat list
 counting as one level; long lists remain subject to message and input size
 limits.
+
+## Owner-configured RPC connection endpoints
+
+The node layer may install `rpc_endpoint_overrides:[LogicalURI-EndpointURI,...]`
+in its per-port runtime state. `node_glue` implements the lower RPC layer's
+`hook_rpc_endpoint/2` using exact logical-URI matching. The RPC client resolves
+this mapping in the calling node context before paging or promise worker creation;
+standalone clients and unconfigured nodes keep the original URI. Public RPC
+options cannot install this configuration. Remote timeout/error replies remain
+ordinary RPC outcomes and are neither retried nor hidden.
+
+The demonstrator uses this to keep N2's public N4 identity in shared source while
+connecting to its Compose peer over `http://wp_n4:3055`. Configuration is optional
+outside that topology. A nested node context shadows outer contexts even when a
+setting is absent; lookup cannot backtrack into another node's routing policy.
