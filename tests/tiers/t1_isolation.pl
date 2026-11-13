@@ -783,7 +783,9 @@ alarm :-
        on_timeout(fail)
    ]).
 
-test(spawned_child_inherits_io_target_for_nl, Data == "\n") :-
+% nl/0 deliberately emits the atom newline so copied code is independent of
+% the receiving module's double_quotes flag (actor_io_support/template).
+test(spawned_child_inherits_io_target_for_nl, Data == '\n') :-
    self(Self),
    with_io_target(Self,
        spawn(alarm, Pid, [
