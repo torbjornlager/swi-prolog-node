@@ -923,7 +923,8 @@ node(Port, Options0) :-
     %  are node runtime values consumed by the layer-0/2 hooks, not
     %  startup-option plumbing. Defaults are `unlimited`, so a node
     %  configured without them behaves exactly as the demonstrator.
-    extract_plain_option(peer_transport_tokens, [], Options0, PeerTokens, PeerOptions),
+    extract_static_peer_tokens(Options0, StaticTokens, TransportOptions),
+    extract_plain_option(peer_transport_tokens, [], TransportOptions, PeerTokens, PeerOptions),
     must_be(list, PeerTokens), maplist(valid_peer_token, PeerTokens),
     extract_lifetime_options(PeerOptions, LifetimeOptions, LifetimeSettings),
     extract_resource_ceiling(max_actor_stack_bytes, LifetimeOptions, MaxActorStackBytes, Options1),
@@ -1041,11 +1042,29 @@ node(Port, Options0) :-
         principal_policies:PrincipalPolicies
     },
     put_dict(LifetimeSettings, Runtime0, Runtime1),
-    put_dict(peer_transport_tokens, Runtime1, PeerTokens, Runtime),
+    put_dict(_{peer_transport_tokens:PeerTokens, static_bearer_tokens:StaticTokens}, Runtime1, Runtime),
     register_node_runtime(Port, Runtime),
     with_node_port_context(Port, set_node_shared_db(SharedDB)),
     set_global_shared_db_fallback(SharedDB),
     register_node_self(URL).
+
+
+% Startup-only credentials live in per-node memory, outside the mutable store.
+% They are never exposed by node_setting/2 or propagated through actor options.
+extract_static_peer_tokens([], [], []).
+extract_static_peer_tokens([bearer_token(Id0,Token0,Caps0)|Options],
+                           [token(Id,Token,Caps)|Tokens], Rest) :- !,
+    must_be(atomic, Id0), must_be(atomic, Token0),
+    atom_string(Id0, Id), atom_string(Token0, Token),
+    string_length(Token, Length),
+    ( Length >= 24, string_codes(Token, Codes),
+      forall(member(C,Codes), (C > 32, C < 127)), Id \== ""
+    -> true
+    ; throw(error(domain_error(static_bearer_credential, invalid), node/2)) ),
+    node_capabilities:normalize_capabilities(Caps0, Caps),
+    extract_static_peer_tokens(Options, Tokens, Rest).
+extract_static_peer_tokens([Option|Options], Tokens, [Option|Rest]) :-
+    extract_static_peer_tokens(Options, Tokens, Rest).
 
 
 call_request_log_context(Route0, GoalAtom, TemplateAtom0, Offset, Limit,

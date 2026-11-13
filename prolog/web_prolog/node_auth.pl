@@ -343,6 +343,14 @@ require_source_options_access(Principal, Options) :-
 request_authenticated_principal(Request, Principal) :-
     request_bearer_principal(Request, Principal),
     !.
+request_authenticated_principal(Request, principal{id:Id,capabilities:Caps,unknown:false}) :-
+    current_node_value(static_bearer_tokens, Tokens),
+    memberchk(authorization(Header0), Request),
+    text_to_string(Header0, Header),
+    split_string(Header, " \t", " \t", [Scheme,Presented]),
+    string_lower(Scheme, "bearer"),
+    member(token(Id,Stored,Caps), Tokens),
+    node_owner_tag:secure_eq_text(Presented, Stored), !.
 request_authenticated_principal(Request, principal{
                                    id:PrincipalId,
                                    capabilities:Capabilities,
