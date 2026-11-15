@@ -435,10 +435,11 @@ load_source_text_checked(SourceText, Module, SourceId) :-
            ],
            ModeOptions,
            LoadOptions),
-    setup_call_cleanup(
-        open_chars_stream(SourceText, Stream),
-        load_files(Module:PrivateSourceId, LoadOptions),
-        close(Stream)).
+    isolation:failing_directives_as_errors(
+        setup_call_cleanup(
+            open_chars_stream(SourceText, Stream),
+            load_files(Module:PrivateSourceId, LoadOptions),
+            close(Stream))).
 
 load_source_text_mode_options(whitelist, [sandboxed(true)]) :-
     !.

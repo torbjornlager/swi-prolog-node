@@ -17,6 +17,7 @@
      canonical_source_option/2, % +Option, -CanonicalOption
      load_sources/2,            % +Module, +Sources
      load_source_text/3,        % +Src, +Module, +SourceId
+     failing_directives_as_errors/1, % :Goal
      load_source_uri/3,         % +URI, +Module, +SourceId
      source_id/3,               % +Module, +Index, -SourceId
      load_option_text/3,        % +GoalModule, +Option, -Text
@@ -549,14 +550,47 @@ load_source_text(Src, Module, SourceId) :-
     ;   Source1 = Source0
     ),
     control_guard:rewrite_source_text(Module, Source1, Source),
-    setup_call_cleanup(
-        open_chars_stream(Source, Stream),
-        load_files(Module:SourceId,
-                   [ stream(Stream),
-                     module(Module),
-                     silent(true)
-                   ]),
-        close(Stream)).
+    failing_directives_as_errors(
+        setup_call_cleanup(
+            open_chars_stream(Source, Stream),
+            load_files(Module:SourceId,
+                       [ stream(Stream),
+                         module(Module),
+                         silent(true)
+                       ]),
+            close(Stream))).
+
+%!  failing_directives_as_errors(:Goal) is semidet.
+%
+%   Run a source-loading Goal. SWI-Prolog reports a directive that fails as
+%   a warning and continues loading, which a remote client never sees. The
+%   Web Prolog contract instead reports the first such directive to the
+%   creating client as error(directive_failed(Directive), _), on every
+%   engine; the caller discards the partly loaded module.
+:- meta_predicate failing_directives_as_errors(0).
+:- thread_local recording_directive_failures/0, source_directive_failure/1.
+:- multifile user:message_hook/3.
+:- dynamic   user:message_hook/3.
+
+user:message_hook(goal_failed(directive, Goal), warning, _) :-
+    isolation:recording_directive_failures,
+    assertz(isolation:source_directive_failure(Goal)).
+
+failing_directives_as_errors(Goal) :-
+    (   recording_directive_failures
+    ->  call(Goal)                      % nested load: the outer call reports
+    ;   retractall(source_directive_failure(_)),
+        setup_call_cleanup(
+            asserta(recording_directive_failures, Ref),
+            call(Goal),
+            erase(Ref)),
+        (   retract(source_directive_failure(Qualified))
+        ->  retractall(source_directive_failure(_)),
+            strip_module(Qualified, _, Directive),
+            throw(error(directive_failed(Directive), _))
+        ;   true
+        )
+    ).
 
 
 %!  load_source_uri(+URI0, +Module, +SourceId) is det.
