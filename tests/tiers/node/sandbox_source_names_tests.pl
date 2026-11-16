@@ -77,4 +77,36 @@ test(forbidden_directives_remain_rejected_and_module_is_reclaimed,
     assertion(Error=error(permission_error(execute,sandboxed_directive,(:- initialization(true))),_)),
     arg(1,Saved,Retired),assertion(Retired\==none),assertion(\+ current_module(Retired)).
 
+% Blacklist mode refuses a forbidden goal directive before loading. Whitelist
+% mode refuses it when it executes (safe_goal/1), which SWI-Prolog reports as a
+% load warning; either way the directive's effect must never happen.
+test(forbidden_goal_directives_never_run,
+     [forall((member(Mode,[blacklist,whitelist]),
+              member(Text-Directive,
+                     [":- open('/dev/null',read,S), close(S), assertz(directive_ran).\n"-
+                          (open('/dev/null',read,S1),close(S1),assertz(directive_ran)),
+                      "directive_fact(a).\n:- directive_fact(a), shell(true), assertz(directive_ran).\n"-
+                          (directive_fact(a),shell(true),assertz(directive_ran))])))]) :-
+    with_mode(Mode,
+      catch(in_temporary_module(Module,true,
+              ( node_sandbox:validate_and_load_source_text(actor,Module,Text,sandbox_source_1),
+                (   current_predicate(Module:directive_ran/0)
+                ->  throw(forbidden_directive_ran)
+                ;   true ) )),
+            Error,true)),
+    (   Mode == blacklist
+    ->  Error = error(permission_error(execute,sandboxed_directive,(:- Found)),_),
+        assertion(Found=@=Directive)
+    ;   assertion(Error \== forbidden_directive_ran)
+    ).
+
+test(safe_goal_directives_and_declarations_still_load,
+     [forall(member(Mode,[blacklist,whitelist]))]) :-
+    with_mode(Mode,
+      in_temporary_module(Module,true,
+        ( node_sandbox:validate_and_load_source_text(actor,Module,
+              ":- dynamic directive_counter/1.\n:- assertz(directive_counter(1)).\n:- true.\n",
+              sandbox_source_1),
+          assertion(call(Module:directive_counter(1))) ))).
+
 :- end_tests(sandbox_source_names).

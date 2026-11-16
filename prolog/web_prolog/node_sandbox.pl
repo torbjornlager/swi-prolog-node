@@ -462,10 +462,11 @@ precheck_source_terms(Profile, Module, Stream) :-
         precheck_source_terms(Profile, Module, Stream)
     ).
 
-precheck_source_term(Profile, _Module, (:- Directive)) :-
+precheck_source_term(Profile, Module, (:- Directive)) :-
     !,
     reject_expansion_declaration(Directive),
-    reject_forbidden_directive(Profile, Directive).
+    reject_forbidden_directive(Profile, Directive),
+    reject_forbidden_directive_goal(Profile, Module, Directive).
 precheck_source_term(Profile, Module, (Head :- Body)) :-
     !,
     reject_qualified_head(Head),
@@ -606,6 +607,36 @@ reject_forbidden_directive(_Profile, Directive) :-
                 context(node_sandbox:reject_forbidden_directive/2,
                         'directive is disabled in sandbox mode'))).
 reject_forbidden_directive(_, _).
+
+%!  reject_forbidden_directive_goal(+Profile, +Module, +Directive) is det.
+%
+%   A goal directive runs while the source loads, so it must pass the same
+%   goal policy as a clause body or a submitted query. Before this check a
+%   directive was compared only with sandbox_forbidden_directive/3, so a
+%   visitor could run, for example, `:- open(File, read, S)` through any
+%   source option. Declarations keep their existing, separate checks.
+
+reject_forbidden_directive_goal(_Profile, _Module, Directive) :-
+    source_declaration_directive(Directive),
+    !.
+reject_forbidden_directive_goal(Profile, Module, Directive) :-
+    catch(reject_forbidden_goal(Profile, Module, Directive),
+          error(permission_error(_, _, _), _),
+          throw(error(permission_error(execute, sandboxed_directive, (:- Directive)),
+                      context(node_sandbox:reject_forbidden_directive_goal/3,
+                              'directive calls a goal disabled in sandbox mode')))).
+
+source_declaration_directive(Directive) :-
+    callable(Directive),
+    functor(Directive, Name, Arity),
+    source_declaration(Name, Arity).
+
+source_declaration(dynamic, 1).
+source_declaration(discontiguous, 1).
+source_declaration(multifile, 1).
+source_declaration(op, 3).
+source_declaration(char_conversion, 2).
+source_declaration(set_prolog_flag, 2).
 
 sandbox_forbidden_directive(_, use_module(_), module_loading).
 sandbox_forbidden_directive(_, use_module(_, _), module_loading).
