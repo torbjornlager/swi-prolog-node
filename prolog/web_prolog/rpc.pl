@@ -110,11 +110,9 @@ rpc_endpoint(LogicalURI, URI) :-
     (hook_rpc_endpoint(LogicalURI, Endpoint) -> URI=Endpoint;URI=LogicalURI).
 
 %!  resolve_rpc_uri(+URI0, -URI) is det.
-resolve_rpc_uri(Input, URI) :-
-    nonvar(Input), Input = Host0:Port,
-    !,
-    uri_atom(Host0, Host), must_be(integer, Port),
-    format(atom(URI), 'http://~w:~w', [Host, Port]).
+%
+%   A URI is an atom or a string; the Host:Port shorthand is not a URI and
+%   raises type_error(atom_or_string, Host:Port), as on the other engines.
 resolve_rpc_uri(URI0, URI) :-
     uri_atom(URI0, URIAtom),
     (   uri_has_scheme(URIAtom)
@@ -281,8 +279,7 @@ validate_client_value(source_text, Value) :- !,
     % Keep the demonstrator's existing atom/string/codes/chars convention.
     system:text_to_string(Value, _).
 validate_client_value(atom_or_string, Value) :- !,
-    must_be(nonvar, Value),
-    (atom(Value) -> true ; string(Value) -> true ; type_error(atom_or_string, Value)).
+    uri_atom(Value, _).
 validate_client_value(predicate_indicators, Value) :- !,
     must_be(list, Value), maplist(validate_client_pi, Value).
 validate_client_value(request_header,Value) :- !, rpc_http_validate(request_header(Value)).

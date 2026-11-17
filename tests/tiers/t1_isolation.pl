@@ -173,6 +173,23 @@ test(src_text, Msg == hello_from_text) :-
        on_timeout(fail)
    ]).
 
+% Several source options make one program, in option order: a predicate
+% defined in more than one of them keeps all its clauses.
+test(mixed_sources_keep_all_clauses_in_order, Items == [first, second, third]) :-
+   self(Self),
+   spawn((findall(X, order(X), Found), send(Self, order(Found))), _Pid, [
+       link(false),
+       src_text("order(first)."),
+       src_list([order(second)]),
+       src_text("order(third).")
+   ]),
+   receive({
+       order(Items) -> true
+   }, [
+       timeout(2),
+       on_timeout(fail)
+   ]).
+
 test(src_text_operator_directive_affects_following_terms,
      Term == likes(alice, bob)) :-
    self(Self),

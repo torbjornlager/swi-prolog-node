@@ -839,6 +839,47 @@ plain_error_mapper(Error, error(Error)).
 %   Wrap controller exception and include the ISOTOPE session pid context.
 pid_error_mapper(Pid, Error, error(Pid, Error)).
 
+%!  stateless_source_declarations_only(+SourceText) is det.
+%
+%   Source sent with a stateless call may declare predicates but may not
+%   run goals while it loads: a stateless call has one goal, the query.
+%   Every engine refuses any other directive with the same error, whatever
+%   the sandbox mode. Syntax errors are left to the loader to report.
+stateless_source_declarations_only(SourceText0) :-
+    text_to_string(SourceText0, SourceText),
+    (   SourceText == ""
+    ->  true
+    ;   setup_call_cleanup(
+            open_string(SourceText, Stream),
+            catch(stateless_source_terms(Stream),
+                  error(syntax_error(_), _), true),
+            close(Stream))
+    ).
+
+stateless_source_terms(Stream) :-
+    read_term(Stream, Term, [module(node_engine)]),
+    (   Term == end_of_file
+    ->  true
+    ;   stateless_source_term(Term),
+        stateless_source_terms(Stream)
+    ).
+
+stateless_source_term(Term) :-
+    nonvar(Term),
+    Term = (:- Directive),
+    !,
+    (   nonvar(Directive),
+        (   Directive = dynamic(_)
+        ;   Directive = multifile(_)
+        ;   Directive = discontiguous(_)
+        )
+    ->  true
+    ;   throw(error(permission_error(load, directive, Directive),
+                    context(node:stateless_source_declarations_only/1,
+                            'stateless source may only declare predicates')))
+    ).
+stateless_source_term(_).
+
 %!  isobase_event(+Principal, +GoalAtom, +TemplateAtom0, +Offset, +Limit, +Format,
 %!                +LoadText, +Once0, +RequestedTimeout0, -Answer) is det.
 isobase_event(Principal, GoalAtom, TemplateAtom0, Offset, Limit, Format, LoadText,
@@ -852,6 +893,7 @@ isobase_event(Principal, GoalAtom, TemplateAtom0, Offset, Limit, Format, LoadTex
                        RequestedTimeout0, Goal, Template, Once,
                        RequestedTimeout),
     relation_check_call(EffectiveProfile, Goal, LoadText),
+    stateless_source_declarations_only(LoadText),
     sandbox_check_goal_with_source(EffectiveProfile, node_engine, Goal, LoadText),
     with_inflight_call_limit(
         Principal,
@@ -1569,6 +1611,7 @@ node_info_page_1(Request) :-
     ),
     node_profile_mode(Profile),
     auth_mode(AuthMode),
+    sandbox_mode(Sandbox),
     request_principal(Request, Principal),
     principal_id(Principal, PrincipalId0),
     text_to_string(PrincipalId0, PrincipalId),
@@ -1585,6 +1628,7 @@ node_info_page_1(Request) :-
         self_url:SelfURL,
         profile:Profile,
         auth:AuthMode,
+        sandbox:Sandbox,
         auth_boundary:trusted_headers,
         trusted_identity_headers:[
             "X-Web-Prolog-User",

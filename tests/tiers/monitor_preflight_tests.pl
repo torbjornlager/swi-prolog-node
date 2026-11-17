@@ -15,9 +15,9 @@ test(variable_target_does_not_resolve_a_registered_name) :-
 test(node_component_validation_precedes_hooks_and_reference_creation,
      [forall(member(Node-Formal,
        [_-instantiation_error,
-        "https://example.test"-type_error(atom,"https://example.test"),
-        [104,116,116,112]-type_error(atom,[104,116,116,112]),
-        42-type_error(atom,42)]))]) :-
+        [h,1.5]-type_error(atom_or_string,[h,1.5]),
+        foo(bar)-type_error(atom_or_string,foo(bar)),
+        42-type_error(atom_or_string,42)]))]) :-
     copy_term(Node,Before),
     catch(monitor('@'(1,Node),Ref),Error,true),
     assertion(nonvar(Error)),Error=error(Actual,_),

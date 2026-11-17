@@ -1247,6 +1247,49 @@ test(node_info_route_announces_configured_auth_mode,
             Auth = JSON.get(auth)
         )).
 
+% A stateless call has one goal, the query: its source may declare
+% predicates but not run goals while loading, in every sandbox mode.
+test(stateless_source_refuses_goal_directives,
+     true(Outcomes == [refused, refused, refused])) :-
+    findall(Outcome,
+            ( member(Sandbox, [off, blacklist, whitelist]),
+              with_node_server_options([sandbox(Sandbox)], URI,
+                  ( call_url(URI, 'p(X)', 'X', 0, 1,
+                             ':- assertz(seen(startup)). p(X) :- seen(X).',
+                             none, URL),
+                    read_answer(URL, Answer),
+                    (   Answer = error(error(permission_error(load, directive,
+                                                              assertz(seen(startup))), _))
+                    ->  Outcome = refused
+                    ;   Outcome = Answer
+                    )
+                  ))
+            ),
+            Outcomes).
+
+test(stateless_source_accepts_declarations,
+     true(Answer == success([a], false))) :-
+    with_node_server_options([sandbox(blacklist)], URI,
+        ( call_url(URI, 'p(X)', 'X', 0, 1,
+                   ':- dynamic(seen/1). :- discontiguous(p/1). p(a).',
+                   none, URL),
+          read_answer(URL, Answer)
+        )).
+
+% Clients and conformance runners read the goal policy from the node, as
+% they do on the Trealla and ECLiPSe nodes.
+test(node_info_route_announces_sandbox_mode,
+     true(Modes == ["whitelist", "blacklist", "off"])) :-
+    findall(Mode,
+            ( member(Sandbox, [whitelist, blacklist, off]),
+              with_node_server_options([sandbox(Sandbox)], URI,
+                  ( format(atom(NodeInfoURL), '~w/node_info', [URI]),
+                    read_json_answer(NodeInfoURL, JSON),
+                    Mode = JSON.get(sandbox)
+                  ))
+            ),
+            Modes).
+
 test(node_info_route_announces_tutorial_sections,
      true(Sections == ["local_isobase", "movie_database"])) :-
     with_node_server_options(
@@ -8720,7 +8763,10 @@ test(sandbox_public_paths) :-
                     read_json_answer(RejectedURL, RejectedJSON),
                     get_dict(type, RejectedJSON, "error"),
                     get_dict(data, RejectedJSON, RejectedErrorData),
-                    sub_string(RejectedErrorData, _, _, _, "sandboxed"),
+                    % Stateless source refuses every goal directive before
+                    % the sandbox is consulted.
+                    sub_string(RejectedErrorData, _, _, _, "directive"),
+                    \+ sub_string(RejectedErrorData, _, _, _, "sandboxed"),
 
                     atom_concat(URI, '/toplevel_spawn', SpawnURL),
                     read_json_post(SpawnURL, _{options:"[]"}, SpawnJSON),

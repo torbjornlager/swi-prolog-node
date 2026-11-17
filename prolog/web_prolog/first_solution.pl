@@ -66,8 +66,6 @@ first_solution_(Solution, QualifiedGoals, Options) :-
     maplist(valid_first_solution_option, Options),
     option(on_fail(OnFail), Options, continue),
     option(on_error(OnError), Options, stop),
-    must_be(oneof([stop, continue]), OnFail),
-    must_be(oneof([stop, continue]), OnError),
     strip_module(QualifiedGoals, Module, Goals0),
     must_be(list, Goals0),
     maplist(qualify_goal(Module), Goals0, Goals),
@@ -76,12 +74,28 @@ first_solution_(Solution, QualifiedGoals, Options) :-
          wait_first(Scope, Pids, Solution, OnFail, OnError))).
 
 
-valid_first_solution_option(on_fail(_)) :- !.
-valid_first_solution_option(on_error(_)) :- !.
+% Every occurrence is validated before any value is used, so a later
+% duplicate is checked too and pending values are never bound.
+valid_first_solution_option(Option) :-
+    var(Option),
+    !,
+    instantiation_error(Option).
+valid_first_solution_option(Option) :-
+    (   Option = on_fail(Policy) ; Option = on_error(Policy) ),
+    !,
+    valid_first_solution_policy(Policy).
 valid_first_solution_option(Option) :-
     throw(error(domain_error(first_solution_option, Option),
                 context(first_solution:first_solution/3,
                         'expected on_fail/1 or on_error/1'))).
+
+
+valid_first_solution_policy(Policy) :-
+    (   var(Policy) -> instantiation_error(Policy)
+    ;   \+ atom(Policy) -> type_error(atom, Policy)
+    ;   memberchk(Policy, [stop, continue]) -> true
+    ;   domain_error(first_solution_policy, Policy)
+    ).
 
 
 qualify_goal(Module, Goal0, Module:Goal) :-

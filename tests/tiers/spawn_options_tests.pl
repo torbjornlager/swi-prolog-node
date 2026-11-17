@@ -36,6 +36,16 @@ test(partial_list) :-
     assertion(Error=error(instantiation_error,_)),assertion(var(Tail)),assertion(var(Pid)).
 test(invalid_node, [throws(error(type_error(atom_or_string,17),_))]) :-
     spawn(true,_,[node(17)]).
+% A node URI is an atom or a string: a string object, or a list of
+% characters or codes.
+test(node_text_forms,
+     [forall(member(Node,['http://localhost:3060',"http://localhost:3060",
+                          [h,t,t,p,:,/,/,x],[104,116,116,112,58,47,47,120]]))]) :-
+    validate_spawn_options([node(Node)],public).
+test(invalid_node_lists,
+     [forall(member(Node,[[h,1.5],[],[foo,bar]]))]) :-
+    catch(validate_spawn_options([node(Node)],public),Error,true),
+    assertion(Error=error(type_error(atom_or_string,Node),_)).
 test(all_duplicates_validated, [throws(error(domain_error(boolean,bad),_))]) :-
     spawn(true,_,[monitor(false),monitor(bad)]).
 test(hook_extension) :-

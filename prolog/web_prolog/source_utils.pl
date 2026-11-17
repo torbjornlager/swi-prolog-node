@@ -134,8 +134,19 @@ uri_atom(URI, URI) :-
 uri_atom(URIString, URI) :-
     string(URIString), !,
     atom_string(URI, URIString).
+uri_atom(URIText, URI) :-
+    uri_text_list_atom(URIText, URI), !.
 uri_atom(Value, _) :-
     must_be(nonvar, Value), type_error(atom_or_string, Value).
+
+% A URI is an atom or a string: a string object, or a proper list of
+% characters or codes.
+uri_text_list_atom(List, Atom) :-
+    is_list(List), List = [First|_],
+    (   integer(First)
+    ->  catch(atom_codes(Atom, List), _, fail)
+    ;   catch(atom_chars(Atom, List), _, fail)
+    ).
 
 %!  normalize_load_uri_allowed_origins(+Origins0, -Origins) is det.
 %

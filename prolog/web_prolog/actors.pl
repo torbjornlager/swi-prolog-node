@@ -441,8 +441,31 @@ validate_boolean(Value) :-
     ; domain_error(boolean, Value) ).
 
 spawn_node_value(Node) :-
+    node_uri_atom(Node, _).
+
+%!  node_uri_atom(+Node, -Atom) is det.
+%
+%   A node URI is an atom or a string: a string object, or a proper list of
+%   characters or codes. Anything else is type_error(atom_or_string, Node).
+node_uri_atom(Node, Atom) :-
     must_be(nonvar, Node),
-    (atom(Node) -> true ; string(Node) -> true ; type_error(atom_or_string, Node)).
+    (   atom(Node) -> Atom = Node
+    ;   string(Node) -> atom_string(Atom, Node)
+    ;   is_list(Node), Node = [First|_],
+        (   integer(First)
+        ->  catch(atom_codes(Atom, Node), _, fail)
+        ;   catch(atom_chars(Atom, Node), _, fail)
+        )
+    ->  true
+    ;   type_error(atom_or_string, Node)
+    ).
+
+% An address Id@Node may name its node with any URI text; route on the atom.
+address_node_atom(Address0, Address) :-
+    (   nonvar(Address0), Address0 = '@'(Id, Node0), nonvar(Node0), \+ atom(Node0)
+    ->  node_uri_atom(Node0, Node), Address = '@'(Id, Node)
+    ;   Address = Address0
+    ).
 
 spawn_local_activate(LocalPid, Pid, Goal, EffectiveOptions) :-
     self(Self),
@@ -883,15 +906,16 @@ self_local(Self) :-
 
 :- dynamic monitor/3.
 
-monitor(Target, Ref) :-
-    must_be(nonvar, Target),
-    validate_monitor_node(Target),
+monitor(Target0, Ref) :-
+    must_be(nonvar, Target0),
+    validate_monitor_node(Target0),
+    address_node_atom(Target0, Target),
     monitor_target(Target, Ref).
 
-% Validate the public node component before canonicalization can coerce text
-% or hooks can allocate an observation. Other URI entry points are unchanged.
+% Validate the public node component before canonicalization or hooks can
+% allocate an observation.
 validate_monitor_node(Target) :-
-    ( Target = '@'(_,Node) -> must_be(atom, Node) ; true ).
+    ( Target = '@'(_,Node) -> node_uri_atom(Node, _) ; true ).
 
 monitor_target(Name, Ref) :-
     current_registered(Name, Pid),
@@ -1327,7 +1351,8 @@ send_system(Pid, Message) :-
 Pid ! Message :-
     send(Pid, Message).
 
-send(Pid, Message) :-
+send(Pid0, Message) :-
+    address_node_atom(Pid0, Pid),
     (system_delivery -> true; forall(hook_check_send(Pid, Message), true)),
     send_checked(Pid, Message).
 

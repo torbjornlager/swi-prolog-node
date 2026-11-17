@@ -356,13 +356,36 @@ test(caller_module_goal_is_preserved, Solution == caller_module) :-
 
 
 test(invalid_on_fail,
-     throws(error(type_error(oneof([stop,continue]), maybe), _))) :-
+     throws(error(domain_error(first_solution_policy, maybe), _))) :-
     first_solution(_Solution, [true], [on_fail(maybe)]).
 
 
 test(invalid_on_error,
-     throws(error(type_error(oneof([stop,continue]), maybe), _))) :-
+     throws(error(domain_error(first_solution_policy, maybe), _))) :-
     first_solution(_Solution, [true], [on_error(maybe)]).
+
+
+test(non_atom_policy,
+     throws(error(type_error(atom, 1), _))) :-
+    first_solution(_Solution, [true], [on_error(1)]).
+
+
+% Every occurrence is validated, and pending values are never bound.
+test(later_duplicate_policy_validated,
+     throws(error(domain_error(first_solution_policy, maybe), _))) :-
+    first_solution(_Solution, [true], [on_fail(stop), on_fail(maybe)]).
+
+
+test(pending_policy_not_bound) :-
+    catch(first_solution(_Solution, [true], [on_error(Pending)]), Error, true),
+    assertion(subsumes_term(error(instantiation_error, _), Error)),
+    assertion(var(Pending)).
+
+
+test(pending_option_not_bound) :-
+    catch(first_solution(_Solution, [true], [Pending]), Error, true),
+    assertion(subsumes_term(error(instantiation_error, _), Error)),
+    assertion(var(Pending)).
 
 
 test(unknown_option,

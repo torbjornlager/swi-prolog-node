@@ -299,11 +299,48 @@ prepare_actor_module(Module, GoalModule, Options) :-
     forall(prepare_module(Module, GoalModule, Options), true),
     configure_actor_operators(Module),
     option(source_module(SourceModule), Options, GoalModule),
-    prepare_runtime_source_options(SourceModule, Options, PreparedOptions),
+    prepare_runtime_source_options(SourceModule, Options, PreparedOptions0),
+    merge_supplied_sources(PreparedOptions0, SourceModule, PreparedOptions),
     prepare_actor_io(Module, Options, PreparedOptions, WithIOPrelude),
     inject_extra_preludes(WithIOPrelude, EffectiveOptions),
     source_options(EffectiveOptions, SourceModule, SourceOptions),
     load_actor_sources(Module, SourceOptions, GoalModule, Options).
+
+
+%!  merge_supplied_sources(+Options0, +SourceModule, -Options) is det.
+%
+%   Several source options make one program, in option order. Each source
+%   loaded as a file of its own would redefine a predicate that an earlier
+%   one also defines, keeping only the last clauses, so the supplied sources
+%   are joined into a single src_text at the position of the first. Runtime
+%   preludes are added afterwards and stay separate.
+merge_supplied_sources(Options0, SourceModule, Options) :-
+    source_options(Options0, SourceModule, Sources),
+    Sources = [_,_|_],
+    !,
+    maplist(source_option_text, Sources, Texts),
+    atomic_list_concat(Texts, '\n', Joined0),
+    atom_string(Joined0, Joined),
+    merge_source_entries(Options0, src_text(Joined), Options).
+merge_supplied_sources(Options, _, Options).
+
+source_option_text(src_text(Text0), Text) :-
+    text_to_string(Text0, Text).
+source_option_text(src_uri(URI0), Text) :-
+    uri_atom(URI0, URI),
+    uri_to_source(URI, Text).
+
+merge_source_entries([], _, []).
+merge_source_entries([Option|Options0], Merged, Options) :-
+    (   canonical_source_option(Option, _)
+    ->  (   var(Merged)
+        ->  Options = Rest
+        ;   Options = [Merged|Rest]
+        ),
+        merge_source_entries(Options0, _, Rest)
+    ;   Options = [Option|Rest],
+        merge_source_entries(Options0, Merged, Rest)
+    ).
 
 
 %!  load_actor_sources(+Module, +Sources, +GoalModule, +Options) is det.

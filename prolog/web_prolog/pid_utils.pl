@@ -57,8 +57,20 @@ node_url_atom(Node0, NodeURL) :-
     string(Node0),
     !,
     atom_string(NodeURL, Node0).
+node_url_atom(Node0, NodeURL) :-
+    node_text_list_atom(Node0, NodeURL),
+    !.
 node_url_atom(Value, _) :-
     must_be(nonvar, Value), type_error(atom_or_string, Value).
+
+% A URI is an atom or a string: a string object, or a proper list of
+% characters or codes.
+node_text_list_atom(List, Atom) :-
+    is_list(List), List = [First|_],
+    (   integer(First)
+    ->  catch(atom_codes(Atom, List), _, fail)
+    ;   catch(atom_chars(Atom, List), _, fail)
+    ).
 
 
 %!  normalize_node_url(+Node0, -Node) is det.
@@ -106,7 +118,11 @@ canonical_pid_1(main, main) :-
 canonical_pid_1(Pid@Node0, Pid@Node) :-
     integer(Pid),
     !,
-    normalize_node_url(Node0, Node).
+    % As on the other engines, Id@localhost names this node.
+    (   nonvar(Node0), localhost_node(Node0)
+    ->  self_node_url(Node)
+    ;   normalize_node_url(Node0, Node)
+    ).
 canonical_pid_1(Pid, Pid) :-
     integer(Pid),
     !.
@@ -140,6 +156,10 @@ canonical_pid_2(Pid, Pid).
 
 
 %!  local_node_url(+Node0) is semidet.
+local_node_url(Node0) :-
+    nonvar(Node0),
+    localhost_node(Node0),
+    !.
 local_node_url(Node0) :-
     normalize_node_url(Node0, Node),
     self_node_url(Self0),
