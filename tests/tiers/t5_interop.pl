@@ -462,10 +462,13 @@ test(node_info_agrees) :-
     fetch_raw(LegacyURL, '/node_info', S1, B1),
     fetch_raw(NewURL, '/node_info', S2, B2),
     S1 == S2,
-    re_replace(":[0-9]+"/g, ":PORT", B1, M1),
-    re_replace(":[0-9]+"/g, ":PORT", B2, M2),
-    atom_json_dict(M1, Legacy, []),
-    atom_json_dict(M2, New, []),
+    atom_json_dict(B1, Legacy0, []),
+    atom_json_dict(B2, New0, []),
+    % Only URLs contain ports. Masking raw JSON also corrupts numeric limits.
+    re_replace(":[0-9]+"/g, ":PORT", Legacy0.self_url, LegacyURLMasked),
+    re_replace(":[0-9]+"/g, ":PORT", New0.self_url, NewURLMasked),
+    Legacy = Legacy0.put(self_url, LegacyURLMasked),
+    New = New0.put(self_url, NewURLMasked),
     forall(get_dict(Key, Legacy, LegacyVal),
            (   get_dict(Key, New, NewVal)
            ->  (   NewVal == LegacyVal
