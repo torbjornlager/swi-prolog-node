@@ -138,6 +138,14 @@ actors:hook_spawn_context(StartGoal0, StartGoal) :-
     ;   StartGoal = StartGoal2
     ).
 
+% Thread at-exit callbacks run after the inherited start-goal context is
+% erased. Retain the creating node here so identity, registry retirement,
+% monitor delivery and lifecycle hooks cannot fall back to another listener.
+:- multifile actors:hook_stop_context/2.
+actors:hook_stop_context(StopGoal,
+        node_runtime_state:with_node_port_context(NodePort,StopGoal)) :-
+    current_node_port(NodePort).
+
 %  Registry/visibility namespace (was current_public_execution_namespace
 %  read directly by actor.pl).
 :- multifile actors:hook_namespace/1.

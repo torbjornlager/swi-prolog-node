@@ -122,6 +122,8 @@ Takeover-style (semidet; if a clause succeeds the core path is skipped):
     fetch source or instantiate user terms.
   - hook_spawn_context(+Goal0, -Goal): caller-side wrapping of the
     child's start goal (node-layer execution-context propagation).
+  - hook_stop_context(+Goal0, -Goal): caller-side wrapping of the
+    thread's retirement callback, after start-goal contexts have unwound.
 
 Side-effect-style (all solutions are run via forall/2; no clauses = no-op):
 
@@ -185,6 +187,7 @@ Transactional triple (semidet prepare; commit/abort run via forall/2):
     hook_spawn_options/3,
     hook_spawn_option/3,
     hook_spawn_context/2,
+    hook_stop_context/2,
     hook_monitor/3,
     hook_demonitor/1,
     hook_pid_activated/1,
@@ -479,8 +482,10 @@ spawn_local_activate(LocalPid, Pid, Goal, EffectiveOptions) :-
     spawn_thread_options(ThreadOptions),
     catch(
         (
+            StopGoal0 = actors:stop_self(Self),
+            (hook_stop_context(StopGoal0, StopGoal) -> true ; StopGoal=StopGoal0),
             thread_create(StartGoal, _Thread,
-                          [at_exit(stop_self(Self))|ThreadOptions]),
+                          [at_exit(StopGoal)|ThreadOptions]),
             thread_get_message(initialized(Pid)),
             check_actor_start_error(Pid),
             forall(hook_spawn_commit(PreparedContext, Pid), true)
@@ -780,8 +785,11 @@ stop(Pid, Parent) :-
     ),
     retractall(link(Parent, GlobalPid)),
     retractall(delayed_send(_Owner, _ID, GlobalPid)),
+    % A recorded parent dependency authorizes runtime teardown. A concurrent
+    % remote down may already have removed public ownership for the child;
+    % rechecking public exit authority here could strand the parent's cleanup.
     forall(retract(link(GlobalPid, ChildPid)),
-           exit(ChildPid, kill)),
+           exit_actor(ChildPid, kill)),
     forall(hook_stop(GlobalPid), true),
     %  Monitor delivery and pid removal form one lifecycle transaction.
     %  monitor/2 and demonitor/2 use the same mutex, so either a monitor

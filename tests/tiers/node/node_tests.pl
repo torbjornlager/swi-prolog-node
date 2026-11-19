@@ -3030,7 +3030,11 @@ test(browser_terminal_inherited_by_remote_descendant) :-
             setup_call_cleanup(ws_open(Home, WS),
                 ( ws_send_json(WS, json{command:transport_hello, version:1, io_ack:true}),
                   ws_receive_json(WS, _),
-                  format(string(Goal), 'spawn(writeln(inherited),_,[node(~q)])', [Remote]),
+                  % Keep the linked parent alive until its remote writer has received
+                  % the browser acknowledgement; parent exit correctly kills children.
+                  format(string(Goal),
+                         'self(Parent),spawn((writeln(inherited),send(Parent,printed)),_,[node(~q)]),receive({printed->true})',
+                         [Remote]),
                   ws_send_json(WS, json{command:spawn, goal:Goal, options:"[]"}),
                   ws_receive_json(WS, Spawned),
                   assertion(Spawned.type == "spawned"),
