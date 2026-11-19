@@ -891,8 +891,8 @@ test(isobase_call_rejects_promise_from_another_anonymous_request,
                 (rpc:promise_queue_key(Ref,Key),rpc:promise_transaction(rpc:dispose_promise_locked(Key))))
         )).
 
-test(isobase_call_preserves_promise_between_authenticated_stateless_requests,
-     true(Answer == success([success([a], false)], false))) :-
+test(isobase_call_rejects_promise_from_another_authenticated_request,
+     true(Answer = error(error(existence_error(promise,Ref),_)))) :-
     with_node_server_options([profile(isobase), sandbox(blacklist), auth(dev),
                               dev_principal("promise-test-owner"),dev_capabilities([execute])], URI,
         (
@@ -903,7 +903,8 @@ test(isobase_call_preserves_promise_between_authenticated_stateless_requests,
             read_answer(PromiseURL, success([Ref], false)),
             format(atom(YieldGoal), 'yield(~w, Answer)', [Ref]),
             call_url(URI, YieldGoal, 'Answer', 0, 1, '', none, YieldURL),
-            read_answer(YieldURL, Answer)
+            setup_call_cleanup(true,read_answer(YieldURL, Answer),
+                (rpc:promise_queue_key(Ref,Key),rpc:promise_transaction(rpc:dispose_promise_locked(Key))))
         )).
 
 test(isobase_call_runs_loaded_promise_and_yield_example,

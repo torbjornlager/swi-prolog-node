@@ -882,17 +882,27 @@ node. Late worker completion is ignored without writing to a destroyed queue.
 Failed initialisation rolls back allocated local resources. Explicit cleanup
 remains idempotent. This is local disposal, not guaranteed remote cancellation.
 
+Public `link(false)` in a live retained WebSocket, delegated or HTTP interactive
+namespace declines the immediate parent link while retaining the client's
+ownership and resource account. It grants no node-owner authority; ending the
+client lifetime still follows its normal teardown policy. A stateless HTTP
+request or public execution without a live retained namespace cannot use this
+to leave unlinked work behind. Trusted node-owner detachment remains separate.
+
 Native node composition records a ground owner key with each promise and
 checks it under the lifecycle mutex before a collector claims the promise:
 
 - WebSocket, HTTP interactive-session and delegated transport calls use their
   existing client namespace, scoped to the node. Sharing a principal does not
   merge separate session namespaces.
-- Authenticated stateless HTTP calls use principal identity scoped to the node,
-  allowing collection in a later request by that principal.
-- Anonymous stateless HTTP calls use the existing distinct request identity,
-  including when an anonymous per-IP identity is configured. A later anonymous
-  request cannot collect; use a session or authentication across requests.
+- Stateless HTTP computations use a fresh request context, including when
+  authenticated requests share a principal or anonymous requests share an IP.
+  A later fresh request cannot collect or dispose of the earlier computation's
+  promises. Create and collect in one computation, or use an explicit retained
+  WebSocket or HTTP interactive session for sharing across queries. OPEN mode
+  supports those anonymous retained sessions without login.
+- Principal identity still aggregates authenticated resource quotas. It does
+  not merge request contexts or separate retained session namespaces.
 - Trusted local/standalone code retains sharing across threads and actors.
   It has no implicit override for public clients' promises, and public clients
   cannot collect trusted local promises.

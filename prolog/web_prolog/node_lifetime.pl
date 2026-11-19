@@ -61,7 +61,10 @@ with_owner_context(Principal, Carrier, Lineage0, Goal) :-
         (cpu_account(Scope, Id, _, _) -> true;
          get_time(Now), assertz(cpu_account(Scope, Id, Now, 0)))),
     (   Lineage0 == local
-    ->  with_mutex(node_lineage, lineage_for(Scope, tree(Id, Carrier), Lineage))
+    ->  (   Carrier == http_call
+        ->  fresh_lineage(Lineage)
+        ;   with_mutex(node_lineage, lineage_for(Scope, tree(Id, Carrier), Lineage))
+        )
     ;   Lineage = Lineage0
     ),
     (principal_has_capability(Principal, admin) -> Owner = true; Owner = false),
@@ -92,9 +95,14 @@ prune_accounts :-
 
 lineage_for(Scope, Id, Token) :- principal_lineage(Scope, Id, Token), !.
 lineage_for(Scope, Id, Token) :-
-    crypto_n_random_bytes(16, Bytes),
-    phrase(hex_bytes(Bytes), Codes), atom_codes(Token, Codes),
+    fresh_lineage(Token),
     assertz(principal_lineage(Scope, Id, Token)).
+
+% A stateless HTTP producer gets a fresh context even for an authenticated
+% principal. Keep its resource account separate: quotas still aggregate by Id.
+fresh_lineage(Token) :-
+    crypto_n_random_bytes(16, Bytes),
+    phrase(hex_bytes(Bytes), Codes), atom_codes(Token, Codes).
 hex_bytes([]) --> [].
 hex_bytes([B|Bs]) --> { H is B >> 4, L is B /\ 15,
                        code_type(HC, xdigit(H)), code_type(LC, xdigit(L)) },
@@ -117,11 +125,19 @@ run_owned_actor(Key, Context, Goal) :-
 check_spawn(Options) :-
     (   option(link(false), Options), current_public_execution_profile(_),
         \+ connection_spawn,
-        \+ current_owner_context(ctx(_, _, _, true, _))
+        \+ current_owner_context(ctx(_, _, _, true, _)),
+        \+ retained_client_namespace
     ->  throw(error(permission_error(spawn, detached_actor, link(false)),
-                    context(actors:spawn/3, 'only the node owner may detach work')))
+                    context(actors:spawn/3, 'unlinking requires a retained client session or the node owner')))
     ;   true
     ).
+
+% Declining a parent link does not detach a public actor from its client.
+% Only a live retained namespace supplies that lifetime; a fresh HTTP request
+% cannot leave unlinked work behind. Non-owner accounting remains unchanged.
+retained_client_namespace :-
+    current_public_execution_namespace(Namespace),
+    node_execution_context:client_namespace_status(Namespace,open).
 
 actor_key(Pid, Key) :- actors:canonical_pid(Pid, Key).
 

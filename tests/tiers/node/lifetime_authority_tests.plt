@@ -165,6 +165,26 @@ test(full_watcher_mailbox_does_not_prevent_retirement) :-
        assertion(\+ actors:resolve_actor_thread(Target, _))),
       (kill_wait(Watcher), kill_wait(Target), set_setting(node_lifetime:max_mailbox_messages, Old))).
 
+test(retained_client_can_decline_parent_link_without_becoming_owner) :-
+    NS=ws_client(public_unlink_test),principal("public-unlink",Principal),
+    setup_call_cleanup(open_client_namespace(NS),
+      with_public_execution_context(actor,NS,
+        with_owner_context(Principal,public_unlink_carrier,local,
+          setup_call_cleanup(
+            spawn(hold,Pid,[link(false),monitor(true),
+                src_text('hold :- receive({stop -> true}).')]),
+            (node_lifetime:actor_key(Pid,Key),node_lifetime:actor_owner(Key,Child),
+             assertion(Child=ctx(_,"public-unlink",_,false,public_unlink_carrier))),
+            kill_wait(Pid)))),
+      close_client_namespace(NS)).
+
+test(closed_client_namespace_does_not_authorize_unlinking,
+     [throws(error(permission_error(spawn,detached_actor,link(false)),_))]) :-
+    NS=ws_client(closed_unlink_test),principal("public-unlink",Principal),
+    with_public_execution_context(actor,NS,
+        with_owner_context(Principal,public_unlink_carrier,local,
+            node_lifetime:check_spawn([link(false)]))).
+
 test(anonymous_http_accounts_are_independent) :-
     with_owner_context(anonymous, http_call, local, current_owner_context(A)),
     with_owner_context(anonymous, http_call, local, current_owner_context(B)),

@@ -264,7 +264,7 @@ rpc:prepare_timeout_callback(Module, Goal0, Goal) :-
     isolation:prepared_goal(Module, Goal0, Goal).
 
 % Promise ownership is a client boundary, not the collecting thread's id.
-% Session namespaces take precedence over principal-wide HTTP identity.
+% Retained session namespaces take precedence over request-local HTTP identity.
 :- multifile rpc:hook_promise_owner/1.
 rpc:hook_promise_owner(Owner) :- promise_client_owner(Owner).
 
@@ -296,8 +296,8 @@ promise_client_owner(Owner) :-
     ->  (ground(Namespace)
         -> node_lifetime:scope(Scope), Owner = client_namespace(Scope,Namespace)
         ;  Owner = unavailable)
-    ;   Context = some(ctx(Scope,Id,_,_,http_call))
-    ->  (ground(Scope-Id) -> Owner = http_client(Scope,Id); Owner = unavailable)
+    ;   Context = some(ctx(Scope,_,Lineage,_,http_call))
+    ->  (ground(Scope-Lineage) -> Owner = http_client(Scope,Lineage); Owner = unavailable)
     ;   current_public_execution_profile(_)
     ->  Owner = unavailable
     ;   Context = some(ctx(_,_,_,false,_))

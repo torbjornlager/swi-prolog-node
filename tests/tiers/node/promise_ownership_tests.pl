@@ -17,8 +17,9 @@ in_namespace(Port,NS,Goal) :-
     with_node_port_context(Port,with_public_execution_context(isobase,NS,Goal)).
 in_http(Port,Id,Goal) :-
     Principal=principal{id:Id,capabilities:[execute],unknown:false},
-    with_node_port_context(Port,with_public_execution_profile(isobase,
-        with_owner_context(Principal,http_call,local,Goal))).
+    with_node_port_context(Port,without_public_execution_context(
+        with_public_execution_profile(isobase,
+            with_owner_context(Principal,http_call,local,Goal)))).
 with_pending(Ref,Key,Goal) :-
     setup_call_cleanup(
       open_fixture_namespace(NS),
@@ -143,13 +144,29 @@ test(foreign_caller_does_not_learn_that_an_owner_is_already_collecting) :-
           (rpc:promise_transaction(rpc:dispose_promise_locked(Key)),thread_join(Thread,_))),
         message_queue_destroy(Events)))).
 
-test(authenticated_http_requests_share_principal_but_not_other_principals) :-
-    with_pending_for_http("alice",Ref,Key),
-    setup_call_cleanup(true,
-      (in_http(19101,"bob",(foreign_yield(Ref),promise_cleanup(Ref))),
+test(authenticated_http_requests_are_isolated_and_foreign_cleanup_preserves_owner) :-
+    in_http(19101,"alice",with_pending(Ref,Key,
+      (in_http(19101,"alice",(foreign_yield(Ref),promise_cleanup(Ref))),
+       in_http(19101,"bob",(foreign_yield(Ref),promise_cleanup(Ref))),
        in_http(19102,"alice",foreign_yield(Ref)),
-       in_http(19101,"alice",collect(Key,Ref))),
-      rpc:promise_transaction(rpc:dispose_promise_locked(Key))).
+       collect(Key,Ref)))).
+
+test(http_descendant_inherits_original_request_owner) :-
+    in_http(19101,"alice",with_pending(Ref,Key,
+      (rpc:deliver_promise_answer(Key,failure),actors:self(Self),
+       without_public_execution_context(
+         actors:spawn((rpc:yield(Ref,Answer),actors:send(Self,http_request_answer(Answer))),
+                      Pid,[monitor(true)])),
+       actors:receive({http_request_answer(failure)->true},
+                      [timeout(3),on_timeout(throw(missing_http_child_answer))]),
+       actors:receive({down(Pid,Pid,_)->true},
+                      [timeout(3),on_timeout(throw(missing_http_child_down))])))).
+
+test(equal_http_credentials_keep_one_resource_account_but_distinct_promise_owners) :-
+    in_http(19101,"alice",(node_lifetime:current_owner_context(A),rpc:promise_owner_context(OA))),
+    in_http(19101,"alice",(node_lifetime:current_owner_context(B),rpc:promise_owner_context(OB))),
+    A=ctx(Scope,Id,_,false,http_call),B=ctx(Scope,Id,_,false,http_call),
+    assertion(Id=="alice"),assertion(OA\==OB).
 
 test(anonymous_http_requests_have_distinct_owners,
      [forall(member(Id,[anonymous,"anon:per-ip-or-connection-id"]))]) :-
@@ -250,7 +267,7 @@ test(teardown_preserves_other_namespace_node_http_and_trusted_promises) :-
                  in_namespace(19101,NS,foreign_yield(Ref)),
                  in_namespace(19102,NS,collect(NodeKey,NodeRef)),
                  in_namespace(19101,ws_client(other_promise_owner),collect(OtherKey,OtherRef)),
-                 in_http(19101,"alice",collect(HttpKey,HttpRef)),
+                 collect(HttpKey,HttpRef),
                  assertion(rpc:promise_state(LocalKey,_,_,_,_,_,trusted_local)))
               )
             )
@@ -342,9 +359,9 @@ test(public_clients_cannot_collect_trusted_local_promises) :-
       (in_namespace(19101,ws_client(public),(foreign_yield(Ref),promise_cleanup(Ref))),collect(Key,Ref))).
 
 test(trusted_local_context_cannot_collect_or_dispose_client_promises) :-
-    with_pending_for_http("alice",Ref,Key),
+    with_pending_for_http("alice",Ref,Key,RequestContext),
     setup_call_cleanup(true,
-      (foreign_yield(Ref),promise_cleanup(Ref),in_http(19101,"alice",collect(Key,Ref))),
+      (foreign_yield(Ref),promise_cleanup(Ref),node_lifetime:with_context(RequestContext,test_promise_ownership:collect(Key,Ref))),
       rpc:promise_transaction(rpc:dispose_promise_locked(Key))).
 
 test(missing_identity_cannot_borrow_an_outer_http_owner_frame) :-
@@ -380,9 +397,11 @@ test(public_cleanup_disposes_the_owners_promise_idempotently) :-
 
 :- end_tests(promise_ownership).
 
-with_pending_for_http(Id,Ref,Key) :-
+with_pending_for_http(Id,Ref,Key) :- with_pending_for_http(Id,Ref,Key,_).
+with_pending_for_http(Id,Ref,Key,Context) :-
     in_http(19101,Id,
-      (rpc:make_reference(Ref),rpc:promise_queue_key(Ref,Key),
+      (node_lifetime:current_owner_context(Context),
+       rpc:make_reference(Ref),rpc:promise_queue_key(Ref,Key),
        with_mutex(promise_lifecycle,rpc:new_promise_state(Key,_)))).
 
 wait_for_claim(Key) :- call_with_time_limit(3,wait_for_claim_loop(Key)).
