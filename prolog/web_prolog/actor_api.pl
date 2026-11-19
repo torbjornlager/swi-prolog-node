@@ -42,6 +42,7 @@ facade re-publishes it for legacy-surface consumers.
     rpc/3,
     promise/3,
     promise/4,
+    promise_cleanup/1,
     yield/2,
     yield/3,
     runtime_property/1

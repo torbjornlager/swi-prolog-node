@@ -361,6 +361,23 @@ test(unidentified_public_execution_fails_closed) :-
        assertion(Error=error(permission_error(create,promise,client_context),_)),
        assertion(\+rpc:promise_state(Key,_,_,_,_,_,_)))).
 
+% Exercise the public import chain and admission hooks as well as RPC ownership.
+% Direct calls to rpc:promise_cleanup/1 would miss a missing actor API export.
+test(public_cleanup_preserves_a_foreign_namespaces_promise) :-
+    with_owned_pending(19101,ws_client(public_cleanup_owner),Ref,Key,
+      (in_namespace(19101,ws_client(public_cleanup_foreign),
+         (node_sandbox:sandbox_check_goal_in_module(actor,web_prolog,promise_cleanup(Ref)),
+          isolation:prepared_goal(web_prolog,promise_cleanup(Ref),Safe),
+          call(Safe))),
+       collect(Key,Ref))).
+
+test(public_cleanup_disposes_the_owners_promise_idempotently) :-
+    with_owned_pending(19101,ws_client(public_cleanup_owner),Ref,Key,
+      (node_sandbox:sandbox_check_goal_in_module(isobase,web_prolog,promise_cleanup(Ref)),
+       isolation:prepared_goal(web_prolog,promise_cleanup(Ref),Safe),
+       call(Safe), foreign_yield(Ref), call(Safe),
+       assertion(\+rpc:promise_state(Key,_,_,_,_,_,_)))).
+
 :- end_tests(promise_ownership).
 
 with_pending_for_http(Id,Ref,Key) :-

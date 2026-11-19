@@ -242,6 +242,7 @@ builtin_goal_policy(rpc(_, _), rpc, isobase).
 builtin_goal_policy(rpc(_, _, _), rpc, isobase).
 builtin_goal_policy(promise(_, _, _), rpc, isobase).
 builtin_goal_policy(promise(_, _, _, _), rpc, isobase).
+builtin_goal_policy(promise_cleanup(_), rpc, isobase).
 builtin_goal_policy(yield(_, _), rpc, isobase).
 builtin_goal_policy(yield(_, _, _), rpc, isobase).
 
@@ -445,7 +446,7 @@ builtin_family_spec(rpc,
                     "Remote queries",
                     "Call remote nodes through the sequential RPC interface.",
                     ["rpc/2", "rpc/3", "promise/3", "promise/4",
-                     "yield/2", "yield/3", "runtime_property/1"],
+                     "promise_cleanup/1", "yield/2", "yield/3", "runtime_property/1"],
                     [isobase, isotope, actor]).
 builtin_family_spec(server,
                     "Generic servers",

@@ -1427,6 +1427,7 @@ sandbox:safe_meta(rpc:rpc(_, _), []).
 sandbox:safe_meta(rpc:rpc(_, _, _), []).
 sandbox:safe_meta(rpc:promise(_, _, _), []).
 sandbox:safe_meta(rpc:promise(_, _, _, _), []).
+sandbox:safe_primitive(rpc:promise_cleanup(_)).
 sandbox:safe_primitive(rpc:yield(_, _)).
 sandbox:safe_meta(rpc:yield(_, _, Options0), Calls) :-
     strip_module(Options0, Module, Options),
