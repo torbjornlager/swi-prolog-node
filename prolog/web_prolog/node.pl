@@ -1623,6 +1623,7 @@ node_info_page_1(Request) :-
     node_info_provides(Provides),
     node_info_self_contained(SelfContained),
     node_info_tutorial_sections(TutorialSections),
+    node_info_admission(Admission),
     ( current_node_value(ws_allowed_origins, WSAllowedOrigins) -> true ; WSAllowedOrigins = [] ),
     reply_json(json{
         self_url:SelfURL,
@@ -1646,8 +1647,21 @@ node_info_page_1(Request) :-
         provides:Provides,
         self_contained:SelfContained,
         ws_allowed_origins:WSAllowedOrigins,
-        tutorial_sections:TutorialSections
+        tutorial_sections:TutorialSections,
+        admission:Admission
     }).
+
+% Public limits only; use the same profile projection as node_setting/2.
+node_info_admission(Admission) :-
+    findall(Key-Value,
+            ( member(Key, [rate_window_seconds, max_call_requests_per_window,
+                           max_session_spawns_per_window, max_ws_commands_per_window,
+                           max_inflight_calls, max_sessions_per_principal,
+                           max_ws_actors_per_principal]),
+              actor_api:node_setting(Key, Value) ), Pairs),
+    dict_create(Limits, json, Pairs),
+    Admission = Limits.put(_{window_policy:fixed, rate_identity:principal}).
+
 
 %!  node_info_tutorial_sections(-Sections:list(string)) is det.
 %

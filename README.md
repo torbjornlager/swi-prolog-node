@@ -277,3 +277,13 @@ invalid culprit. `supervisor_count_children/2` counts supervisor and worker
 subtypes from active records; stopped children can retain their specifications
 without contributing to active counts. Shared cases are in
 `trinity-conformance/cases/native-supervisor-id-counts-0.1.json`.
+
+### Public admission metadata
+
+`/node_info.admission` projects the public rate and concurrency settings also
+available through `node_setting/2`, with `window_policy=fixed` and
+`rate_identity=principal`. Existing node/2 options configure call, session-spawn
+and WebSocket-command budgets independently. Factory defaults remain unchanged;
+the shared public deployment selects 120 call entries and 120 session creations
+per minute while retaining its existing concurrency and resource bounds.
+See the [common admission contract](https://github.com/torbjornlager/trinity-conformance/blob/main/profiles/admission-0.1.md).
