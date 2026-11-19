@@ -49,13 +49,15 @@ test(numbered_source_options_keep_order_contents_and_non_source_options,
          assertion(call(Module:ordered_source_first(a))),
          assertion(call(Module:ordered_source_second(b)))))).
 
-test(temporary_module_is_reclaimed_after_success,
+% SWI-Prolog 11 defers module reclamation to GC. Cleanup must still abolish
+% every predicate immediately, including on exceptions and rejected sources.
+test(temporary_module_is_cleared_after_success,
      [forall(member(Mode,[blacklist,whitelist]))]) :-
     with_mode(Mode,in_temporary_module(Module,true,test_sandbox_source_names:load_probe(Module,sandbox_source,success))),
-    assertion(\+ current_module(Module)),
+    assertion(\+ predicate_property(Module:_, defined)),
     assertion(\+ current_predicate(Module:source_name_probe/1)).
 
-test(temporary_module_is_reclaimed_after_exception,
+test(temporary_module_is_cleared_after_exception,
      [forall(member(Mode,[blacklist,whitelist]))]) :-
     Saved=module(none),
     with_mode(Mode,
@@ -63,10 +65,10 @@ test(temporary_module_is_reclaimed_after_exception,
               (test_sandbox_source_names:load_probe(Module,sandbox_source_1,exception),throw(source_name_probe_error))),
             Error,true)),
     assertion(Error==source_name_probe_error),arg(1,Saved,Retired),
-    assertion(Retired\==none),assertion(\+ current_module(Retired)),
+    assertion(Retired\==none),assertion(\+ predicate_property(Retired:_, defined)),
     assertion(\+ current_predicate(Retired:source_name_probe/1)).
 
-test(forbidden_directives_remain_rejected_and_module_is_reclaimed,
+test(forbidden_directives_remain_rejected_and_module_is_cleared,
      [forall(member(Mode,[blacklist,whitelist]))]) :-
     Saved=module(none),
     with_mode(Mode,
@@ -75,7 +77,7 @@ test(forbidden_directives_remain_rejected_and_module_is_reclaimed,
                   ":- initialization(true).\n",sandbox_source_1)),Error,true)),
     assertion(nonvar(Error)),
     assertion(Error=error(permission_error(execute,sandboxed_directive,(:- initialization(true))),_)),
-    arg(1,Saved,Retired),assertion(Retired\==none),assertion(\+ current_module(Retired)).
+    arg(1,Saved,Retired),assertion(Retired\==none),assertion(\+ predicate_property(Retired:_, defined)).
 
 % Blacklist mode refuses a forbidden goal directive before loading. Whitelist
 % mode refuses it when it executes (safe_goal/1), which SWI-Prolog reports as a

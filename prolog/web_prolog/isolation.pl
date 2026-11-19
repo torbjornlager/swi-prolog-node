@@ -78,6 +78,13 @@ actor-coupled.
 :- use_module(integer_relations, []).
 :- use_module(standard_library, []).
 :- use_module(library(modules)).
+
+% SWI-Prolog 11 abolishes temporary-module predicates immediately and reclaims
+% the empty modules through code GC. Actor workloads need module collection.
+% Earlier engines destroy temporary modules directly and do not have this flag.
+:- if(current_prolog_flag(gc_code, _)).
+:- set_prolog_flag(gc_code, module).
+:- endif.
 :- use_module(library(option)).
 :- use_module(library(memfile)).
 :- use_module(text_config, []).
@@ -180,7 +187,8 @@ source_utils:restore_serialized_term(Module, (Head :- Body0),
 %     4. run the goal in the module via call(Runner, Module:Goal),
 %        after applying the prepare_goal/3 hook.
 %
-%   The temporary module is destroyed when the actor terminates.
+%   Its predicates are abolished when the actor terminates; on SWI-Prolog 11,
+%   the empty module is reclaimed by code GC once no references remain.
 spawn_body(Pid, Goal, Options, OnReady, OnPrepError, Runner) :-
     strip_module(Goal, GoalModule0, Plain),
     normalize_goal_module(GoalModule0, Plain, GoalModule),

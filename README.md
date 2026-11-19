@@ -12,12 +12,17 @@ in a separately verified private backup. See [provenance](docs/ORIGIN.md).
 
 ## Load and test
 
+SWI-Prolog **11.0.0 stable** is the verified runtime. See the
+[upgrade verification](docs/SWI_PROLOG_11_UPGRADE.md) for compatibility details.
+On engines providing `gc_code`, loading the isolation layer sets it to `module`
+so temporary actor and source-validation modules can be reclaimed safely.
+
 ```sh
 swipl load.pl
 SWIPL=/path/to/verified/swipl ./tools/test.sh
 ```
 
-The default runs LINT, T0, T1_NATIVE, T2, T3_NATIVE, T4_NATIVE and T5 in fresh
+The default runs LINT, TEXT, T0, T1_NATIVE, T2, T3_NATIVE, T4_NATIVE and T5 in fresh
 processes. T5 starts temporary peers on fresh ports using the checksummed,
 byte-identical historical server in [tests/fixtures](tests/fixtures/README.md).
 It needs no historical Git tag, network fetch or existing n3/n5 process.
