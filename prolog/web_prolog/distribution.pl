@@ -52,6 +52,7 @@ Own hooks (multifile, implemented by the node layer in Phase 6):
 :- use_module(pid_utils, [
     localhost_node/1,
     node_url_atom/2,
+    normalize_node_url/2,
     local_node_url/1,
     self_node_url/1,
     registered_self_node_url/1
@@ -188,13 +189,13 @@ actors:hook_spawn(Goal, Pid, Options) :-
         ;  spawn_remote(Goal, Pid, Node, Options))
     ).
 
-% Keep local named creation local even when the caller names this node by URL.
+% localhost keeps named creation local; explicit URLs use distribution.
 actors:hook_local_spawn_node(Node) :- localhost_node(Node).
 
 :- multifile actors:hook_remote_named_spawn/4.
 actors:hook_remote_named_spawn(Goal, Pid, Options, Name) :-
     option(node(Node), Options),
-    node_url_atom(Node,NodeURL),
+    normalize_node_url(Node,NodeURL),
     % Keep the ordinary spawn validation, admission and distribution hooks.
     with_remote_name(Name,NodeURL,Pid,spawn(Goal,Pid,Options)).
 
@@ -308,7 +309,7 @@ fail_remote_names(Node0, Pid, Reason) :-
 %   node_controller's routing tables (no per-pid local proxy actor).
 spawn_remote(Goal, RemotePid@NodeURL, Node0, Options) :-
     self(Self),
-    node_url_atom(Node0, NodeURL),
+    normalize_node_url(Node0, NodeURL),
     strip_module(Goal, GoalModule0, PlainGoal),
     normalize_goal_module(GoalModule0, PlainGoal, SourceModule),
     term_to_wire_atom(PlainGoal, GoalAtom),
@@ -752,7 +753,8 @@ log_remote_exit_failure(Node, Pid, ReasonAtom, Error, Terminal) :-
                 *******************************/
 
 toplevel_actors:hook_toplevel_spawn(RemotePid@NodeURL, SourceModule, Options) :-
-    option(node(NodeURL), Options),
+    option(node(Node0), Options),
+    normalize_node_url(Node0, NodeURL),
     \+ localhost_node(NodeURL),
     !,
     (option(name(Name),Options)
@@ -822,7 +824,8 @@ ws_send_json(WebSocket, Dict0) :-
 %   Send a spawn-like command (`spawn` or `toplevel_spawn`) on the shared
 %   WebSocket connection for NodeURL and wait for the corresponding
 %   `spawned(Pid)` event.
-remote_request_spawn(NodeURL, Command0, RemotePid) :-
+remote_request_spawn(Node0, Command0, RemotePid) :-
+    normalize_node_url(Node0, NodeURL),
     make_id(Request), number_string(Request, RequestId),
     put_dict(request_id, Command0, RequestId, Command),
     forall(hook_remote_spawn_start(NodeURL), true),
@@ -905,7 +908,8 @@ remote_spawn_reply(Message, SpawnQueue, RequestId, RemotePid) :-
 %!  remote_send_command(+NodeURL, +Command) is det.
 %
 %   Send a JSON command over the shared per-node WebSocket connection.
-remote_send_command(NodeURL, Command) :-
+remote_send_command(Node0, Command) :-
+    normalize_node_url(Node0, NodeURL),
     ws_mutex(NodeURL, ws_send_lock, Mutex),
     with_mutex(Mutex,
                ( remote_connection(NodeURL, Socket, _SpawnQueue),
@@ -958,7 +962,8 @@ remote_per_pid_dispatch(NodeURL, Dict) :-
 %
 %   Return a live shared WebSocket connection for NodeURL, creating it if
 %   needed.
-remote_connection(NodeURL, Socket, SpawnQueue) :-
+remote_connection(Node0, Socket, SpawnQueue) :-
+    normalize_node_url(Node0, NodeURL),
     ws_mutex(NodeURL, ws_connection_lock, Mutex),
     with_mutex(Mutex,
                remote_connection_locked(NodeURL, Socket, SpawnQueue)).
@@ -1210,10 +1215,23 @@ ws_mutex(NodeURL, Prefix, Mutex) :-
     format(atom(Mutex), '~w::~w', [Prefix, NodeURL]).
 
 %!  node_url_to_ws_endpoint(+NodeURL, -WsURL) is det.
-node_url_to_ws_endpoint(NodeURL, WsURL) :-
-    hook_ws_endpoint_override(NodeURL, WsURL),
-    !.
-node_url_to_ws_endpoint(NodeURL, WsURL) :-
+node_url_to_ws_endpoint(Node0, WsURL) :-
+    normalize_node_url(Node0, NodeURL),
+    findall(Endpoint, (node_endpoint_spelling(NodeURL, Spelling),
+                      hook_ws_endpoint_override(Spelling, Endpoint)), Endpoints0),
+    sort(Endpoints0, Endpoints),
+    ( Endpoints == [] -> default_node_ws_endpoint(NodeURL, WsURL)
+    ; Endpoints = [WsURL] -> true
+    ; throw(error(permission_error(redefine, node_endpoint, NodeURL),
+                  context(distribution, 'conflicting canonical node endpoints')))
+    ).
+
+node_endpoint_spelling(Node, Node).
+node_endpoint_spelling(Node, Slash) :-
+    atom_concat(Node, '/', Slash),
+    normalize_node_url(Slash, Node), Node \== Slash.
+
+default_node_ws_endpoint(NodeURL, WsURL) :-
     atom_string(NodeURL, URLStr),
     (   sub_string(URLStr, 0, 8, _, "https://")
     ->  sub_string(URLStr, 8, _, 0, Rest),

@@ -397,7 +397,7 @@ distribution:hook_connection_context(Goal0,
 :- multifile distribution:hook_ws_endpoint_override/2.
 distribution:hook_ws_endpoint_override(NodeURL, WsURL) :-
     current_node_value(ws_endpoint_overrides, Overrides),
-    memberchk(NodeURL-WsURL, Overrides).
+    member(NodeURL-WsURL, Overrides).
 
 % Trusted per-node topology, parallel to the WebSocket overrides above.
 % Exact URI matching prevents a peer prefix from selecting another authority.

@@ -966,8 +966,9 @@ node(Port, Options0) :-
     %  startup-option plumbing. Defaults are `unlimited`, so a node
     %  configured without them behaves exactly as the demonstrator.
     extract_static_peer_tokens(Options0, StaticTokens, TransportOptions),
-    extract_plain_option(peer_transport_tokens, [], TransportOptions, PeerTokens, PeerOptions),
-    must_be(list, PeerTokens), maplist(valid_peer_token, PeerTokens),
+    extract_plain_option(peer_transport_tokens, [], TransportOptions, PeerTokens0, PeerOptions),
+    must_be(list, PeerTokens0), maplist(valid_peer_token, PeerTokens0),
+    canonical_peer_tokens(PeerTokens0, PeerTokens),
     extract_lifetime_options(PeerOptions, LifetimeOptions, LifetimeSettings),
     extract_resource_ceiling(max_actor_stack_bytes, LifetimeOptions, MaxActorStackBytes, Options1),
     extract_resource_ceiling(max_call_inferences, Options1, MaxCallInferences, Options2),
@@ -2499,8 +2500,19 @@ lifetime_options([Name-Default|Names], Options0, Options, [Name-Value|Pairs]) :-
     ),
     lifetime_options(Names, Options1, Options, Pairs).
 
-% Credentials are keyed by the exact destination URL, never by a client header.
+% Credentials are keyed by the canonical logical node URL, never by a client header.
 valid_peer_token(Node-Token) :-
     must_be(atom, Node), must_be(atom, Token),
     (sub_atom(Node, 0, _, _, 'https://'); sub_atom(Node, 0, _, _, 'http://')),
     \+ sub_atom(Token, _, _, _, '\r'), \+ sub_atom(Token, _, _, _, '\n').
+
+% Publish one credential per canonical logical node, before opening listeners.
+% Duplicate aliases are rejected without including credential values in errors.
+canonical_peer_tokens(Pairs0, Pairs) :-
+    maplist(canonical_peer_token, Pairs0, Pairs),
+    findall(Node, member(Node-_, Pairs), Keys), sort(Keys, Unique),
+    (same_length(Keys, Unique) -> true
+    ; throw(error(domain_error(peer_transport_tokens, duplicate_node),
+                  context(node/2, 'duplicate canonical peer node')))).
+canonical_peer_token(Node0-Token, Node-Token) :-
+    pid_utils:normalize_node_url(Node0, Node).

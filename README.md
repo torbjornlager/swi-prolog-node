@@ -288,3 +288,18 @@ and WebSocket-command budgets independently. Factory defaults remain unchanged;
 the shared public deployment selects 120 call entries and 120 session creations
 per minute while retaining its existing concurrency and resource bounds.
 See the [common admission contract](https://github.com/torbjornlager/trinity-conformance/blob/main/profiles/admission-0.1.md).
+
+### Canonical node addresses and transport contexts
+
+An empty root path is one node-URL spelling: `https://node/` canonicalizes to
+`https://node`. Returned addresses, peer credentials and owner topology use
+that identity. Duplicate canonical credential keys and conflicting dial
+mappings fail closed. Schemes, hosts, ports, non-root paths, queries and
+fragments retain their distinctions. Source and ordinary RPC URI text is
+unchanged.
+
+An explicit node URL retains a separate receiving transport context, even
+when it points back to this server. An implicit local spawn retains the
+caller’s client context. Ordinary names remain scoped to that context;
+published services provide node-wide discovery. Conformance pack
+`node-uri-io-0.2` checks address and context behavior separately.

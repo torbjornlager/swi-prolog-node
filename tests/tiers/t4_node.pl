@@ -44,6 +44,7 @@ http_status(URL, Status) :-
 :- use_module('node/copied_receive_admission_tests.pl', []).
 :- use_module('node/boolean_options_tests.pl', []).
 :- use_module('node/uri_options_tests.pl', []).
+:- use_module('node/canonical_node_tests.pl', []).
 :- use_module('node/node_assets_tests.pl', []).
 :- use_module('node/chart_startup_import_tests.pl', []).
 :- use_module('node/sandbox_source_names_tests.pl', []).

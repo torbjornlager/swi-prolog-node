@@ -766,12 +766,14 @@ toplevel_halt(Pid) :-
 %   Terminate a toplevel and wait until its termination has been observed.
 %   The private monitor is distinct from any spawn-time monitor already owned
 %   by the caller; the second argument retains the historical value `true`.
+% The private reference identifies this observation even when monitor/2
+% canonicalizes a qualified address to another public pid representation.
 toplevel_halt(Pid, true) :-
     setup_call_cleanup(
         monitor(Pid, Ref),
         (   toplevel_halt(Pid),
             receive({
-                down(Pid, Ref, _) ->
+                down(_, Ref, _) ->
                     true
             })
         ),

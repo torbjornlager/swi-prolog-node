@@ -36,9 +36,8 @@ Shared normalization utilities for:
 %!  localhost_node(+Node) is semidet.
 %
 %   True if Node denotes the local node — the atom `localhost`, or any
-%   atom/string whose lowercase form is `"localhost"`. Used to short-
-%   circuit remote-dispatch paths when a "remote" URL actually points
-%   back at this process.
+%   atom/string whose lowercase form is `"localhost"`. This selects the
+%   local-node alias. Explicit URLs retain their receiving transport context.
 
 localhost_node(localhost).
 localhost_node(Node) :-
@@ -76,10 +75,19 @@ node_text_list_atom(List, Atom) :-
 %!  normalize_node_url(+Node0, -Node) is det.
 normalize_node_url(Node0, Node) :-
     node_url_atom(Node0, Node1),
-    (   sub_atom(Node1, _, 1, 0, '/')
-    ->  sub_atom(Node1, 0, _, 1, Node)
-    ;   Node = Node1
-    ).
+    (node_root_alias(Node1, Canonical) -> Node = Canonical ; Node = Node1).
+
+% Only an empty root path is a spelling variant. Non-root paths, queries,
+% fragments, schemes and authorities retain their exact distinctions.
+node_root_alias(URL, Canonical) :-
+    member(Scheme, ['http://','https://','ws://','wss://']),
+    atom_concat(Scheme, Rest, URL),
+    atom_concat(Authority, '/', Rest), Authority \== '',
+    \+ sub_atom(Authority, _, _, _, '/'),
+    \+ sub_atom(Authority, _, _, _, '?'),
+    \+ sub_atom(Authority, _, _, _, '#'),
+    atom_concat(Scheme, Authority, Canonical).
+
 
 
 %!  register_node_self(+URL0) is det.
