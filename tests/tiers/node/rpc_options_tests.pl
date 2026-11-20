@@ -102,12 +102,14 @@ test(omitted_and_numeric_timeout_conventions) :-
     rpc:validate_client_options(rpc,[]),
     rpc:normalize_requested_timeout(none,none),
     rpc:validate_client_options(rpc,[timeout(-1),http_timeout(-1)]),
-    rpc:rpc_http_options([http_timeout(-1)],HTTP), assertion(HTTP==[timeout(0)]).
+    rpc:rpc_http_options([http_timeout(-1)],HTTP),
+    % http_deadline/1 is the internal whole-request deadline marker.
+    assertion(HTTP==[http_deadline(0),timeout(0)]).
 test(transport_projection) :-
     rpc:rpc_http_options([limit(1),src_text('p.'),once(true),timeout(2),
         http_timeout(3),request_header(x='one'),request_header(y="two"),
         authorization(bearer(token)),user_agent('agent')], HTTP),
-    assertion(HTTP==[timeout(3),request_header(x='one'),request_header(y=two),
+    assertion(HTTP==[http_deadline(3),timeout(3),request_header(x='one'),request_header(y=two),
                      request_header(authorization='Bearer token'),user_agent('agent')]).
 test(rpc_http_headers_and_nondeterminism) :-
     with_endpoint(URI,Requests,
@@ -143,5 +145,24 @@ test(invalid_yield_never_runs_callback) :-
          assertion(Error = error(type_error(number,bad),_)), yield(Ref,failure))).
 test(callback_variables_not_instantiated) :-
     rpc:validate_client_options(yield,[on_timeout(Answer=timeout)]), assertion(var(Answer)).
+
+% The stateless endpoint is below the node URI's own path.
+test(node_path_prefix_is_kept, [forall(member(Suffix-Path,
+        ['/prefix/'-'/prefix/call','/prefix'-'/prefix/call','/'-'/call',''-'/call']))]) :-
+    with_endpoint(URI, Requests,
+        ( atom_concat(URI, Suffix, Node),
+          once(rpc(Node, member(_, [a]), [])),
+          thread_get_message(Requests, Request),
+          memberchk(path(Seen), Request),
+          assertion(Seen == Path) )).
+% A whole-request deadline of zero or less is reached before any request.
+test(nonpositive_http_timeout_makes_no_request, [forall(member(T,[0,-2]))]) :-
+    with_endpoint(URI, Requests,
+        ( catch(rpc(URI, true, [http_timeout(T)]), Error, true),
+          assertion(Error = error(rpc_error(http_timeout),_)),
+          promise(URI, true, Ref, [http_timeout(T)]),
+          yield(Ref, Answer),
+          assertion(Answer = error(error(rpc_error(http_timeout),_))),
+          assertion(\+ thread_peek_message(Requests, _)) )).
 
 :- end_tests(rpc_options).

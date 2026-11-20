@@ -48,6 +48,7 @@ client namespaces or stateless HTTP identities; standalone use remains shared.
 :- use_module(library(http/http_open)).
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(url)).
+:- use_module(library(time), [call_with_time_limit/3]).
 :- use_module(library(debug)).
 :- use_module(source_utils, [uri_atom/2]).
 :- use_module(wire_text, [terms_to_wire_texts/2, wire_read_options/1]).
@@ -154,14 +155,32 @@ rpc(Template, Offset, Limit, GoalAtom, TemplateAtom, Parts,
     Options, LoadText, RemoteTimeout, Once) :-
     rpc_search_params(GoalAtom, TemplateAtom, Offset, Limit,
                       LoadText, RemoteTimeout, Once, Search),
-    parse_url(ExpandedURI, [
-        path('/call'),
-        search(Search)
-      | Parts
-    ]),
+    call_url(Parts, Search, ExpandedURI),
     http_read_answer(ExpandedURI, Options, Answer),
     rpc(Answer, Template, Offset, Limit, GoalAtom, TemplateAtom, Parts,
         Options, LoadText, RemoteTimeout, Once).
+
+%!  call_url(+NodeParts, +Search, -URL) is det.
+%
+%   The stateless endpoint is `call` below the node URI's own path, so a
+%   node published at `http://host/prefix/` is called at `/prefix/call`.
+%   Only an empty or root path is the node root.  parse_url/2 keeps the
+%   first path/1 it sees, so the node's path is replaced, not shadowed.
+
+call_url(Parts0, Search, URL) :-
+    (   selectchk(path(Path0), Parts0, Parts)
+    ->  true
+    ;   Path0 = '/', Parts = Parts0
+    ),
+    (   ( Path0 == '' ; sub_atom(Path0, _, 1, 0, '/') )
+    ->  atom_concat(Path0, call, Path1)
+    ;   atom_concat(Path0, '/call', Path1)
+    ),
+    (   sub_atom(Path1, 0, 1, _, '/')
+    ->  Path = Path1
+    ;   atom_concat('/', Path1, Path)
+    ),
+    parse_url(URL, [path(Path), search(Search)|Parts]).
 
 %!  goal_template_texts(+Goal, +Template, -GoalAtom, -TemplateAtom) is det.
 %
@@ -181,7 +200,37 @@ goal_template_texts(Goal, Template, GoalAtom, TemplateAtom) :-
 %   abort, halt and exit signals until it replied.  The stream is closed in
 %   cleanup only if it was actually opened.
 
-http_read_answer(URI, Options, Answer) :-
+http_read_answer(URI, Options0, Answer) :-
+    (   selectchk(http_deadline(Deadline), Options0, Options)
+    ->  http_read_answer_by(Deadline, URI, Options, Answer)
+    ;   http_read_answer_(URI, Options0, Answer)
+    ).
+
+%   http_timeout(T) bounds each whole request (connect, headers and body),
+%   not only the gap between two reads. A limit of zero or less is reached
+%   before any request is made. Both are rpc_error(http_timeout), which a
+%   promise delivers as its error answer.
+http_read_answer_by(Deadline, _, _, _) :-
+    Deadline =< 0,
+    !,
+    http_deadline_exceeded.
+http_read_answer_by(Deadline, URI, Options, Answer) :-
+    catch(call_with_time_limit(Deadline, http_read_answer_(URI, Options, Answer),
+                               rpc_http_deadline),
+          Error, http_deadline_error(Error)).
+
+http_deadline_error(time_limit_exceeded(rpc_http_deadline)) :- !,
+    http_deadline_exceeded.
+http_deadline_error(error(timeout_error(_, _), _)) :- !,
+    http_deadline_exceeded.
+http_deadline_error(Error) :-
+    throw(Error).
+
+http_deadline_exceeded :-
+    throw(error(rpc_error(http_timeout),
+                context(rpc:rpc/3, 'HTTP request deadline exceeded'))).
+
+http_read_answer_(URI, Options, Answer) :-
     Holder = stream(none),
     call_cleanup(
         (   http_open(URI, Stream, Options),
@@ -300,7 +349,7 @@ validate_client_pi(PI) :-
 rpc_http_options(Options0, HTTPOptions) :-
     (   select_option(http_timeout(HTTPTimeout0), Options0, Options1)
     ->  normalize_timeout(HTTPTimeout0, HTTPTimeout),
-        HTTPPrefix = [timeout(HTTPTimeout)]
+        HTTPPrefix = [http_deadline(HTTPTimeout), timeout(HTTPTimeout)]
     ;   Options1 = Options0,
         HTTPPrefix = []
     ),
@@ -499,11 +548,7 @@ promise_answer(URI, Goal, Template, Offset, Limit,
     parse_url(URI, Parts),
     rpc_search_params(GoalAtom, TemplateAtom, Offset, Limit,
                       LoadText, RemoteTimeout, Once, Search),
-    parse_url(ExpandedURI, [
-        path('/call'),
-        search(Search)
-      | Parts
-    ]),
+    call_url(Parts, Search, ExpandedURI),
     http_read_answer(ExpandedURI, HTTPOptions, Answer),
     (   valid_promise_answer(Answer)
     ->  true
