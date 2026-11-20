@@ -775,8 +775,8 @@ actor_in_current_namespace(LocalPid) :-
 %
 %     - remove links, names and delayed-send records,
 %     - kill linked children,
-%     - notify monitors with down messages,
-%     - remove pid/thread mappings.
+%     - remove pid/thread mappings,
+%     - notify monitors with down messages.
 stop(Pid, Parent) :-
     canonical_pid(Pid, GlobalPid),
     (   pid_thread(Pid, ThreadId)
@@ -807,10 +807,12 @@ stop(Pid, Parent) :-
             forall(hook_registry_retire(GlobalPid), true),
             with_mutex(actors_monitor_lifecycle,
                 (   down_reason(Pid, Reason),
-                    forall(retract(monitor(Other, GlobalPid, Ref)),
-                           send_system(Other, down(GlobalPid, Ref, Reason))),
                     retractall(pid_thread(Pid, _)),
-                    retractall(thread_pid(_, Pid))
+                    retractall(thread_pid(_, Pid)),
+                    % Delivery can wake the observer before send_system/2
+                    % returns.  Its first actors/1 must already exclude Pid.
+                    forall(retract(monitor(Other, GlobalPid, Ref)),
+                           send_system(Other, down(GlobalPid, Ref, Reason)))
                 ))
         )),
     retractall(actor_public_namespace(Pid, _)),

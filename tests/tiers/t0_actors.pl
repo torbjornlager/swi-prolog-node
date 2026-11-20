@@ -20,10 +20,12 @@
 :- use_module('zero_poll_tests.pl', []).
 :- use_module('receive_handoff_tests.pl', []).
 :- use_module('monitor_preflight_tests.pl', []).
+:- use_module('retirement_order_tests.pl', []).
 
 run_tier :-
     layer_honesty,
     run_tests([ t0_receive, zero_poll, receive_handoff, monitor_preflight,
+                retirement_order,
                 spawn_options,
                 t0_actors,
                 t0_postmortem,
