@@ -141,11 +141,12 @@ using separate engines and does not update installed runtimes or restart n3/n5.
 
 URI values used internally for routing and fetching are atoms. Public URI inputs
 retain supported text forms and are checked before source loading or dispatch;
-unknown variables are not instantiated by matching the `Host:Port` shorthand.
-RPC/promise accept that shorthand with a text host and integer port. This is
+unknown variables remain unbound. The author-directed 17 November contract
+accepts atoms, string objects and proper character/code lists consistently.
+The `Host:Port` compound shorthand is rejected before dispatch. This is
 representation normalization, not a change to URI syntax, relative resolution,
 source origin policy, redirects, TLS or permitted schemes. See the shared manual
-for the runtime-specific text forms. The bounded regression report is in
+for the common text forms. The bounded regression report is in
 `docs/verification/uri-options-2026-10-24/REPORT.md`.
 
 ### Composed DCG execution guards

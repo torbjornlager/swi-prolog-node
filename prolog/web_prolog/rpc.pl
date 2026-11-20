@@ -271,8 +271,9 @@ query_option_type(user_agent, http_field).
 
 validate_client_value(template, _) :- !.
 validate_client_value(remote_timeout, Value) :- !,
-    % Preserve the existing unspecified-timeout and negative-timeout rules.
-    normalize_requested_timeout(Value, _).
+    % Omission uses an internal sentinel; an explicitly supplied timeout
+    % must be numeric before source preparation or request dispatch.
+    normalize_timeout(Value, _).
 validate_client_value(boolean, Value) :- !,
     must_be(nonvar, Value), normalize_once(Value, _).
 validate_client_value(source_text, Value) :- !,

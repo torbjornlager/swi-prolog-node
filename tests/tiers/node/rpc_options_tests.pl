@@ -87,10 +87,21 @@ test(template_sharing_and_source_repetition) :-
 test(native_source_text_representations,
      [forall(member(Text,['p.',"p.",[112,46],[p,'.']]))]) :-
     rpc:validate_client_options(rpc,[src_text(Text)]).
-test(existing_timeout_conventions) :-
-    rpc:validate_client_options(rpc,[timeout(Unspecified),timeout(none),
-                                    timeout(-1),http_timeout(-1)]),
-    assertion(var(Unspecified)),
+test(explicit_timeout_requires_number_before_source_or_dispatch,
+     [forall((member(Kind,[rpc,promise]),member(Value,[_ ,none,infinite])))]) :-
+    copy_term(Value,Before),
+    aggregate_all(count,rpc:promise_state(_,_,_,_,_,_,_),CountBefore),
+    catch(invoke(Kind,17,[src_uri('http://127.0.0.1:1/never'),timeout(Value)]),Error,true),
+    assertion(nonvar(Error)),
+    (var(Value) -> assertion(Error=error(instantiation_error,_))
+    ; assertion(Error=error(type_error(number,Value),_))),
+    assertion(Value=@=Before),
+    aggregate_all(count,rpc:promise_state(_,_,_,_,_,_,_),CountAfter),
+    assertion(CountBefore==CountAfter).
+test(omitted_and_numeric_timeout_conventions) :-
+    rpc:validate_client_options(rpc,[]),
+    rpc:normalize_requested_timeout(none,none),
+    rpc:validate_client_options(rpc,[timeout(-1),http_timeout(-1)]),
     rpc:rpc_http_options([http_timeout(-1)],HTTP), assertion(HTTP==[timeout(0)]).
 test(transport_projection) :-
     rpc:rpc_http_options([limit(1),src_text('p.'),once(true),timeout(2),
