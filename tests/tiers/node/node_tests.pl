@@ -1301,6 +1301,49 @@ test(node_info_route_announces_tutorial_sections,
             Sections = JSON.get(tutorial_sections)
         )).
 
+test(node_info_route_announces_engine_and_description,
+     true((Implementation == "SWI-Prolog",
+           Version == Expected,
+           Description == "A test node."))) :-
+    current_prolog_flag(version_data, swi(Major, Minor, Patch, _)),
+    format(string(Expected), "~w.~w.~w", [Major, Minor, Patch]),
+    with_node_server_options([description("  A test\n   node. ")], URI,
+        (
+            format(atom(NodeInfoURL), '~w/node_info', [URI]),
+            read_json_answer(NodeInfoURL, JSON),
+            Implementation = JSON.get(implementation),
+            Version = JSON.get(version),
+            Description = JSON.get(description)
+        )).
+
+test(node_info_route_omits_unconfigured_description, fail) :-
+    with_node_server(URI,
+        (
+            format(atom(NodeInfoURL), '~w/node_info', [URI]),
+            read_json_answer(NodeInfoURL, JSON),
+            get_dict(description, JSON, _)
+        )).
+
+test(node_rejects_overlong_description,
+     error(domain_error(node_description, _))) :-
+    length(Codes, 161), maplist(=(0'x), Codes),
+    string_codes(Long, Codes),
+    node:extract_node_description([description(Long)], _, _).
+
+test(relation_node_info_provides_only_advertised_relations,
+     true(Provides == ["wife/2"])) :-
+    with_node_server_options(
+        [ profile(relation),
+          relations([wife(socrates, _)]),
+          load_shared_db_text("wife(socrates, xantippa).\nhelper(x).\n")
+        ],
+        URI,
+        (
+            format(atom(NodeInfoURL), '~w/node_info', [URI]),
+            read_json_answer(NodeInfoURL, JSON),
+            Provides = JSON.get(provides)
+        )).
+
 test(normalize_auth_mode_accepts_string_open,
      true(Auth == open)) :-
     normalize_auth_mode("open", Auth).

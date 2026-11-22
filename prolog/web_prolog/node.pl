@@ -130,6 +130,7 @@ Design notes:
 ]).
 :- use_module(node_relation_policy, [
     normalize_relation_patterns/2,
+    relation_patterns/1,
     relation_check_call/3
 ]).
 :- use_module(node_principal_policy, [
@@ -938,6 +939,7 @@ isobase_event(Principal, GoalAtom, TemplateAtom0, Offset, Limit, Format, LoadTex
 %     - max_ws_frame_bytes(+Bytes)
 %     - max_admin_json_bytes(+Bytes)
 %     - tutorial_sections(+Sections)  % names of the tutorial sections shown by this node
+%     - description(+Text)            % one-line self-description in /node_info
 %     - rate_window_seconds(+Seconds)
 %     - max_call_requests_per_window(+Count)
 %     - max_session_spawns_per_window(+Count)
@@ -979,7 +981,8 @@ node(Port, Options0) :-
     extract_plain_option(idle_limit, default, Options4b, IdleLimit0, Options4c),
     extract_plain_option(max_interaction_log_backups, 5, Options4c, MaxLogBackups, Options),
     extract_plain_option(ws_allowed_origins, [], Options, WSAllowedOrigins0, Options5a),
-    extract_tutorial_sections(Options5a, TutorialSections, Options5),
+    extract_tutorial_sections(Options5a, TutorialSections, Options5b),
+    extract_node_description(Options5b, Description, Options5),
     node_options(Options5, SharedDB, SandboxMode, Profile, AuthMode,
                  DevPrincipal0, DevCapabilities0, PrincipalPolicies0,
                  Timeout0, CacheSize0, MaxInflightCalls0,
@@ -1079,6 +1082,7 @@ node(Port, Options0) :-
         max_interaction_log_bytes:MaxLogBytes,
         max_interaction_log_backups:MaxLogBackups,
         tutorial_sections:TutorialSections,
+        description:Description,
         started_at:StartedAt,
         dev_principal:DevPrincipal,
         dev_capabilities:DevCapabilities,
@@ -1626,8 +1630,12 @@ node_info_page_1(Request) :-
     node_info_tutorial_sections(TutorialSections),
     node_info_admission(Admission),
     ( current_node_value(ws_allowed_origins, WSAllowedOrigins) -> true ; WSAllowedOrigins = [] ),
-    reply_json(json{
+    node_info_engine(Implementation, Version),
+    node_info_description(Description),
+    Info = json{
         self_url:SelfURL,
+        implementation:Implementation,
+        version:Version,
         profile:Profile,
         auth:AuthMode,
         sandbox:Sandbox,
@@ -1650,7 +1658,29 @@ node_info_page_1(Request) :-
         ws_allowed_origins:WSAllowedOrigins,
         tutorial_sections:TutorialSections,
         admission:Admission
-    }).
+    },
+    (   Description == ""
+    ->  reply_json(Info)
+    ;   reply_json(Info.put(description, Description))
+    ).
+
+%!  node_info_engine(-Implementation:string, -Version:string) is det.
+%
+%   The Prolog system running this node, so directories such as the
+%   discovery hub can name it without curating labels of their own.
+node_info_engine("SWI-Prolog", Version) :-
+    current_prolog_flag(version_data, swi(Major, Minor, Patch, _)),
+    format(string(Version), "~w.~w.~w", [Major, Minor, Patch]).
+
+%!  node_info_description(-Description:string) is det.
+%
+%   The owner's one-line self-description (the `description/1` node
+%   option), or "" when none was configured.
+node_info_description(Description) :-
+    (   current_node_value(description, Description0)
+    ->  Description = Description0
+    ;   Description = ""
+    ).
 
 % Public limits only; use the same profile projection as node_setting/2.
 node_info_admission(Admission) :-
@@ -1692,6 +1722,19 @@ node_info_services(Services) :-
 %   by the baseline below), SWI built-ins, and the control facts an owner
 %   may place in the shared DB (provides/1, relation_filter/1).  Absent
 %   shared DB ⇒ empty.
+node_info_provides(Provides) :-
+    node_profile_mode(Profile),
+    Profile == relation,
+    !,
+    %  A RELATION node answers only its advertised relation patterns, so
+    %  those — not every helper in its shared DB — are its contract.
+    relation_patterns(Patterns),
+    findall(S,
+            ( member(Pattern, Patterns),
+              functor(Pattern, Name, Arity),
+              format(string(S), "~w/~w", [Name, Arity]) ),
+            Provides0),
+    sort(Provides0, Provides).
 node_info_provides(Provides) :-
     (   current_shared_db_module(Module)
     ->  findall(S,
@@ -2426,6 +2469,30 @@ extract_tutorial_sections(Options0, Sections, Options) :-
     ).
 
 is_tutorial_sections_option(tutorial_sections(_)).
+
+%!  extract_node_description(+Options0, -Description, -Options) is det.
+%
+%   The optional one-line self-description advertised in /node_info,
+%   kept outside the pinned node_options/24 interface like the tutorial
+%   catalogue.  Whitespace is collapsed; at most 160 characters.
+extract_node_description(Options0, Description, Options) :-
+    (   select(description(Raw), Options0, Options)
+    ->  must_be(text, Raw),
+        text_to_string(Raw, Text),
+        split_string(Text, " \t\r\n", " \t\r\n", Words0),
+        exclude(==(""), Words0, Words),
+        atomic_list_concat(Words, ' ', Joined),
+        atom_string(Joined, Description),
+        string_length(Description, Length),
+        (   Length =< 160
+        ->  true
+        ;   throw(error(domain_error(node_description, Raw),
+                        context(node:extract_node_description/3,
+                                'node descriptions are at most 160 characters')))
+        )
+    ;   Description = "",
+        Options = Options0
+    ).
 
 normalize_tutorial_section(Value, Section) :-
     must_be(atom, Value),
